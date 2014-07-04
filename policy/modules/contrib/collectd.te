@@ -157,6 +157,10 @@ optional_policy(`
 	virt_read_config(collectd_t)
 ')
 
+optional_policy(`
+	openvpn_read_status(collectd_t)
+')
+
 ########################################
 #
 # Web local policy
