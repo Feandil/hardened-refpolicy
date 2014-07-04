@@ -13,6 +13,55 @@ policy_module(collectd, 1.0.0)
 ## </desc>
 gen_tunable(collectd_tcp_network_connect, false)
 
+## <desc>
+##     <p>
+##     Determine whether collectd can read
+##     /proc/sys/kernel/random/entropy_avail
+##     (entropy module)
+##     </p>
+## </desc>
+gen_tunable(collectd_entropy, true)
+
+## <desc>
+##     <p>
+##     Determine whether collectd can connect
+##     to hddtemp using TCP.
+##     </p>
+## </desc>
+gen_tunable(collectd_hddtemp, true)
+
+## <desc>
+##     <p>
+##     Determine whether collectd can use
+##     the lvm raw api (lvm module)
+##     </p>
+## </desc>
+gen_tunable(collectd_lvm, true)
+
+## <desc>
+##     <p>
+##     Determine whether collectd can connect
+##     to nut using TCP (nut module)
+##     </p>
+## </desc>
+gen_tunable(collectd_nut, true)
+
+## <desc>
+##     <p>
+##     Determine whether collectd can read
+##     /proc/id/* (process module)
+##     </p>
+## </desc>
+gen_tunable(collectd_process, true)
+
+## <desc>
+##     <p>
+##     Determine whether collectd can read
+##     /run/utmp (users module)
+##     </p>
+## </desc>
+gen_tunable(collectd_users, true)
+
 type collectd_t;
 type collectd_exec_t;
 init_daemon_domain(collectd_t, collectd_exec_t)
@@ -68,10 +117,40 @@ logging_send_syslog_msg(collectd_t)
 
 sysnet_dns_name_resolve(collectd_t)
 
+dev_dontaudit_getattr_all_chr_files(collectd_t)
+
 tunable_policy(`collectd_tcp_network_connect',`
 	corenet_sendrecv_all_client_packets(collectd_t)
 	corenet_tcp_connect_all_ports(collectd_t)
 	corenet_tcp_sendrecv_all_ports(collectd_t)
+')
+
+tunable_policy(`collectd_entropy',`
+	kernel_read_kernel_sysctls(collectd_t)
+')
+
+tunable_policy(`collectd_hddtemp',`
+	corenet_tcp_connect_hddtemp_port(collectd_t)
+	corenet_tcp_sendrecv_hddtemp_port(collectd_t)
+')
+
+lvm_use_api_uncond(collectd_t)
+tunable_policy(`collectd_lvm',`
+	lvm_use_api_cond(collectd_t)
+')
+
+tunable_policy(`collectd_nut',`
+	corenet_tcp_connect_ups_port(collectd_t)
+	corenet_tcp_sendrecv_ups_port(collectd_t)
+')
+
+tunable_policy(`collectd_process',`
+	allow collectd_t self:capability { dac_override };
+	domain_read_all_domains_state(collectd_t)
+')
+
+tunable_policy(`collectd_users',`
+	init_read_utmp(collectd_t)
 ')
 
 optional_policy(`
