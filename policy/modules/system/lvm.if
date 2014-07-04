@@ -123,3 +123,60 @@ interface(`lvm_domtrans_clvmd',`
 	corecmd_search_bin($1)
 	domtrans_pattern($1, clvmd_exec_t, clvmd_t)
 ')
+
+########################################
+## <summary>
+##      Use directly LVM library API, unconditional part
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <rolecap/>
+#
+interface(`lvm_use_api_uncond',`
+	storage_raw_read_fixed_disk_uncond($1)
+')
+
+########################################
+## <summary>
+##      Use directly LVM library API, conditional part
+##	requires the unconditional part in order to work
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <rolecap/>
+#
+interface(`lvm_use_api_cond',`
+        gen_require(`
+                type lvm_lock_t, lvm_metadata_t;
+        ')
+
+	storage_raw_read_fixed_disk_cond($1)
+        dev_rw_lvm_control($1)
+
+        lvm_read_config($1)
+        manage_files_pattern($1, lvm_lock_t, lvm_lock_t)
+        manage_files_pattern($1, lvm_metadata_t, lvm_metadata_t)
+')
+
+
+########################################
+## <summary>
+##      Use directly LVM library API
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <rolecap/>
+#
+interface(`lvm_use_api',`
+	lvm_use_api_uncond($1)
+	lvm_use_api_cond($1)
+')
