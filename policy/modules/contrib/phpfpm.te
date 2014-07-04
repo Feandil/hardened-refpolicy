@@ -21,6 +21,13 @@ gen_tunable(phpfpm_can_network_connect_http, false)
 
 ## <desc>
 ## <p>
+## Allow php-fpm to read collectd data
+## </p>
+## </desc>
+gen_tunable(phpfpm_can_read_collectd, false)
+
+## <desc>
+## <p>
 ## Allow php-fpm to read generic certificats
 ## </p>
 ## </desc>
@@ -123,6 +130,10 @@ optional_policy(`
 
 tunable_policy(`phpfpm_can_network_connect_http',`
 	corenet_tcp_connect_http_port(phpfpm_t)
+')
+
+tunable_policy(`phpfpm_can_read_collectd',`
+	collectd_read_var_lib(phpfpm_t)
 ')
 
 tunable_policy(`phpfpm_can_read_generic_certs',`
