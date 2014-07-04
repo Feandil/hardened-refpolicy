@@ -2,6 +2,27 @@
 
 ########################################
 ## <summary>
+##	Allow a domain to get access to the rrd
+##	files produced by collectd.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <rolecap/>
+#
+interface(`collectd_read_var_lib',`
+	gen_require(`
+		type collectd_var_lib_t;
+	')
+
+	read_files_pattern($1, collectd_var_lib_t, collectd_var_lib_t)
+	list_dirs_pattern($1, collectd_var_lib_t, collectd_var_lib_t)
+')
+
+########################################
+## <summary>
 ##	All of the rules required to
 ##	administrate an collectd environment.
 ## </summary>
