@@ -135,9 +135,11 @@ tunable_policy(`collectd_hddtemp',`
 	corenet_tcp_sendrecv_hddtemp_port(collectd_t)
 ')
 
-lvm_use_api_uncond(collectd_t)
-tunable_policy(`collectd_lvm',`
-	lvm_use_api_cond(collectd_t)
+optional_policy(`
+	lvm_use_api_uncond(collectd_t)
+	tunable_policy(`collectd_lvm',`
+		lvm_use_api_cond(collectd_t)
+	')
 ')
 
 tunable_policy(`collectd_nut',`
