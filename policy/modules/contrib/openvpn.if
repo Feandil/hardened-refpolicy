@@ -125,6 +125,26 @@ interface(`openvpn_read_config',`
 
 ########################################
 ## <summary>
+##	Read openvpn status.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`openvpn_read_status',`
+	gen_require(`
+		type openvpn_status_t;
+	')
+
+	logging_search_logs($1)
+	read_files_pattern($1, openvpn_status_t, openvpn_status_t)
+')
+
+########################################
+## <summary>
 ##	All of the rules required to
 ##	administrate an openvpn environment.
 ## </summary>
