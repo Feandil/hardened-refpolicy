@@ -132,14 +132,18 @@ tunable_policy(`phpfpm_can_network_connect_http',`
 	corenet_tcp_connect_http_port(phpfpm_t)
 ')
 
-tunable_policy(`phpfpm_can_read_collectd',`
-	collectd_read_var_lib(phpfpm_t)
+optional_policy(`
+	tunable_policy(`phpfpm_can_read_collectd',`
+		collectd_read_var_lib(phpfpm_t)
+	')
 ')
 
 tunable_policy(`phpfpm_can_read_generic_certs',`
 	miscfiles_read_generic_certs(phpfpm_t)
 ')
 
-tunable_policy(`phpfpm_can_clamav_connect_unix',`
-	clamav_stream_connect(phpfpm_t)
+optional_policy(`
+	tunable_policy(`phpfpm_can_clamav_connect_unix',`
+		clamav_stream_connect(phpfpm_t)
+	')
 ')
