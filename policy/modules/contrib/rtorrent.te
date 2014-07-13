@@ -31,6 +31,12 @@ userdom_user_home_content(rtorrent_home_t)
 type rtorrent_session_t;
 userdom_user_home_content(rtorrent_session_t)
 
+# Downloaded files: manageable by rtorrent, manageable by user
+type rtorrent_download_t;
+userdom_user_home_content(rtorrent_download_t)
+files_mountpoint(rtorrent_download_t)
+
+
 ########################################
 #
 # rtorrent local policy
@@ -44,6 +50,10 @@ read_files_pattern(rtorrent_t, rtorrent_home_t, rtorrent_home_t)
 
 manage_dirs_pattern(rtorrent_t, rtorrent_session_t, rtorrent_session_t)
 manage_files_pattern(rtorrent_t, rtorrent_session_t, rtorrent_session_t)
+
+# Manage the downloaded files
+manage_dirs_pattern(rtorrent_t, rtorrent_download_t, rtorrent_download_t)
+manage_files_pattern(rtorrent_t, rtorrent_download_t, rtorrent_download_t)
 
 corenet_tcp_bind_generic_node(rtorrent_t)
 corenet_tcp_bind_rtorrent_port(rtorrent_t)

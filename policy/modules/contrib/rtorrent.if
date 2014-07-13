@@ -17,7 +17,7 @@
 #
 interface(`rtorrent_role',`
 	gen_require(`
-		type rtorrent_t, rtorrent_exec_t, rtorrent_home_t, rtorrent_session_t;
+		type rtorrent_t, rtorrent_exec_t, rtorrent_home_t, rtorrent_session_t, rtorrent_download_t;
 	')
 
 	role $1 types rtorrent_t;
@@ -30,6 +30,9 @@ interface(`rtorrent_role',`
 
 	read_files_pattern($2, rtorrent_session_t, rtorrent_session_t)
 	list_dirs_pattern($2, rtorrent_session_t, rtorrent_session_t)
+
+	manage_dirs_pattern($2, rtorrent_download_t, rtorrent_download_t)
+	manage_files_pattern($2, rtorrent_download_t, rtorrent_download_t)
 
 	ps_process_pattern($2, rtorrent_t)
 ')
