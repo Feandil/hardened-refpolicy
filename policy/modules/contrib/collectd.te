@@ -32,6 +32,15 @@ gen_tunable(collectd_hddtemp, true)
 
 ## <desc>
 ##     <p>
+##     Determine whether collectd can connect
+##     to http ports using TCP.
+##     Used by, at least, nginx stat module
+##     </p>
+## </desc>
+gen_tunable(collectd_http, true)
+
+## <desc>
+##     <p>
 ##     Determine whether collectd can use
 ##     the lvm raw api (lvm module)
 ##     </p>
@@ -141,6 +150,11 @@ tunable_policy(`collectd_entropy',`
 tunable_policy(`collectd_hddtemp',`
 	corenet_tcp_connect_hddtemp_port(collectd_t)
 	corenet_tcp_sendrecv_hddtemp_port(collectd_t)
+')
+
+tunable_policy(`collectd_http',`
+	corenet_tcp_connect_http_port(collectd_t)
+	corenet_tcp_sendrecv_http_port(collectd_t)
 ')
 
 optional_policy(`
