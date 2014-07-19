@@ -99,6 +99,10 @@ allow domain self:process { fork sigchld };
 # glibc get_nprocs requires read access to /sys/devices/system/cpu/online
 dev_read_cpu_online(domain)
 
+# glibc malloc requires access to /proc/sys/vm/overcommit_memory
+# see https://sourceware.org/git/?p=glibc.git;a=commit;h=9fab36eb
+kernel_read_vm_overcommit_sysctls(domain)
+
 # Use trusted objects in /dev
 dev_rw_null(domain)
 dev_rw_zero(domain)
