@@ -1445,7 +1445,9 @@ interface(`files_relabel_non_auth_files',`
 	relabelfrom_chr_files_pattern($1, non_auth_file_type, non_auth_file_type)
 
 	# satisfy the assertions:
-	seutil_relabelto_bin_policy($1)
+	# seutil_relabelto_bin_policy($1)
+	# Gentoo: this is removed as we do not want to set attributes in this phase, we want
+	# to allow files_relabel_non_auth_files to be an optional setting (tunable).
 ')
 
 
@@ -6725,4 +6727,79 @@ interface(`files_read_etc_runtime',`
 	list_dirs_pattern($1, etc_t, etc_runtime_t)
 	read_files_pattern($1, { etc_t etc_runtime_t }, etc_runtime_t)
 	read_lnk_files_pattern($1, { etc_t etc_runtime_t }, etc_runtime_t)
+')
+
+########################################
+## <summary>
+##	Allow relabel from and to non-security types
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`files_relabel_all_non_security_file_types',`
+	gen_require(`
+		attribute non_security_file_type;
+	')
+
+	allow $1 non_security_file_type:dir list_dir_perms;
+
+	relabel_dirs_pattern($1, non_security_file_type, non_security_file_type)
+	relabel_files_pattern($1, non_security_file_type, non_security_file_type)
+	relabel_lnk_files_pattern($1, non_security_file_type, non_security_file_type)
+	relabel_fifo_files_pattern($1, non_security_file_type, non_security_file_type)
+	relabel_sock_files_pattern($1, non_security_file_type, non_security_file_type)
+
+	# this is only relabelfrom since there should be no
+	# device nodes with file types.
+	relabelfrom_blk_files_pattern($1, non_security_file_type, non_security_file_type)
+	relabelfrom_chr_files_pattern($1, non_security_file_type, non_security_file_type)
+')
+
+########################################
+## <summary>
+##	Manage non-security-sensitive resource types
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`files_manage_all_non_security_file_types',`
+	gen_require(`
+		attribute non_security_file_type;
+	')
+
+	manage_dirs_pattern($1, non_security_file_type, non_security_file_type)
+	manage_files_pattern($1, non_security_file_type, non_security_file_type)
+	manage_lnk_files_pattern($1, non_security_file_type, non_security_file_type)
+	manage_fifo_files_pattern($1, non_security_file_type, non_security_file_type)
+	manage_sock_files_pattern($1, non_security_file_type, non_security_file_type)
+')
+
+#########################################
+## <summary>
+##	Allow relabeling from and to any pidfile associated type
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_relabel_all_pidfiles',`
+	gen_require(`
+		attribute pidfile;
+	')
+
+	allow $1 pidfile:dir list_dir_perms;
+
+	relabel_dirs_pattern($1, pidfile, pidfile)
+	relabel_files_pattern($1, pidfile, pidfile)
+	relabel_lnk_files_pattern($1, pidfile, pidfile)
 ')
