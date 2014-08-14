@@ -230,13 +230,10 @@ userdom_user_home_dir_filetrans(iceauth_t, iceauth_home_t, file)
 
 allow xdm_t iceauth_home_t:file read_file_perms;
 
-files_search_tmp(iceauth_t)
 fs_search_auto_mountpoints(iceauth_t)
 
 userdom_use_user_terminals(iceauth_t)
 userdom_read_user_tmp_files(iceauth_t)
-
-getty_use_fds(iceauth_t)
 
 tunable_policy(`use_nfs_home_dirs',`
 	fs_manage_nfs_files(iceauth_t)
@@ -281,7 +278,6 @@ auth_use_nsswitch(xauth_t)
 
 userdom_use_user_terminals(xauth_t)
 userdom_read_user_tmp_files(xauth_t)
-userdom_read_user_tmp_files(xserver_t)
 
 xserver_rw_xdm_tmp_files(xauth_t)
 
@@ -1014,3 +1010,29 @@ allow xserver_unconfined_type { x_domain xserver_t }:x_keyboard *;
 allow xserver_unconfined_type xextension_type:x_extension *;
 allow xserver_unconfined_type { x_domain xserver_t }:x_resource *;
 allow xserver_unconfined_type xevent_type:{ x_event x_synthetic_event } *;
+
+ifdef(`distro_gentoo',`
+	########################################
+	#
+	# iceauth_t policy
+	#
+
+	files_search_tmp(iceauth_t)
+
+	getty_use_fds(iceauth_t)
+
+	########################################
+	#
+	# xserver_t policy
+	#
+
+	type xserver_xdg_data_home_t;
+	xdg_data_home_content(xserver_xdg_data_home_t)
+
+	# Mark data in ~/.local/share as xserver_t XDG data, see bug #516512
+	manage_dirs_pattern(xserver_t, xserver_xdg_data_home_t, xserver_xdg_data_home_t)
+	allow xserver_t xserver_xdg_data_home_t:file manage_file_perms;
+	xdg_data_home_filetrans(xserver_t, xserver_xdg_data_home_t, dir)
+
+	userdom_read_user_tmp_files(xserver_t)
+')
