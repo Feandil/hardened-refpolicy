@@ -1,4 +1,4 @@
-policy_module(irc, 2.4.0)
+policy_module(irc, 2.4.1)
 
 ########################################
 #
@@ -49,6 +49,9 @@ allow irc_t self:fifo_file rw_fifo_file_perms;
 allow irc_t self:unix_stream_socket { accept listen };
 
 allow irc_t irc_conf_t:file read_file_perms;
+
+can_exec(irc_t, irc_exec_t)
+corecmd_search_bin(irc_t)
 
 manage_dirs_pattern(irc_t, irc_home_t, irc_home_t)
 manage_files_pattern(irc_t, irc_home_t, irc_home_t)

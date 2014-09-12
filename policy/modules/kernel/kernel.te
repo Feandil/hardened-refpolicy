@@ -1,4 +1,4 @@
-policy_module(kernel, 1.18.1)
+policy_module(kernel, 1.18.3)
 
 ########################################
 #
@@ -301,6 +301,11 @@ mls_file_read_all_levels(kernel_t)
 ifdef(`distro_redhat',`
 	# Bugzilla 222337
 	fs_rw_tmpfs_chr_files(kernel_t)
+')
+
+optional_policy(`
+	# loop devices
+	fstools_use_fds(kernel_t)
 ')
 
 optional_policy(`

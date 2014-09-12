@@ -534,6 +534,13 @@ ifndef(`distro_redhat',`
 ')
 
 ifdef(`distro_gentoo',`
+	# powertop support
+	dev_read_cpuid(sysadm_t)
+
+	optional_policy(`
+		dnsmasq_admin(sysadm_t, sysadm_r)
+	')
+
 	optional_policy(`
 		dovecot_admin(sysadm_t, sysadm_r)
 	')
@@ -548,6 +555,11 @@ ifdef(`distro_gentoo',`
 
 	optional_policy(`
 		rpcbind_stream_connect(sysadm_t)
+	')
+
+	optional_policy(`
+		salt_admin_master(sysadm_t, sysadm_r)
+		salt_admin_minion(sysadm_t, sysadm_r)
 	')
 
 	optional_policy(`
