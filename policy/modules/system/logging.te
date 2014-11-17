@@ -1,4 +1,4 @@
-policy_module(logging, 1.21.1)
+policy_module(logging, 1.21.3)
 
 ########################################
 #
@@ -406,6 +406,8 @@ kernel_read_messages(syslogd_t)
 kernel_read_vm_sysctls(syslogd_t)
 kernel_clear_ring_buffer(syslogd_t)
 kernel_change_ring_buffer_level(syslogd_t)
+# Read ring buffer for journald
+kernel_read_ring_buffer(syslogd_t)
 # /initrd is not umounted before minilog starts
 kernel_dontaudit_search_unlabeled(syslogd_t)
 
@@ -437,8 +439,12 @@ corenet_sendrecv_mysqld_client_packets(syslogd_t)
 
 dev_filetrans(syslogd_t, devlog_t, sock_file)
 dev_read_sysfs(syslogd_t)
+# Allow access to /dev/kmsg for journald
+dev_rw_kmsg(syslogd_t)
 
 domain_use_interactive_fds(syslogd_t)
+# Allow access to /proc/ information for journald
+domain_read_all_domains_state(syslogd_t)
 
 files_read_etc_files(syslogd_t)
 files_read_usr_files(syslogd_t)
@@ -477,7 +483,7 @@ userdom_dontaudit_search_user_home_dirs(syslogd_t)
 ifdef(`distro_gentoo',`
 	# default gentoo syslog-ng config appends kernel
 	# and high priority messages to /dev/tty12
-	term_append_unallocated_ttys(syslogd_t)
+	# and chown/chgrp/chmod /dev/tty12, which is denied
 	term_dontaudit_setattr_unallocated_ttys(syslogd_t)
 ')
 

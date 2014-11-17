@@ -1,11 +1,11 @@
-policy_module(staff, 2.5.1)
+policy_module(staff, 2.5.2)
 
 ########################################
 #
 # Declarations
 #
 
-role staff_r;
+#role staff_r;
 
 userdom_unpriv_user_template(staff)
 

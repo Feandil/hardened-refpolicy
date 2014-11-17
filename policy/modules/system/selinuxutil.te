@@ -648,11 +648,16 @@ ifdef(`distro_gentoo',`
 		class passwd { passwd chfn chsh rootok };
 	')
 
-	allow run_init_t self:passwd rootok;
+	# Needed to support pam_rootok.so even with integrated run_init support in openrc
+	allow run_init_t self:passwd { passwd rootok };
 
 	# Fix bug #512676
 	allow run_init_t self:process signal;
 	allow run_init_t self:netlink_selinux_socket { create bind };
+
+	# Needed to support openrc with USE="-pam"
+	# TODO can we make this optional? is this a bad thing?
+	auth_read_shadow(run_init_t)
 
 	# Denials upon loading policy
 	fs_getattr_tmpfs(setfiles_t)
