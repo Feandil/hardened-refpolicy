@@ -844,14 +844,6 @@ interface(`init_spec_domtrans_script',`
 	files_list_etc($1)
 	spec_domtrans_pattern($1, initrc_exec_t, initrc_t)
 
-	ifdef(`distro_gentoo',`
-		gen_require(`
-			type rc_exec_t;
-		')
-
-		domtrans_pattern($1, rc_exec_t, initrc_t)
-	')
-
 	ifdef(`enable_mcs',`
 		range_transition $1 initrc_exec_t:process s0;
 	')

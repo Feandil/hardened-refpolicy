@@ -1,4 +1,4 @@
-policy_module(afs, 1.9.0)
+policy_module(afs, 1.9.2)
 
 ########################################
 #
@@ -74,7 +74,7 @@ role system_r types afs_vlserver_t;
 
 allow afs_t self:capability { dac_override sys_admin sys_nice sys_tty_config };
 allow afs_t self:process { setsched signal };
-allow afs_t self:fifo_file rw_file_perms;
+allow afs_t self:fifo_file rw_fifo_file_perms;
 allow afs_t self:unix_stream_socket { accept listen };
 
 manage_files_pattern(afs_t, afs_cache_t, afs_cache_t)
@@ -135,6 +135,8 @@ corenet_udp_bind_afs_bos_port(afs_bosserver_t)
 corenet_sendrecv_afs_bos_server_packets(afs_bosserver_t)
 corenet_udp_sendrecv_afs_bos_port(afs_bosserver_t)
 
+dev_read_urand(afs_bosserver_t)
+
 files_list_home(afs_bosserver_t)
 files_read_usr_files(afs_bosserver_t)
 
@@ -151,13 +153,9 @@ allow afs_fsserver_t self:process { setsched signal_perms };
 allow afs_fsserver_t self:fifo_file rw_fifo_file_perms;
 allow afs_fsserver_t self:tcp_socket create_stream_socket_perms;
 
-read_files_pattern(afs_fsserver_t, afs_config_t, afs_config_t)
-allow afs_fsserver_t afs_config_t:dir list_dir_perms;
-
 manage_dirs_pattern(afs_fsserver_t, afs_config_t, afs_config_t)
 manage_files_pattern(afs_fsserver_t, afs_config_t, afs_config_t)
 
-allow afs_fsserver_t afs_files_t:filesystem getattr;
 manage_dirs_pattern(afs_fsserver_t, afs_files_t, afs_files_t)
 manage_files_pattern(afs_fsserver_t, afs_files_t, afs_files_t)
 manage_lnk_files_pattern(afs_fsserver_t, afs_files_t, afs_files_t)
@@ -187,6 +185,8 @@ corenet_tcp_bind_afs_fs_port(afs_fsserver_t)
 corenet_udp_bind_afs_fs_port(afs_fsserver_t)
 corenet_tcp_sendrecv_afs_fs_port(afs_fsserver_t)
 corenet_udp_sendrecv_afs_fs_port(afs_fsserver_t)
+
+dev_read_urand(afs_fsserver_t)
 
 files_read_etc_runtime_files(afs_fsserver_t)
 files_list_home(afs_fsserver_t)
@@ -274,6 +274,8 @@ corenet_udp_bind_generic_node(afs_ptserver_t)
 corenet_udp_bind_afs_pt_port(afs_ptserver_t)
 corenet_sendrecv_afs_pt_server_packets(afs_ptserver_t)
 
+dev_read_urand(afs_ptserver_t)
+
 userdom_dontaudit_use_user_terminals(afs_ptserver_t)
 
 ########################################
@@ -304,6 +306,8 @@ corenet_udp_sendrecv_all_ports(afs_vlserver_t)
 corenet_udp_bind_generic_node(afs_vlserver_t)
 corenet_udp_bind_afs_vl_port(afs_vlserver_t)
 corenet_sendrecv_afs_vl_server_packets(afs_vlserver_t)
+
+dev_read_urand(afs_vlserver_t)
 
 userdom_dontaudit_use_user_terminals(afs_vlserver_t)
 

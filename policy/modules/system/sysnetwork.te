@@ -1,4 +1,4 @@
-policy_module(sysnetwork, 1.17.0)
+policy_module(sysnetwork, 1.17.1)
 
 ########################################
 #
@@ -197,9 +197,6 @@ optional_policy(`
 optional_policy(`
 	netutils_run_ping(dhcpc_t, dhcpc_roles)
 	netutils_run(dhcpc_t, dhcpc_roles)
-',`
-	allow dhcpc_t self:capability setuid;
-	allow dhcpc_t self:rawip_socket create_socket_perms;
 ')
 
 optional_policy(`
@@ -455,6 +452,7 @@ ifdef(`distro_gentoo',`
 	files_tmp_filetrans(dhcpc_script_t, dhcpc_script_tmp_t, { file dir })
 
 	manage_files_pattern(dhcpc_script_t, dhcpc_var_run_t, dhcpc_var_run_t)
+	create_dirs_pattern(dhcpc_script_t, dhcpc_var_run_t, dhcpc_var_run_t)
 	files_pid_filetrans(dhcpc_script_t, dhcpc_var_run_t, { file dir })
 
 	kernel_read_network_state(dhcpc_script_t)
