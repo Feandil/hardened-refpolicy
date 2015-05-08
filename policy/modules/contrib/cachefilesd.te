@@ -1,4 +1,4 @@
-policy_module(cachefilesd, 1.1.0)
+policy_module(cachefilesd, 1.1.2)
 
 ########################################
 #
@@ -18,22 +18,28 @@ files_type(cachefilesd_cache_t)
 type cachefilesd_var_run_t;
 files_pid_file(cachefilesd_var_run_t)
 
+type cachefiles_kernel_t;
+domain_type(cachefiles_kernel_t)
+role system_r types cachefiles_kernel_t;
+
 ########################################
 #
-# Local policy
+# Cachefilesd local policy
 #
 
 allow cachefilesd_t self:capability { setuid setgid sys_admin dac_override };
 
+allow cachefilesd_t cachefiles_kernel_t:kernel_service use_as_override;
+
 manage_files_pattern(cachefilesd_t, cachefilesd_var_run_t, cachefilesd_var_run_t)
 files_pid_filetrans(cachefilesd_t, cachefilesd_var_run_t, file)
 
+allow cachefilesd_t cachefilesd_cache_t:kernel_service create_files_as;
 manage_dirs_pattern(cachefilesd_t, cachefilesd_cache_t, cachefilesd_cache_t)
 manage_files_pattern(cachefilesd_t, cachefilesd_cache_t, cachefilesd_cache_t)
 
 dev_rw_cachefiles(cachefilesd_t)
 
-files_create_all_files_as(cachefilesd_t)
 files_read_etc_files(cachefilesd_t)
 
 fs_getattr_xattr_fs(cachefilesd_t)
@@ -51,35 +57,20 @@ optional_policy(`
 	rpm_use_script_fds(cachefilesd_t)
 ')
 
-ifdef(`distro_gentoo',`
-	type cachefilesd_kernel_t;
-	# Compatible with fedora, for package defaults and so on
-	typealias cachefilesd_kernel_t alias cachefiles_kernel_t;
-	domain_type(cachefilesd_kernel_t)
-	domain_obj_id_change_exemption(cachefilesd_kernel_t)
-	role system_r types cachefilesd_kernel_t;
+########################################
+#
+# Cachefiles_kernel local policy
+#
 
-	# CacheFiles tells the Linux kernel for which security context
-	# it should act to begin caching.
+allow cachefiles_kernel_t self:capability { dac_override dac_read_search };
 
-	# Allow cachefilesd_t to tell the kernel to use cachefilesd_kernel_t)
-	allow cachefilesd_t cachefilesd_kernel_t:kernel_service { use_as_override };
+manage_dirs_pattern(cachefiles_kernel_t, cachefilesd_cache_t, cachefilesd_cache_t)
+manage_files_pattern(cachefiles_kernel_t, cachefilesd_cache_t, cachefilesd_cache_t)
 
-	# Allow cachefilesd_t to tell the kernel to write files as cachefilesd_cache_t
-	allow cachefilesd_t cachefilesd_cache_t:kernel_service { create_files_as };
+dev_search_sysfs(cachefiles_kernel_t)
 
-	##########################################
-	#
-	# cachefilesd_kernel_t policy
-	#
-	allow cachefilesd_kernel_t self:capability { dac_override dac_read_search };
+domain_obj_id_change_exemption(cachefiles_kernel_t)
 
-	manage_dirs_pattern(cachefilesd_kernel_t, cachefilesd_cache_t, cachefilesd_cache_t)
-	manage_files_pattern(cachefilesd_kernel_t, cachefilesd_cache_t, cachefilesd_cache_t)
+fs_getattr_xattr_fs(cachefiles_kernel_t)
 
-	fs_getattr_xattr_fs(cachefilesd_kernel_t)
-
-	dev_search_sysfs(cachefilesd_kernel_t)
-
-	init_sigchld_script(cachefilesd_kernel_t)
-')
+init_sigchld_script(cachefiles_kernel_t)
