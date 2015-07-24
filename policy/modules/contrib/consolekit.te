@@ -147,3 +147,18 @@ optional_policy(`
 optional_policy(`
 	unconfined_stream_connect(consolekit_t)
 ')
+
+ifdef(`distro_gentoo',`
+	# consolekit needs to be able to chown /dev nodes when logging in
+	dev_setattr_all_chr_files(consolekit_t)
+
+	optional_policy(`
+		udev_read_pid_files(consolekit_t)
+	')
+
+	# needs to write to sys for suspend
+	dev_rw_sysfs(consolekit_t)
+	optional_policy(`
+		devicekit_manage_log_files(consolekit_t)
+	')
+')

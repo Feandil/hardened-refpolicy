@@ -1,4 +1,4 @@
-policy_module(netutils, 1.14.0)
+policy_module(netutils, 1.14.1)
 
 ########################################
 #
@@ -38,6 +38,8 @@ dontaudit netutils_t self:capability { dac_override sys_tty_config };
 allow netutils_t self:process { setcap signal_perms };
 allow netutils_t self:netlink_route_socket create_netlink_socket_perms;
 allow netutils_t self:netlink_socket create_socket_perms;
+# For tcpdump.
+allow netutils_t self:netlink_netfilter_socket create_socket_perms;
 allow netutils_t self:packet_socket create_socket_perms;
 allow netutils_t self:udp_socket create_socket_perms;
 allow netutils_t self:tcp_socket create_stream_socket_perms;
@@ -214,3 +216,19 @@ userdom_use_user_terminals(traceroute_t)
 dev_read_rand(traceroute_t)
 dev_read_urand(traceroute_t)
 files_read_usr_files(traceroute_t)
+
+ifdef(`distro_gentoo',`
+	########################################
+	# 
+	# netutils_t policy updates
+	#
+
+	# Fix bug 535988
+	allow netutils_t self:process getcap;
+	allow netutils_t self:capability setpcap;
+
+	kernel_request_load_module(netutils_t)
+	kernel_dontaudit_search_debugfs(netutils_t)
+
+	dev_dontaudit_read_usbmon_dev(netutils_t)
+')

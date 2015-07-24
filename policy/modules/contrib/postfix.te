@@ -1,4 +1,4 @@
-policy_module(postfix, 1.16.0)
+policy_module(postfix, 1.16.1)
 
 ########################################
 #
@@ -811,4 +811,13 @@ ifdef(`distro_gentoo',`
 	#
 
 	rw_sock_files_pattern(postfix_postdrop_t, postfix_public_t, postfix_public_t)
+
+	#####################################
+	#
+	# Local postmap policy
+	#
+
+	# Bug #549566
+	domain_use_interactive_fds(postfix_map_t)
+	userdom_use_user_terminals(postfix_map_t)
 ')

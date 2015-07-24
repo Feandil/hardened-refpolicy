@@ -695,10 +695,7 @@ interface(`samba_admin',`
 	allow $1 { nmbd_t smbd_t }:process { ptrace signal_perms };
 	ps_process_pattern($1, { nmbd_t smbd_t })
 
-	init_labeled_script_domtrans($1, samba_initrc_exec_t)
-	domain_system_change_exemption($1)
-	role_transition $2 samba_initrc_exec_t system_r;
-	allow $2 system_r;
+	init_startstop_service($1, $2, samba_t, samba_initrc_exec_t)
 
 	files_list_etc($1)
 	admin_pattern($1, { samba_etc_t smbd_keytab_t })
@@ -717,9 +714,4 @@ interface(`samba_admin',`
 
 	files_list_tmp($1)
 	admin_pattern($1, { swat_tmp_t smbd_tmp_t winbind_tmp_t })
-
-	samba_run_smbcontrol($1, $2)
-	samba_run_winbind_helper($1, $2)
-	samba_run_smbmount($1, $2)
-	samba_run_net($1, $2)
 ')
