@@ -8,6 +8,27 @@
 
 ########################################
 ## <summary>
+##	Allows the kernel to start userland processes
+##	by dynamic transitions to the specified domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	The process type entered by the kernel.
+##	</summary>
+## </param>
+#
+interface(`kernel_dyntrans_to',`
+	gen_require(`
+		type kernel_t;
+	')
+
+	domain_dyntrans_type(kernel_t)
+	allow kernel_t self:process setcurrent;
+	allow kernel_t $1:process dyntransition;
+')
+
+########################################
+## <summary>
 ##	Allows to start userland processes
 ##	by transitioning to the specified domain.
 ## </summary>
@@ -254,6 +275,25 @@ interface(`kernel_rw_pipes',`
 
 ########################################
 ## <summary>
+##	Read/write to kernel using a unix
+##	domain stream socket.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_rw_stream_sockets',`
+	gen_require(`
+		type kernel_t;
+	')
+
+	allow $1 kernel_t:unix_stream_socket rw_socket_perms;
+')
+
+########################################
+## <summary>
 ##	Connect to kernel using a unix
 ##	domain stream socket.
 ## </summary>
@@ -273,7 +313,25 @@ interface(`kernel_stream_connect',`
 
 ########################################
 ## <summary>
-##	Read and write kernel unix datagram sockets.
+##	Getattr on kernel unix datagram sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_getattr_dgram_sockets',`
+	gen_require(`
+		type kernel_t;
+	')
+
+	allow $1 kernel_t:unix_dgram_socket getattr;
+')
+
+########################################
+## <summary>
+##	Read and write kernel unix datagram sockets. (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -3286,57 +3344,40 @@ interface(`kernel_unconfined',`
 
 ########################################
 ## <summary>
-## 	Allow caller to search virtual memory overcommit sysctls.
+##	Read virtual memory overcommit sysctl.
 ## </summary>
 ## <param name="domain">
-## 	<summary>
-## 	Domain allowed access.
-## 	</summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
+## <rolecap/>
 #
-interface(`kernel_search_vm_overcommit_sysctl',`
+interface(`kernel_read_vm_overcommit_sysctl',`
 	gen_require(`
-		type proc_t, sysctl_t, sysctl_vm_t, sysctl_vm_overcommit_t;
+		type sysctl_vm_overcommit_t;
 	')
 
-	search_dirs_pattern($1, { proc_t sysctl_t sysctl_vm_t }, sysctl_vm_overcommit_t)
+	kernel_search_vm_sysctl($1)
+	allow $1 sysctl_vm_overcommit_t:file read_file_perms;
 ')
 
 ########################################
 ## <summary>
-## 	Allow caller to read virtual memory overcommit sysctls.
+##	Read and write virtual memory overcommit sysctl.
 ## </summary>
 ## <param name="domain">
-## 	<summary>
-## 	Domain allowed access.
-## 	</summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 ## <rolecap/>
 #
-interface(`kernel_read_vm_overcommit_sysctls',`
+interface(`kernel_rw_vm_overcommit_sysctl',`
 	gen_require(`
-		type proc_t, sysctl_t, sysctl_vm_t, sysctl_vm_overcommit_t;
+		type sysctl_vm_overcommit_t;
 	')
 
-	read_files_pattern($1, { proc_t sysctl_t sysctl_vm_t sysctl_vm_overcommit_t }, sysctl_vm_overcommit_t)
-')
-
-########################################
-## <summary>
-## 	Read and write virtual memory overcommit sysctls.
-## </summary>
-## <param name="domain">
-## 	<summary>
-## 	Domain allowed access.
-## 	</summary>
-## </param>
-## <rolecap/>
-#
-interface(`kernel_rw_vm_overcommit_sysctls',`
-	gen_require(`
-		type proc_t, sysctl_t, sysctl_vm_t, sysctl_vm_overcommit_t;
-	')
-
-	rw_files_pattern($1 ,{ proc_t sysctl_t sysctl_vm_t sysctl_vm_overcommit_t }, sysctl_vm_overcommit_t)
-	list_dirs_pattern($1, { proc_t sysctl_t sysctl_vm_t }, sysctl_vm_overcommit_t)
+	kernel_search_vm_sysctl($1)
+	allow $1 sysctl_vm_overcommit_t:file rw_file_perms;
 ')

@@ -1,4 +1,4 @@
-policy_module(ssh, 2.6.0)
+policy_module(ssh, 2.7.0)
 
 ########################################
 #
@@ -264,6 +264,11 @@ corenet_sendrecv_xserver_server_packets(sshd_t)
 
 ifdef(`distro_debian',`
 	allow sshd_t self:process { getcap setcap };
+')
+
+ifdef(`init_systemd',`
+	systemd_dbus_chat_logind(sshd_t)
+	init_rw_stream_sockets(sshd_t)
 ')
 
 tunable_policy(`ssh_sysadm_login',`

@@ -1,4 +1,4 @@
-policy_module(ntp, 1.13.1)
+policy_module(ntp, 1.14.0)
 
 ########################################
 #
@@ -32,6 +32,9 @@ files_tmp_file(ntpd_tmp_t)
 
 type ntpd_tmpfs_t;
 files_tmpfs_file(ntpd_tmpfs_t)
+
+type ntpd_unit_t;
+init_unit_file(ntpd_unit_t)
 
 type ntpd_var_run_t;
 files_pid_file(ntpd_var_run_t)
@@ -75,7 +78,8 @@ manage_files_pattern(ntpd_t, ntpd_tmpfs_t, ntpd_tmpfs_t)
 fs_tmpfs_filetrans(ntpd_t, ntpd_tmpfs_t, { dir file })
 
 manage_files_pattern(ntpd_t, ntpd_var_run_t, ntpd_var_run_t)
-files_pid_filetrans(ntpd_t, ntpd_var_run_t, file)
+manage_sock_files_pattern(ntpd_t, ntpd_var_run_t, ntpd_var_run_t)
+files_pid_filetrans(ntpd_t, ntpd_var_run_t, { file sock_file })
 
 can_exec(ntpd_t, ntpd_exec_t)
 

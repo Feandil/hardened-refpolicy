@@ -1,4 +1,4 @@
-policy_module(domain, 1.12.0)
+policy_module(domain, 1.13.0)
 
 ########################################
 #
@@ -101,7 +101,7 @@ dev_read_cpu_online(domain)
 
 # glibc malloc requires access to /proc/sys/vm/overcommit_memory
 # see https://sourceware.org/git/?p=glibc.git;a=commit;h=9fab36eb
-kernel_read_vm_overcommit_sysctls(domain)
+kernel_read_vm_overcommit_sysctl(domain)
 
 # Use trusted objects in /dev
 dev_rw_null(domain)
@@ -117,6 +117,12 @@ ifdef(`hide_broken_symptoms',`
 	# listen function is called, so bad calls
 	# to listen on UDP sockets should be silenced
 	dontaudit domain self:udp_socket listen;
+')
+
+ifdef(`init_systemd',`
+	optional_policy(`
+		shutdown_sigchld(domain)
+	')
 ')
 
 tunable_policy(`global_ssp',`

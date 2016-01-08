@@ -1,4 +1,4 @@
-policy_module(kernel, 1.19.1)
+policy_module(kernel, 1.20.2)
 
 ########################################
 #
@@ -153,7 +153,6 @@ genfscon proc /sys/net/unix gen_context(system_u:object_r:sysctl_net_unix_t,s0)
 type sysctl_vm_t, sysctl_type;
 genfscon proc /sys/vm gen_context(system_u:object_r:sysctl_vm_t,s0)
 
-# /proc/sys/vm/overcommit_memory
 type sysctl_vm_overcommit_t, sysctl_type;
 genfscon proc /sys/vm/overcommit_memory gen_context(system_u:object_r:sysctl_vm_overcommit_t,s0)
 
@@ -303,6 +302,23 @@ ifdef(`distro_redhat',`
 	fs_rw_tmpfs_chr_files(kernel_t)
 ')
 
+ifdef(`init_systemd',`
+	optional_policy(`
+		dev_manage_input_dev(kernel_t)
+		dev_filetrans_input_dev(kernel_t)
+	')
+
+	optional_policy(`
+		selinux_compute_create_context(kernel_t)
+	')
+
+	optional_policy(`
+		storage_dev_filetrans_fixed_disk(kernel_t)
+		storage_setattr_fixed_disk_dev(kernel_t)
+		storage_create_fixed_disk_dev(kernel_t)
+	')
+')
+
 optional_policy(`
 	# loop devices
 	fstools_use_fds(kernel_t)
@@ -445,4 +461,13 @@ ifdef(`distro_gentoo',`
 	# See also bug 535992
 	#dev_manage_all_dev_nodes(kernel_t)
 	dev_setattr_generic_chr_files(kernel_t)
+
+	# ZFS send/recv writes to an fd
+	optional_policy(`
+		sysadm_use_fds(kernel_t)
+	')
+	# zfs list writes to a pipe
+	optional_policy(`
+		mount_rw_pipes(kernel_t)
+	')
 ')

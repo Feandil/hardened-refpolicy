@@ -1,4 +1,4 @@
-policy_module(postgresql, 1.17.1)
+policy_module(postgresql, 1.18.0)
 
 gen_require(`
 	class db_database all_db_database_perms;
@@ -60,6 +60,9 @@ logging_log_file(postgresql_log_t)
 
 type postgresql_tmp_t;
 files_tmp_file(postgresql_tmp_t)
+
+type postgresql_unit_t;
+init_unit_file(postgresql_unit_t)
 
 type postgresql_var_run_t;
 files_pid_file(postgresql_var_run_t)
