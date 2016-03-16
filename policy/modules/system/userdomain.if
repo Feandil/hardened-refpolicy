@@ -1307,7 +1307,6 @@ template(`userdom_security_admin_template',`
 	selinux_set_parameters($1)
 
 	files_relabel_non_auth_files($1)
-	auth_relabel_shadow($1)
 
 	init_exec($1)
 
