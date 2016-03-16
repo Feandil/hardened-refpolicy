@@ -1,4 +1,4 @@
-policy_module(filesystem, 1.20.0)
+policy_module(filesystem, 1.20.4)
 
 ########################################
 #
@@ -93,6 +93,11 @@ fs_noxattr_type(ecryptfs_t)
 files_mountpoint(ecryptfs_t)
 genfscon ecryptfs / gen_context(system_u:object_r:ecryptfs_t,s0)
 
+type efivarfs_t;
+fs_noxattr_type(efivarfs_t)
+files_mountpoint(efivarfs_t)
+genfscon efivarfs / gen_context(system_u:object_r:efivarfs_t,s0)
+
 type futexfs_t;
 fs_type(futexfs_t)
 genfscon futexfs / gen_context(system_u:object_r:futexfs_t,s0)
@@ -125,6 +130,10 @@ genfscon mvfs / gen_context(system_u:object_r:mvfs_t,s0)
 type nfsd_fs_t;
 fs_type(nfsd_fs_t)
 genfscon nfsd / gen_context(system_u:object_r:nfsd_fs_t,s0)
+
+type nsfs_t;
+fs_type(nsfs_t)
+genfscon nsfs / gen_context(system_u:object_r:nsfs_t,s0)
 
 type oprofilefs_t;
 fs_type(oprofilefs_t)
@@ -161,6 +170,10 @@ fs_noxattr_type(sysv_t)
 files_mountpoint(sysv_t)
 genfscon sysv / gen_context(system_u:object_r:sysv_t,s0)
 genfscon v7 / gen_context(system_u:object_r:sysv_t,s0)
+
+type tracefs_t;
+fs_type(tracefs_t)
+genfscon tracefs / gen_context(system_u:object_r:tracefs_t,s0)
 
 type vmblock_t;
 fs_noxattr_type(vmblock_t)

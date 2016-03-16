@@ -1,4 +1,4 @@
-policy_module(init, 2.0.0)
+policy_module(init, 2.0.3)
 
 gen_require(`
 	class passwd rootok;
@@ -195,10 +195,11 @@ ifdef(`init_systemd',`
 	typeattribute init_t init_run_all_scripts_domain;
 
 	allow init_t self:process { getcap getsched setsched setpgid setfscreate setsockcreate setcap setrlimit };
-	allow init_t self:capability2 block_suspend;
+	allow init_t self:capability2 { audit_read block_suspend };
 	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
 	allow init_t self:netlink_route_socket create_netlink_socket_perms;
 	allow init_t self:netlink_selinux_socket create_socket_perms;
+	allow init_t self:unix_dgram_socket lock;
 
 	manage_files_pattern(init_t, init_var_run_t, init_var_run_t)
 	manage_lnk_files_pattern(init_t, init_var_run_t, init_var_run_t)
@@ -260,6 +261,8 @@ ifdef(`init_systemd',`
 	# mount-setup
 	fs_unmount_autofs(init_t)
 	fs_getattr_pstore_dirs(init_t)
+	# for network namespaces
+	fs_read_nsfs_files(init_t)
 
 	# systemd_socket_activated policy
 	mls_socket_write_all_levels(init_t)
@@ -277,11 +280,13 @@ ifdef(`init_systemd',`
 
 	seutil_read_file_contexts(init_t)
 
-	systemd_relabelto_kmod_files(init_t)
-	systemd_dbus_chat_logind(init_t)
-
 	# udevd is a "systemd kobject uevent socket activated daemon"
 	udev_create_kobject_uevent_sockets(init_t)
+
+	optional_policy(`
+		systemd_relabelto_kmod_files(init_t)
+		systemd_dbus_chat_logind(init_t)
+	')
 
 	optional_policy(`
 		dbus_system_bus_client(init_t)

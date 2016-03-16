@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.9.0)
+policy_module(sysadm, 2.9.1)
 
 ########################################
 #
@@ -1049,6 +1049,10 @@ optional_policy(`
 
 optional_policy(`
 	sysstat_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	tboot_run_txtstat(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`

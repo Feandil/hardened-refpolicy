@@ -6,6 +6,7 @@
 /sbin/ebtables			--	gen_context(system_u:object_r:iptables_exec_t,s0)
 /sbin/ebtables-restore		--	gen_context(system_u:object_r:iptables_exec_t,s0)
 /sbin/ipchains.*		--	gen_context(system_u:object_r:iptables_exec_t,s0)
+/sbin/ipset			--	gen_context(system_u:object_r:iptables_exec_t,s0)
 /sbin/ip6?tables		--	gen_context(system_u:object_r:iptables_exec_t,s0)
 /sbin/ip6?tables-restore	--	gen_context(system_u:object_r:iptables_exec_t,s0)
 /sbin/ip6?tables-multi		--	gen_context(system_u:object_r:iptables_exec_t,s0)
@@ -25,3 +26,6 @@
 /usr/sbin/iptables		--	gen_context(system_u:object_r:iptables_exec_t,s0)
 /usr/sbin/iptables-multi 	--	gen_context(system_u:object_r:iptables_exec_t,s0)
 /usr/sbin/iptables-restore	--	gen_context(system_u:object_r:iptables_exec_t,s0)
+
+/var/run/ebtables\.lock		--	gen_context(system_u:object_r:iptables_var_run_t,s0)
+/var/run/xtables.*		--	gen_context(system_u:object_r:iptables_var_run_t,s0)
