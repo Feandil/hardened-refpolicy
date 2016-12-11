@@ -1,9 +1,17 @@
-policy_module(pulseaudio, 1.8.0)
+policy_module(pulseaudio, 1.9.0)
 
 ########################################
 #
 # Declarations
 #
+
+## <desc>
+## <p>
+## Allow pulseaudio to execute code in
+## writable memory 
+## </p>
+## </desc>
+gen_tunable(pulseaudio_execmem, false)
 
 attribute pulseaudio_client;
 attribute pulseaudio_tmpfsfile;
@@ -37,7 +45,8 @@ files_pid_file(pulseaudio_var_run_t)
 #
 
 allow pulseaudio_t self:capability { fowner fsetid chown setgid setuid sys_nice sys_resource sys_tty_config };
-allow pulseaudio_t self:process { getcap setcap setrlimit setsched getsched signal signull };
+allow pulseaudio_t self:process { getcap getsched setcap setrlimit setsched signal signull };
+
 allow pulseaudio_t self:fifo_file rw_fifo_file_perms;
 allow pulseaudio_t self:unix_stream_socket { accept connectto listen };
 allow pulseaudio_t self:unix_dgram_socket sendto;
@@ -56,6 +65,7 @@ manage_dirs_pattern(pulseaudio_t, pulseaudio_tmp_t, pulseaudio_tmp_t)
 manage_files_pattern(pulseaudio_t, pulseaudio_tmp_t, pulseaudio_tmp_t)
 manage_sock_files_pattern(pulseaudio_t, pulseaudio_tmp_t, pulseaudio_tmp_t)
 files_tmp_filetrans(pulseaudio_t, pulseaudio_tmp_t, dir)
+userdom_user_runtime_filetrans(pulseaudio_t, pulseaudio_tmp_t, dir)
 userdom_user_tmp_filetrans(pulseaudio_t, pulseaudio_tmp_t, file, "autospawn.lock")
 userdom_user_tmp_filetrans(pulseaudio_t, pulseaudio_tmp_t, file, "pid")
 userdom_user_tmp_filetrans(pulseaudio_t, pulseaudio_tmp_t, sock_file, "dbus-socket")
@@ -128,9 +138,15 @@ logging_send_syslog_msg(pulseaudio_t)
 miscfiles_read_localization(pulseaudio_t)
 
 userdom_read_user_tmpfs_files(pulseaudio_t)
-
+userdom_delete_user_tmpfs_files(pulseaudio_t)
 userdom_search_user_home_dirs(pulseaudio_t)
-userdom_write_user_tmp_sockets(pulseaudio_t)
+userdom_search_user_home_content(pulseaudio_t)
+
+userdom_manage_user_tmp_sockets(pulseaudio_t)
+
+tunable_policy(`pulseaudio_execmem',`
+	allow pulseaudio_t self:process execmem;
+')
 
 tunable_policy(`use_nfs_home_dirs',`
 	fs_manage_nfs_dirs(pulseaudio_t)
@@ -145,7 +161,8 @@ tunable_policy(`use_samba_home_dirs',`
 ')
 
 optional_policy(`
-	alsa_read_rw_config(pulseaudio_t)
+	alsa_read_config(pulseaudio_t)
+	alsa_read_home_files(pulseaudio_t)
 ')
 
 optional_policy(`
@@ -175,6 +192,16 @@ optional_policy(`
 ')
 
 optional_policy(`
+	gnome_stream_connect_gconf(pulseaudio_t)
+
+	# OIL Runtime Compiler (ORC) optimized code execution
+	gnome_manage_gstreamer_orcexec(pulseaudio_t)
+	gnome_mmap_gstreamer_orcexec(pulseaudio_t)
+	gnome_user_runtime_filetrans_gstreamer_orcexec(pulseaudio_t, file)
+	gnome_user_home_dir_filetrans_gstreamer_orcexec(pulseaudio_t, file)
+')
+
+optional_policy(`
 	rtkit_scheduled(pulseaudio_t)
 ')
 
@@ -185,6 +212,7 @@ optional_policy(`
 ')
 
 optional_policy(`
+	udev_read_pid_files(pulseaudio_t)
 	udev_read_state(pulseaudio_t)
 	udev_read_db(pulseaudio_t)
 ')
@@ -203,8 +231,11 @@ optional_policy(`
 #
 
 allow pulseaudio_client self:unix_dgram_socket sendto;
+allow pulseaudio_client self:process signull;
 
-allow pulseaudio_client pulseaudio_client:process signull;
+allow pulseaudio_client pulseaudio_tmp_t:dir manage_dir_perms;
+allow pulseaudio_client pulseaudio_tmp_t:file manage_file_perms;
+allow pulseaudio_client pulseaudio_tmp_t:sock_file manage_sock_file_perms;
 
 read_files_pattern(pulseaudio_client, { pulseaudio_tmpfsfile pulseaudio_tmpfs_t }, { pulseaudio_tmpfsfile pulseaudio_tmpfs_t })
 delete_files_pattern(pulseaudio_client, pulseaudio_tmpfsfile, pulseaudio_tmpfsfile)
@@ -228,6 +259,7 @@ pulseaudio_home_filetrans_pulseaudio_home(pulseaudio_client, file, ".pulse-cooki
 pulseaudio_signull(pulseaudio_client)
 
 userdom_read_user_tmpfs_files(pulseaudio_client)
+userdom_user_runtime_filetrans(pulseaudio_client, pulseaudio_tmp_t, dir, "pulse")
 # userdom_delete_user_tmpfs_files(pulseaudio_client)
 
 tunable_policy(`use_nfs_home_dirs',`
@@ -278,7 +310,7 @@ ifdef(`distro_gentoo',`
 	# /tmp/pulse-* gets created by the clients usually as user_tmp_t, bug 556526
 	userdom_list_user_tmp(pulseaudio_client)
 
-	# pulse 7 uses fd's
+	# pulse 7 uses fds
 	allow pulseaudio_client pulseaudio_t:fd use;
 	allow pulseaudio_client pulseaudio_tmpfs_t:file rw_file_perms;
 ')

@@ -1,4 +1,4 @@
-policy_module(logrotate, 1.17.0)
+policy_module(logrotate, 1.18.0)
 
 ########################################
 #
@@ -240,6 +240,11 @@ optional_policy(`
 
 optional_policy(`
 	varnishd_manage_log(logrotate_t)
+')
+
+optional_policy(`
+	manage_webalizer_var_lib(logrotate_t)
+	webalizer_run(logrotate_t, system_r)
 ')
 
 #######################################

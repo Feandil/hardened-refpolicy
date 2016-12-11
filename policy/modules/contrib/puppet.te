@@ -1,4 +1,4 @@
-policy_module(puppet, 1.6.0)
+policy_module(puppet, 1.7.0)
 
 ########################################
 #
@@ -189,6 +189,10 @@ optional_policy(`
 	rpm_domtrans(puppet_t)
 	rpm_manage_db(puppet_t)
 	rpm_manage_log(puppet_t)
+')
+
+optional_policy(`
+	shorewall_domtrans(puppet_t)
 ')
 
 optional_policy(`

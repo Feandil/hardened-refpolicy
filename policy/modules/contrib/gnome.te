@@ -1,4 +1,4 @@
-policy_module(gnome, 2.5.0)
+policy_module(gnome, 2.6.1)
 
 ##############################
 #
@@ -46,6 +46,9 @@ userdom_user_home_content(gnome_keyring_home_t)
 type gnome_keyring_tmp_t;
 userdom_user_tmp_file(gnome_keyring_tmp_t)
 
+type gstreamer_orcexec_t;
+application_executable_file(gstreamer_orcexec_t)
+
 ##############################
 #
 # Common local Policy
@@ -89,6 +92,7 @@ userdom_user_tmp_filetrans(gconfd_t, gconf_tmp_t, { dir file })
 
 userdom_manage_user_tmp_dirs(gconfd_t)
 userdom_tmp_filetrans_user_tmp(gconfd_t, dir)
+userdom_user_runtime_filetrans_user_tmp(gconfd_t, dir)
 
 optional_policy(`
 	dbus_all_session_domain(gconfd_t, gconfd_exec_t)
@@ -119,9 +123,11 @@ gnome_home_filetrans(gkeyringd_domain, gnome_keyring_home_t, dir, "keyrings")
 manage_dirs_pattern(gkeyringd_domain, gnome_keyring_tmp_t, gnome_keyring_tmp_t)
 manage_sock_files_pattern(gkeyringd_domain, gnome_keyring_tmp_t, gnome_keyring_tmp_t)
 files_tmp_filetrans(gkeyringd_domain, gnome_keyring_tmp_t, dir)
+userdom_user_runtime_filetrans(gkeyringd_domain, gnome_keyring_tmp_t, dir)
 
-kernel_read_system_state(gkeyringd_domain)
 kernel_read_crypto_sysctls(gkeyringd_domain)
+kernel_read_kernel_sysctls(gkeyringd_domain)
+kernel_read_system_state(gkeyringd_domain)
 
 dev_read_rand(gkeyringd_domain)
 dev_read_sysfs(gkeyringd_domain)

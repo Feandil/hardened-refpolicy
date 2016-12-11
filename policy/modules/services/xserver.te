@@ -1,4 +1,4 @@
-policy_module(xserver, 3.11.2)
+policy_module(xserver, 3.12.3)
 
 gen_require(`
 	class x_drawable all_x_drawable_perms;
@@ -101,6 +101,9 @@ typealias user_xproperty_t alias { staff_xproperty_t sysadm_xproperty_t };
 typealias user_xproperty_t alias { auditadm_xproperty_t secadm_xproperty_t };
 typealias user_input_xevent_t alias { staff_input_xevent_t sysadm_input_xevent_t };
 typealias user_input_xevent_t alias { auditadm_input_xevent_t secadm_input_xevent_t };
+
+type dmrc_home_t;
+userdom_user_home_content(dmrc_home_t)
 
 type remote_t;
 xserver_object_types_template(remote)
@@ -467,11 +470,13 @@ sysnet_read_config(xdm_t)
 
 userdom_dontaudit_use_unpriv_user_fds(xdm_t)
 userdom_create_all_users_keys(xdm_t)
-# for .dmrc
-userdom_read_user_home_content_files(xdm_t)
 # Search /proc for any user domain processes.
 userdom_read_all_users_state(xdm_t)
 userdom_signal_all_users(xdm_t)
+
+# for .dmrc: this was used by the Gnome Display Manager (gdm)
+# and it is now obsolete in Gnome3
+xserver_read_user_dmrc(xdm_t)
 
 xserver_rw_session(xdm_t, xdm_tmpfs_t)
 xserver_unconfined(xdm_t)
@@ -504,6 +509,14 @@ tunable_policy(`xdm_sysadm_login',`
 
 optional_policy(`
 	alsa_domtrans(xdm_t)
+')
+
+optional_policy(`
+	colord_dbus_chat(xdm_t)
+')
+
+optional_policy(`
+	colord_dbus_chat(xdm_t)
 ')
 
 optional_policy(`
@@ -834,12 +847,6 @@ can_exec(xserver_t, xserver_exec_t)
 corenet_tcp_bind_vnc_port(xserver_t)
 
 init_use_fds(xserver_t)
-
-# FIXME: After per user fonts are properly working
-# xserver_t may no longer have any reason
-# to read ROLE_home_t - examine this in more detail
-# (xauth?)
-userdom_read_user_home_content_files(xserver_t)
 
 tunable_policy(`use_nfs_home_dirs',`
 	fs_manage_nfs_dirs(xserver_t)

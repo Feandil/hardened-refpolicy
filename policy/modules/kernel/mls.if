@@ -100,6 +100,26 @@ interface(`mls_file_write_to_clearance',`
 ########################################
 ## <summary>
 ##	Make specified domain MLS trusted
+##	for relabelto to files up to its clearance.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`mls_file_relabel_to_clearance',`
+	gen_require(`
+		attribute mlsfilerelabeltoclr;
+	')
+
+	typeattribute $1 mlsfilerelabeltoclr;
+')
+
+########################################
+## <summary>
+##	Make specified domain MLS trusted
 ##	for writing to files at all levels.  (Deprecated)
 ## </summary>
 ## <desc>
@@ -290,7 +310,7 @@ interface(`mls_socket_write_all_levels',`
 ########################################
 ## <summary>
 ##	Make specified domain MLS trusted
-##	for receiving network data from 
+##	for receiving network data from
 ##	network interfaces or hosts at any level.
 ## </summary>
 ## <param name="domain">
@@ -802,6 +822,33 @@ interface(`mls_trusted_object',`
 
 ########################################
 ## <summary>
+##	Make specified socket MLS trusted.
+## </summary>
+## <desc>
+##	<p>
+##	Make specified socket MLS trusted. For sockets
+##	marked as such, this allows all levels to:
+##	 * sendto to unix_dgram_sockets
+##	 * connectto to unix_stream_sockets
+##	respectively.
+##	</p>
+## </desc>
+## <param name="domain">
+##	<summary>
+##	The type of the object.
+##	</summary>
+## </param>
+#
+interface(`mls_trusted_socket',`
+	gen_require(`
+		attribute mlstrustedsocket;
+	')
+
+	typeattribute $1 mlstrustedsocket;
+')
+
+########################################
+## <summary>
 ##	Make the specified domain trusted
 ##	to inherit and use file descriptors
 ##	from all levels.
@@ -944,7 +991,7 @@ interface(`mls_db_downgrade',`
 ########################################
 ## <summary>
 ##	Make specified domain MLS trusted
-##	for sending dbus messages to 
+##	for sending dbus messages to
 ##	all levels.
 ## </summary>
 ## <param name="domain">
@@ -965,7 +1012,7 @@ interface(`mls_dbus_send_all_levels',`
 ########################################
 ## <summary>
 ##	Make specified domain MLS trusted
-##	for receiving dbus messages from 
+##	for receiving dbus messages from
 ##	all levels.
 ## </summary>
 ## <param name="domain">

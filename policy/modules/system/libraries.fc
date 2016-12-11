@@ -52,6 +52,8 @@ ifdef(`distro_redhat',`
 /opt/(.*/)?jre.*/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /opt/(.*/)?jre/.+\.jar			--	gen_context(system_u:object_r:lib_t,s0)
 
+/opt/openoffice4/program/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:lib_t,s0)
+
 /opt/(.*/)?/RealPlayer/.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 # despite the extensions, they are actually libs
 /opt/Acrobat[5-9]/Reader/intellinux/plugins/.*\.api -- gen_context(system_u:object_r:lib_t,s0)
@@ -140,6 +142,7 @@ ifdef(`distro_debian',`
 /usr/lib/fglrx/.*\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/libjs\.so.*		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/sse2/libx264\.so(\.[^/]*)* 	-- gen_context(system_u:object_r:textrel_shlib_t,s0)
+/usr/lib/systemd/libsystemd-shared-[0-9]+\.so.*   --      gen_context(system_u:object_r:lib_t,s0)
 /usr/lib(/.*)?/libnvidia.+\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib(/.*)?/nvidia_drv.*\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/nero/plug-ins/libMP3\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)

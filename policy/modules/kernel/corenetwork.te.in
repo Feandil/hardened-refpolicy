@@ -1,4 +1,4 @@
-policy_module(corenetwork, 1.21.1)
+policy_module(corenetwork, 1.22.0)
 
 ########################################
 #
@@ -169,8 +169,9 @@ network_port(kdeconnect, tcp,1714,s0, udp,1714,s0)
 network_port(kprop, tcp,754,s0)
 network_port(ktalkd, udp,517,s0, udp,518,s0)
 network_port(l2tp, tcp,1701,s0, udp,1701,s0)
-network_port(ldap, tcp,389,s0, udp,389,s0, tcp,636,s0, udp,636,s0, tcp,3268,s0)
+network_port(ldap, tcp,389,s0, udp,389,s0, tcp,636,s0, udp,636,s0, tcp,3268,s0, tcp,3269,s0)
 network_port(lirc, tcp,8765,s0)
+network_port(llmnr, tcp,5355,s0, udp,5355,s0)
 network_port(lmtp, tcp,24,s0, udp,24,s0)
 network_port(lrrd) # no defined portcon
 network_port(mail, tcp,2000,s0, tcp,3905,s0)
@@ -260,6 +261,9 @@ network_port(stunnel) # no defined portcon
 network_port(svn, tcp,3690,s0, udp,3690,s0)
 network_port(svrloc, tcp,427,s0, udp,427,s0)
 network_port(swat, tcp,901,s0)
+network_port(syncthing, tcp,22000,s0)
+network_port(syncthing_admin, tcp,8384,s0)
+network_port(syncthing_discovery, udp,21027,s0)
 network_port(sype_transport, tcp,9911,s0, udp,9911,s0)
 network_port(syslogd, udp,514,s0)
 network_port(syslog_tls, tcp,6514,s0, udp,6514,s0)

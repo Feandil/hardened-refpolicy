@@ -97,20 +97,13 @@ interface(`miscfiles_read_generic_certs',`
 ## </param>
 #
 interface(`miscfiles_manage_user_certs',`
-	gen_require(`
-		type cert_home_t;
-	')
-
-	manage_dirs_pattern($1, cert_home_t, cert_home_t)
-	manage_files_pattern($1, cert_home_t, cert_home_t)
-	manage_lnk_files_pattern($1, cert_home_t, cert_home_t)
-
-	userdom_search_user_home_dirs($1)
+	userdom_manage_user_certs($1)
+	refpolicywarn(`$0() has been deprecated, please use userdom_manage_user_certs() instead.')
 ')
 
 ########################################
 ## <summary>
-##	Relabel from/to cert_home_t (user-managed SSL certificates)
+##	Relabel from/to user_cert_t (user-managed SSL certificates)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -119,13 +112,8 @@ interface(`miscfiles_manage_user_certs',`
 ## </param>
 #
 interface(`miscfiles_relabel_user_certs',`
-	gen_require(`
-		type cert_home_t;
-	')
-
-	relabel_dirs_pattern($1, cert_home_t, cert_home_t)
-	relabel_files_pattern($1, cert_home_t, cert_home_t)
-	relabel_lnk_files_pattern($1, cert_home_t, cert_home_t)
+	userdom_relabel_user_certs($1)
+	refpolicywarn(`$0() has been deprecated, please use userdom_relabel_user_certs() instead.')
 ')
 
 ########################################
@@ -209,35 +197,6 @@ interface(`miscfiles_manage_cert_dirs',`
 interface(`miscfiles_manage_cert_files',`
 	miscfiles_manage_generic_cert_files($1)
 	refpolicywarn(`$0() has been deprecated, please use miscfiles_manage_generic_cert_files() instead.')
-')
-
-########################################
-## <summary>
-##	Automatically use the cert_home_t label for selected resources created
-##	in a users home directory
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access
-##	</summary>
-## </param>
-## <param name="class">
-##	<summary>
-##	Resource type(s) for which the label should be used
-##	</summary>
-## </param>
-## <param name="filename" optional="true">
-##	<summary>
-##	Name of the resource that is being created
-##	</summary>
-## </param>
-#
-interface(`miscfiles_user_home_dir_filetrans_cert_home',`
-	gen_require(`
-		type cert_home_t;
-	')
-
-	userdom_user_home_dir_filetrans($1, cert_home_t, $2, $3)
 ')
 
 ########################################
@@ -823,8 +782,7 @@ interface(`miscfiles_read_test_files',`
 
 ########################################
 ## <summary>
-##	Create files in etc directories
-##	with localization file type.
+##	Execute test files.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -843,7 +801,8 @@ interface(`miscfiles_exec_test_files',`
 
 ########################################
 ## <summary>
-##	Execute test files.
+##	Create files in etc directories
+##	with localization file type.
 ## </summary>
 ## <param name="domain">
 ##	<summary>

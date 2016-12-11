@@ -602,6 +602,44 @@ interface(`xserver_read_user_xauth',`
 
 ########################################
 ## <summary>
+##	Read all users .dmrc.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_read_user_dmrc',`
+	gen_require(`
+		type dmrc_home_t;
+	')
+
+	allow $1 dmrc_home_t:file read_file_perms;
+	userdom_search_user_home_dirs($1)
+')
+
+########################################
+## <summary>
+##	Read all users .ICEauthority.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_read_user_iceauth',`
+	gen_require(`
+		type iceauth_home_t;
+	')
+
+	allow $1 iceauth_home_t:file read_file_perms;
+	userdom_search_user_home_dirs($1)
+')
+
+########################################
+## <summary>
 ##	Set the attributes of the X windows console named pipes.
 ## </summary>
 ## <param name="domain">
@@ -651,7 +689,7 @@ interface(`xserver_use_xdm_fds',`
 		type xdm_t;
 	')
 
-	allow $1 xdm_t:fd use; 
+	allow $1 xdm_t:fd use;
 ')
 
 ########################################
@@ -670,7 +708,7 @@ interface(`xserver_dontaudit_use_xdm_fds',`
 		type xdm_t;
 	')
 
-	dontaudit $1 xdm_t:fd use; 
+	dontaudit $1 xdm_t:fd use;
 ')
 
 ########################################
@@ -688,7 +726,7 @@ interface(`xserver_rw_xdm_pipes',`
 		type xdm_t;
 	')
 
-	allow $1 xdm_t:fifo_file { getattr read write }; 
+	allow $1 xdm_t:fifo_file { getattr read write };
 ')
 
 ########################################
@@ -708,7 +746,28 @@ interface(`xserver_dontaudit_rw_xdm_pipes',`
 		type xdm_t;
 	')
 
-	dontaudit $1 xdm_t:fifo_file rw_fifo_file_perms; 
+	dontaudit $1 xdm_t:fifo_file rw_fifo_file_perms;
+')
+
+########################################
+## <summary>
+##	Send and receive messages from
+##	xdm over dbus.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_dbus_chat_xdm',`
+	gen_require(`
+		type xdm_t;
+		class dbus send_msg;
+        ')
+
+	allow $1 xdm_t:dbus send_msg;
+	allow xdm_t $1:dbus send_msg;
 ')
 
 ########################################
@@ -919,7 +978,7 @@ interface(`xserver_xsession_spec_domtrans',`
 		type xsession_exec_t;
 	')
 
-	domain_trans($1, xsession_exec_t, $2)
+	domain_transition_pattern($1, xsession_exec_t, $2)
 ')
 
 ########################################

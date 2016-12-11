@@ -1,6 +1,6 @@
 ifdef(`enable_mls',`
 #
-# Define sensitivities 
+# Define sensitivities
 #
 # Domination of sensitivities is in increasin
 # numerical order, with s0 being the lowest
@@ -70,7 +70,9 @@ mlsconstrain { file lnk_file fifo_file } { create relabelto }
 
 # new file labels must be dominated by the relabeling subjects clearance
 mlsconstrain { dir file lnk_file chr_file blk_file sock_file fifo_file } relabelto
-	( h1 dom h2 );
+	(( h1 dom h2 ) or
+	(( t1 == mlsfilerelabeltoclr ) and ( h1 dom l2 )) or
+	( t1 == mlsfilewrite ));
 
 # the file "read" ops (note the check is dominance of the low level)
 mlsconstrain { dir file lnk_file chr_file blk_file sock_file fifo_file } { read getattr execute }
@@ -192,7 +194,7 @@ mlsconstrain { netlink_route_socket netlink_firewall_socket netlink_tcpdiag_sock
 
 # the socket "write" ops
 mlsconstrain { socket tcp_socket udp_socket rawip_socket netlink_socket packet_socket key_socket unix_stream_socket unix_dgram_socket netlink_route_socket netlink_firewall_socket netlink_tcpdiag_socket netlink_nflog_socket netlink_xfrm_socket netlink_selinux_socket netlink_audit_socket netlink_ip6fw_socket netlink_dnrt_socket netlink_iscsi_socket netlink_fib_lookup_socket netlink_connector_socket netlink_netfilter_socket netlink_generic_socket netlink_scsitransport_socket netlink_rdma_socket netlink_crypto_socket } { write setattr relabelfrom connect setopt shutdown }
-	(( l1 eq l2 ) or 
+	(( l1 eq l2 ) or
 	 (( t1 == mlsnetwriteranged ) and ( l1 dom l2 ) and ( l1 domby h2 )) or
 	 (( t1 == mlsnetwritetoclr ) and ( h1 dom l2 ) and ( l1 domby l2 )) or
 	 ( t1 == mlsnetwrite ));
@@ -205,18 +207,20 @@ mlsconstrain { tcp_socket udp_socket rawip_socket } recvfrom
 
 # UNIX domain socket ops
 mlsconstrain unix_stream_socket connectto
-	(( l1 eq l2 ) or 
+	(( l1 eq l2 ) or
 	 (( t1 == mlsnetwriteranged ) and ( l1 dom l2 ) and ( l1 domby h2 )) or
 	 (( t1 == mlsnetwritetoclr ) and ( h1 dom l2 ) and ( l1 domby l2 )) or
 	 ( t1 == mlsnetwrite ) or
-	 ( t2 == mlstrustedobject ));
+	 ( t2 == mlstrustedobject ) or
+	 ( t2 == mlstrustedsocket ));
 
 mlsconstrain unix_dgram_socket sendto
-	(( l1 eq l2 ) or 
+	(( l1 eq l2 ) or
 	 (( t1 == mlsnetwriteranged ) and ( l1 dom l2 ) and ( l1 domby h2 )) or
 	 (( t1 == mlsnetwritetoclr ) and ( h1 dom l2 ) and ( l1 domby l2 )) or
 	 ( t1 == mlsnetwrite ) or
-	 ( t2 == mlstrustedobject ));
+	 ( t2 == mlstrustedobject ) or
+	 ( t2 == mlstrustedsocket ));
 
 # these access vectors have no MLS restrictions
 # { socket tcp_socket udp_socket rawip_socket netlink_socket packet_socket key_socket unix_stream_socket unix_dgram_socket netlink_route_socket netlink_firewall_socket netlink_tcpdiag_socket netlink_nflog_socket netlink_xfrm_socket netlink_selinux_socket netlink_audit_socket netlink_ip6fw_socket netlink_dnrt_socket } { ioctl create lock append bind sendto send_msg name_bind }
@@ -284,9 +288,9 @@ mlsconstrain msg send
 #
 
 # No sharing of open file descriptors between levels unless
-# the process type is authorized to use fds created by 
+# the process type is authorized to use fds created by
 # other levels (mlsfduse) or the fd type is authorized to
-# shared among levels (mlsfdshare). 
+# shared among levels (mlsfdshare).
 mlsconstrain fd use (
 	l1 eq l2
 	or t1 == mlsfduse
@@ -558,7 +562,7 @@ mlsconstrain x_cursor { read getattr use }
 	(( l1 dom l2 ) or
 	 (( t1 == mlsxwinreadtoclr ) and ( h1 dom l2 )) or
 	 ( t1 == mlsxwinread ));
-	
+
 # the x_cursor "write" ops (implicit single level)
 mlsconstrain x_cursor { create destroy write setattr }
 	(( l1 eq l2 ) or

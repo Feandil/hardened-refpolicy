@@ -1,4 +1,4 @@
-policy_module(mls, 1.8.0)
+policy_module(mls, 1.9.0)
 
 ########################################
 #
@@ -12,6 +12,7 @@ attribute mlsfilewritetoclr;
 attribute mlsfilewriteinrange;
 attribute mlsfileupgrade;
 attribute mlsfiledowngrade;
+attribute mlsfilerelabeltoclr;
 
 attribute mlsnetread;
 attribute mlsnetreadtoclr;
@@ -56,11 +57,12 @@ attribute mlsdbupgrade;
 attribute mlsdbdowngrade;
 
 attribute mlstrustedobject;
+attribute mlstrustedsocket;
 
 attribute privrangetrans;
 attribute mlsrangetrans;
 
-attribute mlsfduse; 
+attribute mlsfduse;
 attribute mlsfdshare;
 
 attribute mlstranslate;

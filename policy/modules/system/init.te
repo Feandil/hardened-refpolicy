@@ -1,4 +1,4 @@
-policy_module(init, 2.0.3)
+policy_module(init, 2.1.0)
 
 gen_require(`
 	class passwd rootok;
@@ -568,6 +568,9 @@ userdom_read_user_home_content_files(initrc_t)
 userdom_use_user_terminals(initrc_t)
 
 ifdef(`distro_debian',`
+	kernel_getattr_core_if(initrc_t)
+
+	dev_getattr_generic_blk_files(initrc_t)
 	dev_setattr_generic_dirs(initrc_t)
 
 	fs_tmpfs_filetrans(initrc_t, initrc_var_run_t, dir)
@@ -694,7 +697,7 @@ ifdef(`distro_redhat',`
 	miscfiles_read_hwdata(initrc_t)
 
 	optional_policy(`
-		alsa_manage_rw_config(initrc_t)
+		alsa_manage_config(initrc_t)
 	')
 
 	optional_policy(`

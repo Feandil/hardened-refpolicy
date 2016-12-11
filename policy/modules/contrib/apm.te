@@ -1,4 +1,4 @@
-policy_module(apm, 1.14.0)
+policy_module(apm, 1.15.0)
 
 ########################################
 #
@@ -28,6 +28,9 @@ logging_log_file(apmd_log_t)
 
 type apmd_tmp_t;
 files_tmp_file(apmd_tmp_t)
+
+type apmd_unit_t;
+init_unit_file(apmd_unit_t)
 
 type apmd_var_lib_t;
 files_type(apmd_var_lib_t)
@@ -64,6 +67,7 @@ dontaudit apmd_t self:capability { setuid dac_override dac_read_search sys_ptrac
 allow apmd_t self:process { signal_perms getsession };
 allow apmd_t self:fifo_file rw_fifo_file_perms;
 allow apmd_t self:netlink_socket create_socket_perms;
+allow apmd_t self:netlink_generic_socket create_socket_perms;
 allow apmd_t self:unix_stream_socket { accept listen };
 
 allow apmd_t apmd_lock_t:file manage_file_perms;

@@ -1,4 +1,4 @@
-policy_module(webalizer, 1.13.0)
+policy_module(webalizer, 1.14.0)
 
 ########################################
 #
@@ -16,17 +16,11 @@ role webalizer_roles types webalizer_t;
 type webalizer_etc_t;
 files_config_file(webalizer_etc_t)
 
-type webalizer_usage_t;
-files_type(webalizer_usage_t)
-
 type webalizer_tmp_t;
 files_tmp_file(webalizer_tmp_t)
 
 type webalizer_var_lib_t;
 files_type(webalizer_var_lib_t)
-
-type webalizer_write_t;
-files_type(webalizer_write_t)
 
 ########################################
 #
@@ -56,6 +50,7 @@ kernel_read_kernel_sysctls(webalizer_t)
 kernel_read_system_state(webalizer_t)
 
 files_read_etc_runtime_files(webalizer_t)
+files_read_usr_files(webalizer_t)
 
 fs_search_auto_mountpoints(webalizer_t)
 fs_getattr_xattr_fs(webalizer_t)
@@ -68,6 +63,7 @@ logging_send_syslog_msg(webalizer_t)
 
 miscfiles_read_localization(webalizer_t)
 miscfiles_read_public_files(webalizer_t)
+miscfiles_read_fonts(webalizer_t)
 
 userdom_use_user_terminals(webalizer_t)
 userdom_use_unpriv_users_fds(webalizer_t)

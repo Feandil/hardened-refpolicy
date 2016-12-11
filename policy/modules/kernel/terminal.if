@@ -538,6 +538,23 @@ interface(`term_relabel_pty_dirs',`
 
 ########################################
 ## <summary>
+##	Get the attributes of generic pty devices.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to allow
+##	</summary>
+## </param>
+#
+interface(`term_getattr_generic_ptys',`
+	gen_require(`
+		type devpts_t;
+	')
+
+	allow $1 devpts_t:chr_file getattr;
+')
+########################################
+## <summary>
 ##	Do not audit attempts to get the attributes
 ##	of generic pty devices.
 ## </summary>
@@ -1082,6 +1099,26 @@ interface(`term_getattr_unallocated_ttys',`
 
 	dev_list_all_dev_nodes($1)
 	allow $1 tty_device_t:chr_file getattr;
+')
+
+########################################
+## <summary>
+##	Setattr and unlink unallocated tty device nodes.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`term_setattr_unlink_unallocated_ttys',`
+	gen_require(`
+		type tty_device_t;
+	')
+
+	dev_list_all_dev_nodes($1)
+	allow $1 tty_device_t:chr_file { getattr setattr unlink };
 ')
 
 ########################################

@@ -1,4 +1,4 @@
-policy_module(bind, 1.16.1)
+policy_module(bind, 1.17.0)
 
 ########################################
 #
@@ -52,6 +52,9 @@ logging_log_file(named_log_t)
 
 type named_tmp_t;
 files_tmp_file(named_tmp_t)
+
+type named_unit_t;
+init_unit_file(named_unit_t)
 
 type named_var_run_t;
 files_pid_file(named_var_run_t)
@@ -110,6 +113,7 @@ read_files_pattern(named_t, named_zone_t, named_zone_t)
 read_lnk_files_pattern(named_t, named_zone_t, named_zone_t)
 
 kernel_read_kernel_sysctls(named_t)
+kernel_read_vm_overcommit_sysctl(named_t)
 kernel_read_system_state(named_t)
 kernel_read_network_state(named_t)
 

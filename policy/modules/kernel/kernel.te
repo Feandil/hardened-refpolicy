@@ -1,4 +1,4 @@
-policy_module(kernel, 1.20.4)
+policy_module(kernel, 1.21.2)
 
 ########################################
 #
@@ -278,6 +278,9 @@ selinux_load_policy(kernel_t)
 
 term_use_console(kernel_t)
 
+# for kdevtmpfs
+term_setattr_unlink_unallocated_ttys(kernel_t)
+
 corecmd_exec_shell(kernel_t)
 corecmd_list_bin(kernel_t)
 # /proc/sys/kernel/modprobe is set to /bin/true if not using modules.
@@ -429,8 +432,12 @@ optional_policy(`
 if( ! secure_mode_insmod ) {
 	allow can_load_kernmodule self:capability sys_module;
 
+	files_load_kernel_modules(can_load_kernmodule)
+
 	# load_module() calls stop_machine() which
 	# calls sched_setscheduler()
+	# gt: there seems to be no trace of the above, at
+	# least in kernel versions greater than 2.6.37...
 	allow can_load_kernmodule self:capability sys_nice;
 	kernel_setsched(can_load_kernmodule)
 }

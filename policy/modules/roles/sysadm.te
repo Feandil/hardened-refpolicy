@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.9.1)
+policy_module(sysadm, 2.10.1)
 
 ########################################
 #
@@ -458,6 +458,11 @@ optional_policy(`
 ')
 
 optional_policy(`
+	hwloc_admin(sysadm_t)
+	hwloc_run_dhwd(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
 	howl_admin(sysadm_t, sysadm_r)
 ')
 
@@ -713,6 +718,10 @@ optional_policy(`
 
 optional_policy(`
 	oident_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	ooffice_role(sysadm_r, sysadm_t)
 ')
 
 optional_policy(`
