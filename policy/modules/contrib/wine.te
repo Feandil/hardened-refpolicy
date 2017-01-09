@@ -1,4 +1,4 @@
-policy_module(wine, 1.12.0)
+policy_module(wine, 1.12.2)
 
 ########################################
 #
@@ -27,6 +27,10 @@ userdom_user_home_content(wine_home_t)
 
 type wine_tmp_t;
 userdom_user_tmp_file(wine_tmp_t)
+
+optional_policy(`
+	wm_application_domain(wine_t, wine_exec_t)
+')
 
 ########################################
 #

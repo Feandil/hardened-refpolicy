@@ -1,4 +1,4 @@
-policy_module(mozilla, 2.10.1)
+policy_module(mozilla, 2.10.5)
 
 ########################################
 #
@@ -36,6 +36,10 @@ typealias mozilla_t alias { user_mozilla_t staff_mozilla_t sysadm_mozilla_t };
 typealias mozilla_t alias { auditadm_mozilla_t secadm_mozilla_t };
 userdom_user_application_domain(mozilla_t, mozilla_exec_t)
 role mozilla_roles types mozilla_t;
+
+optional_policy(`
+	wm_application_domain(mozilla_t, mozilla_exec_t)
+')
 
 type mozilla_home_t;
 typealias mozilla_home_t alias { user_mozilla_home_t staff_mozilla_home_t sysadm_mozilla_home_t };
@@ -186,6 +190,7 @@ logging_send_syslog_msg(mozilla_t)
 miscfiles_read_fonts(mozilla_t)
 miscfiles_read_localization(mozilla_t)
 miscfiles_dontaudit_setattr_fonts_dirs(mozilla_t)
+miscfiles_dontaudit_setattr_fonts_cache_dirs(mozilla_t)
 
 userdom_use_user_ptys(mozilla_t)
 
@@ -236,6 +241,7 @@ optional_policy(`
 
 optional_policy(`
 	dbus_all_session_bus_client(mozilla_t)
+	dbus_connect_all_session_bus(mozilla_t)
 	dbus_system_bus_client(mozilla_t)
 
 	optional_policy(`
@@ -274,13 +280,11 @@ optional_policy(`
 
 optional_policy(`
 	ooffice_domtrans(mozilla_t)
-	ooffice_rw_ooffice_tmp_files(mozilla_t)
+	ooffice_rw_tmp_files(mozilla_t)
 ')
 
 optional_policy(`
 	pulseaudio_run(mozilla_t, mozilla_roles)
-	pulseaudio_rw_tmpfs_files(mozilla_t)
-	pulseaudio_use_fds(mozilla_t)
 ')
 
 optional_policy(`
@@ -505,8 +509,6 @@ optional_policy(`
 
 optional_policy(`
 	pulseaudio_run(mozilla_plugin_t, mozilla_plugin_roles)
-	pulseaudio_rw_tmpfs_files(mozilla_plugin_t)
-	pulseaudio_use_fds(mozilla_plugin_t)
 ')
 
 optional_policy(`

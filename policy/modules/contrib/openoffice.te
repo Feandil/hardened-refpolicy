@@ -1,4 +1,4 @@
-policy_module(openoffice, 1.0.0)
+policy_module(openoffice, 1.0.4)
 
 ##############################
 #
@@ -14,6 +14,18 @@ policy_module(openoffice, 1.0.0)
 ##	</p>
 ## </desc>
 gen_tunable(openoffice_allow_update, true)
+
+## <desc>
+##	<p>
+##	Determine whether openoffice writer
+##	can send emails directly (print to
+##	email). This is different from the
+##	functionality of sending emails
+##	through external clients which is
+##	always enabled.
+##	</p>
+## </desc>
+gen_tunable(openoffice_allow_email, false)
 
 attribute_role ooffice_roles;
 
@@ -72,6 +84,7 @@ ooffice_dontaudit_exec_tmp_files(ooffice_t)
 sysnet_dns_name_resolve(ooffice_t)
 
 userdom_dontaudit_exec_user_home_content_files(ooffice_t)
+userdom_read_user_tmp_files(ooffice_t)
 userdom_manage_user_home_content_dirs(ooffice_t)
 userdom_manage_user_home_content_files(ooffice_t)
 userdom_manage_user_home_content_symlinks(ooffice_t)
@@ -79,6 +92,12 @@ userdom_user_home_dir_filetrans_user_home_content(ooffice_t, { dir file lnk_file
 
 tunable_policy(`openoffice_allow_update',`
 	corenet_tcp_connect_http_port(ooffice_t)
+')
+
+tunable_policy(`openoffice_allow_email',`
+	corenet_tcp_connect_smtp_port(ooffice_t)
+	corenet_tcp_sendrecv_smtp_port(ooffice_t)
+	corenet_sendrecv_smtp_client_packets(ooffice_t)
 ')
 
 optional_policy(`
@@ -92,7 +111,7 @@ optional_policy(`
 
 optional_policy(`
 	evolution_domtrans(ooffice_t)
-	evolution_read_evolution_home_files(ooffice_t)
+	evolution_read_home_files(ooffice_t)
 ')
 
 optional_policy(`
@@ -112,6 +131,7 @@ optional_policy(`
 ')
 
 optional_policy(`
+	xserver_rw_xsession_log(ooffice_t)
 	xserver_read_user_iceauth(ooffice_t)
 	xserver_read_user_xauth(ooffice_t)
 	xserver_read_xdm_tmp_files(ooffice_t)

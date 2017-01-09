@@ -1,4 +1,4 @@
-policy_module(games, 2.3.0)
+policy_module(games, 2.3.2)
 
 ########################################
 #
@@ -13,6 +13,10 @@ typealias games_t alias { user_games_t staff_games_t sysadm_games_t };
 typealias games_t alias { auditadm_games_t secadm_games_t };
 userdom_user_application_domain(games_t, games_exec_t)
 role games_roles types games_t;
+
+optional_policy(`
+	wm_application_domain(games_t, games_exec_t)
+')
 
 type games_data_t;
 typealias games_data_t alias { user_games_data_t staff_games_data_t sysadm_games_data_t };
@@ -41,6 +45,10 @@ type games_tmpfs_t;
 typealias games_tmpfs_t alias { user_games_tmpfs_t staff_games_tmpfs_t sysadm_games_tmpfs_t };
 typealias games_tmpfs_t alias { auditadm_games_tmpfs_t secadm_games_tmpfs_t };
 userdom_user_tmpfs_file(games_tmpfs_t)
+
+optional_policy(`
+	pulseaudio_tmpfs_content(games_tmpfs_t)
+')
 
 ########################################
 #
@@ -95,6 +103,7 @@ optional_policy(`
 # Client local policy
 #
 
+allow games_t self:fifo_file rw_file_perms;
 allow games_t self:sem create_sem_perms;
 allow games_t self:tcp_socket { accept listen };
 
@@ -137,6 +146,7 @@ dev_read_sound(games_t)
 dev_read_input(games_t)
 dev_read_mouse(games_t)
 dev_read_urand(games_t)
+dev_rw_dri(games_t)
 dev_write_sound(games_t)
 
 files_list_var(games_t)
@@ -145,6 +155,8 @@ files_dontaudit_search_var(games_t)
 files_read_etc_files(games_t)
 files_read_usr_files(games_t)
 files_read_var_files(games_t)
+
+fs_dontaudit_getattr_xattr_fs(games_t)
 
 init_dontaudit_rw_utmp(games_t)
 
@@ -166,7 +178,16 @@ tunable_policy(`allow_execmem',`
 ')
 
 optional_policy(`
+	dbus_all_session_bus_client(games_t)
+	dbus_connect_all_session_bus(games_t)
+')
+
+optional_policy(`
 	nscd_use(games_t)
+')
+
+optional_policy(`
+	pulseaudio_run(games_t, games_roles)
 ')
 
 optional_policy(`

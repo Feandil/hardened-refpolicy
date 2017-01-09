@@ -1,4 +1,4 @@
-policy_module(gift, 2.4.0)
+policy_module(gift, 2.4.2)
 
 ########################################
 #
@@ -31,6 +31,10 @@ typealias giftd_t alias { user_giftd_t staff_giftd_t sysadm_giftd_t };
 typealias giftd_t alias { auditadm_giftd_t secadm_giftd_t };
 userdom_user_application_domain(giftd_t, giftd_exec_t)
 role giftd_roles types giftd_t;
+
+optional_policy(`
+	wm_application_domain(gift_t, gift_exec_t)
+')
 
 ##############################
 #

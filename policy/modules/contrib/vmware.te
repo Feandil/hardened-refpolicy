@@ -1,4 +1,4 @@
-policy_module(vmware, 2.7.0)
+policy_module(vmware, 2.7.3)
 
 ########################################
 #
@@ -58,6 +58,10 @@ userdom_user_tmpfs_file(vmware_tmpfs_t)
 
 ifdef(`enable_mcs',`
 	init_ranged_daemon_domain(vmware_host_t, vmware_host_exec_t, s0 - mcs_systemhigh)
+')
+
+optional_policy(`
+	wm_application_domain(vmware_t, vmware_exec_t)
 ')
 
 ########################################

@@ -1,4 +1,4 @@
-policy_module(colord, 1.2.0)
+policy_module(colord, 1.2.1)
 
 ########################################
 #
@@ -136,4 +136,9 @@ optional_policy(`
 optional_policy(`
 	udev_read_db(colord_t)
 	udev_read_pid_files(colord_t)
+')
+
+optional_policy(`
+	xserver_read_xdm_lib_files(colord_t)
+	xserver_use_xdm_fds(colord_t)
 ')

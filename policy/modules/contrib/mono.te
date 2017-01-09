@@ -1,4 +1,4 @@
-policy_module(mono, 1.9.0)
+policy_module(mono, 1.9.1)
 
 ########################################
 #
@@ -15,6 +15,10 @@ init_system_domain(mono_t, mono_exec_t)
 role mono_roles types mono_t;
 
 application_type(mono_t)
+
+optional_policy(`
+	wm_application_domain(mono_t, mono_exec_t)
+')
 
 ########################################
 #

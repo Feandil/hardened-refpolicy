@@ -1,4 +1,4 @@
-policy_module(networkmanager, 1.19.0)
+policy_module(networkmanager, 1.19.5)
 
 ########################################
 #
@@ -49,6 +49,7 @@ ifdef(`distro_gentoo',`
 
 allow NetworkManager_t self:capability { fowner chown fsetid kill setgid setuid sys_nice dac_override net_admin net_raw ipc_lock };
 dontaudit NetworkManager_t self:capability { sys_tty_config sys_module sys_ptrace };
+allow NetworkManager_t self:capability2 wake_alarm;
 allow NetworkManager_t self:process { ptrace getcap setcap setpgid getsched setsched signal_perms };
 allow NetworkManager_t self:fifo_file rw_fifo_file_perms;
 allow NetworkManager_t self:unix_dgram_socket sendto;
@@ -181,7 +182,7 @@ sysnet_manage_config(NetworkManager_t)
 sysnet_etc_filetrans_config(NetworkManager_t)
 
 # certificates in user home directories (cert_home_t in ~/\.pki)
-userdom_read_user_home_content_files(NetworkManager_t)
+userdom_read_user_certs(NetworkManager_t)
 
 userdom_write_user_tmp_sockets(NetworkManager_t)
 userdom_dontaudit_use_unpriv_user_fds(NetworkManager_t)
@@ -230,7 +231,15 @@ optional_policy(`
 	')
 
 	optional_policy(`
+		cups_dbus_chat(NetworkManager_t)
+	')
+
+	optional_policy(`
 		policykit_dbus_chat(NetworkManager_t)
+	')
+
+	optional_policy(`
+		xserver_dbus_chat_xdm(NetworkManager_t)
 	')
 ')
 

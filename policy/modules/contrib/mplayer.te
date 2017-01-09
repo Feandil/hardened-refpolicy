@@ -1,4 +1,4 @@
-policy_module(mplayer, 2.6.0)
+policy_module(mplayer, 2.6.1)
 
 ########################################
 #
@@ -44,6 +44,10 @@ typealias mplayer_t alias { user_mplayer_t staff_mplayer_t sysadm_mplayer_t };
 typealias mplayer_t alias { auditadm_mplayer_t secadm_mplayer_t };
 userdom_user_application_domain(mplayer_t, mplayer_exec_t)
 role mplayer_roles types mplayer_t;
+
+optional_policy(`
+	wm_application_domain(mplayer_t, mplayer_exec_t)
+')
 
 type mplayer_etc_t;
 files_config_file(mplayer_etc_t)

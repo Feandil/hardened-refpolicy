@@ -480,6 +480,25 @@ interface(`dev_dontaudit_getattr_generic_blk_files',`
 
 ########################################
 ## <summary>
+##	Set the attributes on generic
+##	block devices.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_setattr_generic_blk_files',`
+	gen_require(`
+		type device_t;
+	')
+
+	allow $1 device_t:blk_file setattr;
+')
+
+########################################
+## <summary>
 ##	Dontaudit setattr on generic block devices.
 ## </summary>
 ## <param name="domain">
@@ -566,6 +585,25 @@ interface(`dev_dontaudit_getattr_generic_chr_files',`
 	')
 
 	dontaudit $1 device_t:chr_file getattr;
+')
+
+########################################
+## <summary>
+##	Set the attributes for generic
+##	character device files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_setattr_generic_chr_files',`
+	gen_require(`
+		type device_t;
+	')
+
+	allow $1 device_t:chr_file setattr;
 ')
 
 ########################################
@@ -3897,6 +3935,24 @@ interface(`dev_manage_smartcard',`
 
 ########################################
 ## <summary>
+##	Mount a filesystem on sysfs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allow access.
+##	</summary>
+## </param>
+#
+interface(`dev_mounton_sysfs',`
+	gen_require(`
+		type device_t;
+	')
+
+	allow $1 sysfs_t:dir mounton;
+')
+
+########################################
+## <summary>
 ##	Associate a file to a sysfs filesystem.
 ## </summary>
 ## <param name="file_type">
@@ -5068,25 +5124,6 @@ interface(`dev_dontaudit_read_sysfs',`
 	dontaudit $1 sysfs_t:dir list_dir_perms;
 	dontaudit $1 sysfs_t:lnk_file read_lnk_file_perms;
 ')
-
-########################################
-## <summary>
-##	Setattr for generic character device files.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access
-##	</summary>
-## </param>
-#
-interface(`dev_setattr_generic_chr_files',`
-	gen_require(`
-		type device_t;
-	')
-
-	allow $1 device_t:chr_file setattr;
-')
-
 
 ########################################
 ## <summary>

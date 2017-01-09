@@ -1,4 +1,4 @@
-policy_module(java, 2.8.0)
+policy_module(java, 2.8.1)
 
 ########################################
 #
@@ -26,6 +26,10 @@ userdom_user_application_domain(java_t, java_exec_t)
 typealias java_t alias { staff_javaplugin_t user_javaplugin_t sysadm_javaplugin_t };
 typealias java_t alias { auditadm_javaplugin_t secadm_javaplugin_t };
 role java_roles types java_t;
+
+optional_policy(`
+	wm_application_domain(java_t, java_exec_t)
+')
 
 type java_home_t;
 userdom_user_home_content(java_home_t)

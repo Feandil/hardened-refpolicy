@@ -1,4 +1,4 @@
-policy_module(tvtime, 2.3.0)
+policy_module(tvtime, 2.3.2)
 
 ########################################
 #
@@ -28,6 +28,10 @@ type tvtime_tmpfs_t;
 typealias tvtime_tmpfs_t alias { user_tvtime_tmpfs_t staff_tvtime_tmpfs_t sysadm_tvtime_tmpfs_t };
 typealias tvtime_tmpfs_t alias { auditadm_tvtime_tmpfs_t secadm_tvtime_tmpfs_t };
 userdom_user_tmpfs_file(tvtime_tmpfs_t)
+
+optional_policy(`
+	wm_application_domain(tvtime_t, tvtime_exec_t)
+')
 
 ########################################
 #
