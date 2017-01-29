@@ -326,6 +326,27 @@ interface(`cups_read_state',`
 
 ########################################
 ## <summary>
+##	Execute HP Linux Imaging and
+##	Printing applications in their
+##	own domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to transition.
+##	</summary>
+## </param>
+#
+interface(`cups_domtrans_hplip',`
+	gen_require(`
+		type hplip_t, hplip_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, hplip_exec_t, hplip_t)
+')
+
+########################################
+## <summary>
 ##	All of the rules required to
 ##	administrate an cups environment.
 ## </summary>

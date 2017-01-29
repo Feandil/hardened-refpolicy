@@ -1,4 +1,4 @@
-policy_module(devices, 1.19.2)
+policy_module(devices, 1.19.3)
 
 ########################################
 #
@@ -66,6 +66,7 @@ dev_node(cpu_device_t)
 type cpu_online_t, sysfs_types;
 files_type(cpu_online_t)
 dev_associate_sysfs(cpu_online_t)
+genfscon sysfs /devices/system/cpu/online gen_context(system_u:object_r:cpu_online_t,s0)
 
 #
 # Type for /dev/crash

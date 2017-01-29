@@ -1,4 +1,4 @@
-policy_module(udev, 1.20.3)
+policy_module(udev, 1.20.4)
 
 ########################################
 #
@@ -261,6 +261,7 @@ optional_policy(`
 
 optional_policy(`
 	cups_domtrans_config(udev_t)
+	cups_domtrans_hplip(udev_t)
 ')
 
 optional_policy(`

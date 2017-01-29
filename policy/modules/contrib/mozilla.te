@@ -1,4 +1,4 @@
-policy_module(mozilla, 2.10.5)
+policy_module(mozilla, 2.10.6)
 
 ########################################
 #
@@ -255,6 +255,10 @@ optional_policy(`
 	optional_policy(`
 		networkmanager_dbus_chat(mozilla_t)
 	')
+')
+
+optional_policy(`
+	evolution_domtrans(mozilla_t)
 ')
 
 optional_policy(`
