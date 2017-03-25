@@ -1,4 +1,4 @@
-policy_module(selinuxutil, 1.21.2)
+policy_module(selinuxutil, 1.22.5)
 
 gen_require(`
 	bool secure_mode;
@@ -88,8 +88,9 @@ role system_r types restorecond_t;
 type restorecond_unit_t;
 init_unit_file(restorecond_unit_t)
 
-type restorecond_var_run_t;
-files_pid_file(restorecond_var_run_t)
+type restorecond_run_t;
+typealias restorecond_run_t alias restorecond_var_run_t;
+files_pid_file(restorecond_run_t)
 
 type run_init_t;
 type run_init_exec_t;
@@ -220,8 +221,8 @@ optional_policy(`
 # Newrole local policy
 #
 
-allow newrole_t self:capability { fowner setuid setgid dac_override };
-allow newrole_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execheap execstack };
+dontaudit newrole_t self:capability net_admin;
+allow newrole_t self:capability { dac_override fowner setgid setuid };
 allow newrole_t self:process setexec;
 allow newrole_t self:fd use;
 allow newrole_t self:fifo_file rw_fifo_file_perms;
@@ -303,6 +304,25 @@ ifdef(`distro_ubuntu',`
 	')
 ')
 
+ifdef(`init_systemd',`
+	optional_policy(`
+		systemd_use_logind_fds(newrole_t)
+		systemd_dbus_chat_logind(newrole_t)
+	')
+')
+
+optional_policy(`
+	auth_use_pam_systemd(newrole_t)
+')
+
+optional_policy(`
+	dbus_system_bus_client(newrole_t)
+
+	optional_policy(`
+		consolekit_dbus_chat(newrole_t)
+	')
+')
+
 # if secure mode is enabled, then newrole
 # can only transition to unprivileged users
 if(secure_mode) {
@@ -315,6 +335,10 @@ tunable_policy(`allow_polyinstantiation',`
 	files_polyinstantiate_all(newrole_t)
 ')
 
+optional_policy(`
+	systemd_use_logind_fds(newrole_t)
+')
+
 ########################################
 #
 # Restorecond local policy
@@ -323,17 +347,20 @@ tunable_policy(`allow_polyinstantiation',`
 allow restorecond_t self:capability { dac_override dac_read_search fowner };
 allow restorecond_t self:fifo_file rw_fifo_file_perms;
 
-allow restorecond_t restorecond_var_run_t:file manage_file_perms;
-files_pid_filetrans(restorecond_t, restorecond_var_run_t, file)
+allow restorecond_t restorecond_run_t:file manage_file_perms;
+files_pid_filetrans(restorecond_t, restorecond_run_t, file)
 
-kernel_use_fds(restorecond_t)
-kernel_rw_pipes(restorecond_t)
+kernel_getattr_debugfs(restorecond_t)
 kernel_read_system_state(restorecond_t)
+kernel_rw_pipes(restorecond_t)
+kernel_use_fds(restorecond_t)
 
-fs_relabelfrom_noxattr_fs(restorecond_t)
 fs_dontaudit_list_nfs(restorecond_t)
 fs_getattr_all_xattr_fs(restorecond_t)
+fs_getattr_pstore_dirs(restorecond_t)
+fs_getattr_tracefs(restorecond_t)
 fs_list_inotifyfs(restorecond_t)
+fs_relabelfrom_noxattr_fs(restorecond_t)
 
 selinux_validate_context(restorecond_t)
 selinux_compute_access_vector(restorecond_t)
@@ -345,8 +372,6 @@ files_relabel_non_auth_files(restorecond_t )
 files_read_non_auth_files(restorecond_t)
 auth_use_nsswitch(restorecond_t)
 
-locallogin_dontaudit_use_fds(restorecond_t)
-
 logging_send_syslog_msg(restorecond_t)
 
 miscfiles_read_localization(restorecond_t)
@@ -357,6 +382,10 @@ ifdef(`distro_ubuntu',`
 	optional_policy(`
 		unconfined_domain(restorecond_t)
 	')
+')
+
+optional_policy(`
+	locallogin_dontaudit_use_fds(restorecond_t)
 ')
 
 optional_policy(`
@@ -444,7 +473,7 @@ optional_policy(`
 # semodule local policy
 #
 
-allow semanage_t self:capability { dac_override audit_write };
+allow semanage_t self:capability { audit_write dac_override };
 allow semanage_t self:unix_stream_socket create_stream_socket_perms;
 allow semanage_t self:unix_dgram_socket create_socket_perms;
 allow semanage_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
@@ -486,8 +515,6 @@ term_use_all_terms(semanage_t)
 # Running genhomedircon requires this for finding all users
 auth_use_nsswitch(semanage_t)
 
-locallogin_use_fds(semanage_t)
-
 logging_send_syslog_msg(semanage_t)
 
 miscfiles_read_localization(semanage_t)
@@ -524,6 +551,10 @@ optional_policy(`
 	portage_eselect_module(semanage_t)
 ')
 
+optional_policy(`
+	locallogin_use_fds(semanage_t)
+')
+
 ########################################
 #
 # Setfiles local policy
@@ -548,6 +579,7 @@ kernel_rw_pipes(setfiles_t)
 kernel_rw_unix_dgram_sockets(setfiles_t)
 kernel_dontaudit_list_all_proc(setfiles_t)
 kernel_dontaudit_list_all_sysctls(setfiles_t)
+kernel_getattr_debugfs(setfiles_t)
 
 dev_relabel_all_dev_nodes(setfiles_t)
 # to handle when /dev/console needs to be relabeled
@@ -564,9 +596,13 @@ files_read_usr_symlinks(setfiles_t)
 files_dontaudit_read_all_symlinks(setfiles_t)
 
 fs_getattr_all_xattr_fs(setfiles_t)
+fs_getattr_pstore_dirs(setfiles_t)
+fs_getattr_pstorefs(setfiles_t)
+fs_getattr_tracefs(setfiles_t)
+fs_getattr_tracefs_files(setfiles_t)
 fs_list_all(setfiles_t)
-fs_search_auto_mountpoints(setfiles_t)
 fs_relabelfrom_noxattr_fs(setfiles_t)
+fs_search_auto_mountpoints(setfiles_t)
 
 mls_file_read_all_levels(setfiles_t)
 mls_file_write_all_levels(setfiles_t)

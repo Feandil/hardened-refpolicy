@@ -1,9 +1,17 @@
-policy_module(samba, 1.19.1)
+policy_module(samba, 1.20.1)
 
 #################################
 #
 # Declarations
 #
+
+## <desc>
+##      <p>
+##      Determine whether smbd_t can
+##      read shadow files.
+##      </p>
+## </desc>
+gen_tunable(samba_read_shadow, false)
 
 ## <desc>
 ##	<p>
@@ -104,8 +112,9 @@ type nmbd_t;
 type nmbd_exec_t;
 init_daemon_domain(nmbd_t, nmbd_exec_t)
 
-type nmbd_var_run_t;
-files_pid_file(nmbd_var_run_t)
+type samba_var_run_t;
+typealias samba_var_run_t alias { nmbd_var_run_t smbd_var_run_t };
+files_pid_file(samba_var_run_t)
 
 type samba_etc_t;
 files_config_file(samba_etc_t)
@@ -151,9 +160,6 @@ files_type(smbd_keytab_t)
 type smbd_tmp_t;
 files_tmp_file(smbd_tmp_t)
 
-type smbd_var_run_t;
-files_pid_file(smbd_var_run_t)
-
 type smbmount_t;
 type smbmount_exec_t;
 application_domain(smbmount_t, smbmount_exec_t)
@@ -194,7 +200,7 @@ files_pid_file(winbind_var_run_t)
 # Net local policy
 #
 
-allow samba_net_t self:capability { sys_chroot sys_nice dac_read_search dac_override };
+allow samba_net_t self:capability { dac_override dac_read_search sys_chroot sys_nice };
 allow samba_net_t self:capability2 block_suspend;
 allow samba_net_t self:process { getsched setsched };
 allow samba_net_t self:unix_stream_socket { accept listen };
@@ -261,7 +267,7 @@ optional_policy(`
 # Smbd Local policy
 #
 
-allow smbd_t self:capability { chown fowner kill fsetid setgid setuid sys_chroot sys_nice sys_admin sys_resource lease dac_override dac_read_search };
+allow smbd_t self:capability { chown dac_override dac_read_search fowner fsetid kill lease setgid setuid sys_admin sys_chroot sys_nice sys_resource };
 dontaudit smbd_t self:capability sys_tty_config;
 allow smbd_t self:process ~{ ptrace setcurrent setexec setfscreate execmem execstack execheap };
 allow smbd_t self:fd use;
@@ -305,16 +311,15 @@ manage_dirs_pattern(smbd_t, smbd_tmp_t, smbd_tmp_t)
 manage_files_pattern(smbd_t, smbd_tmp_t, smbd_tmp_t)
 files_tmp_filetrans(smbd_t, smbd_tmp_t, { file dir })
 
-manage_dirs_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
-manage_files_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
-manage_sock_files_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
-files_pid_filetrans(smbd_t, smbd_var_run_t, { dir file })
+manage_dirs_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
+manage_files_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
+manage_sock_files_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
+files_pid_filetrans(smbd_t, samba_var_run_t, { dir file })
 
 allow smbd_t winbind_var_run_t:sock_file read_sock_file_perms;
 stream_connect_pattern(smbd_t, winbind_var_run_t, winbind_var_run_t, winbind_t)
 
-allow smbd_t nmbd_var_run_t:file read_file_perms;
-stream_connect_pattern(smbd_t, nmbd_var_run_t, nmbd_var_run_t, nmbd_t)
+stream_connect_pattern(smbd_t, samba_var_run_t, samba_var_run_t, nmbd_t)
 
 kernel_getattr_core_if(smbd_t)
 kernel_getattr_message_if(smbd_t)
@@ -376,6 +381,7 @@ auth_domtrans_chk_passwd(smbd_t)
 auth_domtrans_upd_passwd(smbd_t)
 auth_manage_cache(smbd_t)
 auth_write_login_records(smbd_t)
+auth_can_read_shadow_passwords(smbd_t)
 
 init_rw_utmp(smbd_t)
 
@@ -434,6 +440,10 @@ tunable_policy(`samba_portmapper',`
 	corenet_tcp_bind_epmap_port(smbd_t)
 	corenet_tcp_bind_all_unreserved_ports(smbd_t)
 	corenet_tcp_sendrecv_all_ports(smbd_t)
+')
+
+tunable_policy(`samba_read_shadow',`
+	auth_tunable_read_shadow(smbd_t)
 ')
 
 tunable_policy(`samba_share_nfs',`
@@ -519,11 +529,10 @@ allow nmbd_t self:tcp_socket { accept listen };
 allow nmbd_t self:unix_dgram_socket sendto;
 allow nmbd_t self:unix_stream_socket { accept connectto listen };
 
-manage_dirs_pattern(nmbd_t, { smbd_var_run_t nmbd_var_run_t }, nmbd_var_run_t)
-manage_files_pattern(nmbd_t, nmbd_var_run_t, nmbd_var_run_t)
-manage_sock_files_pattern(nmbd_t, nmbd_var_run_t, nmbd_var_run_t)
-files_pid_filetrans(nmbd_t, nmbd_var_run_t, { dir file sock_file })
-filetrans_pattern(nmbd_t, smbd_var_run_t, nmbd_var_run_t, dir)
+manage_dirs_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
+manage_files_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
+manage_sock_files_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
+files_pid_filetrans(nmbd_t, samba_var_run_t, { dir file sock_file })
 
 read_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
 read_lnk_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
@@ -542,7 +551,7 @@ files_var_filetrans(nmbd_t, samba_var_t, dir, "samba")
 
 allow nmbd_t { swat_t smbcontrol_t }:process signal;
 
-allow nmbd_t smbd_var_run_t:dir rw_dir_perms;
+allow nmbd_t samba_var_run_t:dir rw_dir_perms;
 
 kernel_getattr_core_if(nmbd_t)
 kernel_getattr_message_if(nmbd_t)
@@ -550,6 +559,8 @@ kernel_read_kernel_sysctls(nmbd_t)
 kernel_read_network_state(nmbd_t)
 kernel_read_software_raid_state(nmbd_t)
 kernel_read_system_state(nmbd_t)
+
+corecmd_search_bin(nmbd_t)
 
 corenet_all_recvfrom_unlabeled(nmbd_t)
 corenet_all_recvfrom_netlabel(nmbd_t)
@@ -567,6 +578,7 @@ corenet_sendrecv_smbd_client_packets(nmbd_t)
 corenet_tcp_connect_smbd_port(nmbd_t)
 corenet_tcp_sendrecv_smbd_port(nmbd_t)
 
+dev_read_urand(nmbd_t)
 dev_read_sysfs(nmbd_t)
 dev_getattr_mtrr_dev(nmbd_t)
 
@@ -618,7 +630,7 @@ allow smbcontrol_t self:unix_stream_socket create_stream_socket_perms;
 allow smbcontrol_t self:process { signal signull };
 
 allow smbcontrol_t { winbind_t nmbd_t smbd_t }:process { signal signull };
-read_files_pattern(smbcontrol_t, { nmbd_var_run_t smbd_var_run_t }, { nmbd_var_run_t smbd_var_run_t })
+read_files_pattern(smbcontrol_t, samba_var_run_t, samba_var_run_t)
 
 manage_files_pattern(smbcontrol_t, samba_var_t, samba_var_t)
 
@@ -650,7 +662,7 @@ optional_policy(`
 # Smbmount Local policy
 #
 
-allow smbmount_t self:capability { sys_rawio sys_admin dac_override chown };
+allow smbmount_t self:capability { chown dac_override sys_admin sys_rawio };
 allow smbmount_t self:process signal_perms;
 allow smbmount_t self:tcp_socket { accept listen };
 allow smbmount_t self:unix_dgram_socket create_socket_perms;
@@ -724,7 +736,7 @@ optional_policy(`
 # Swat Local policy
 #
 
-allow swat_t self:capability { dac_override setuid setgid sys_resource };
+allow swat_t self:capability { dac_override setgid setuid sys_resource };
 allow swat_t self:process { setrlimit signal_perms };
 allow swat_t self:fifo_file rw_fifo_file_perms;
 allow swat_t self:netlink_tcpdiag_socket r_netlink_socket_perms;
@@ -733,8 +745,8 @@ allow swat_t self:unix_stream_socket connectto;
 
 allow swat_t { nmbd_t smbd_t }:process { signal signull };
 
-allow swat_t smbd_var_run_t:file read_file_perms;
-allow swat_t smbd_var_run_t:file { lock delete_file_perms };
+allow swat_t samba_var_run_t:file read_file_perms;
+allow swat_t samba_var_run_t:file { lock delete_file_perms };
 
 rw_files_pattern(swat_t, samba_etc_t, samba_etc_t)
 read_lnk_files_pattern(swat_t, samba_etc_t, samba_etc_t)
@@ -766,8 +778,8 @@ read_files_pattern(swat_t, winbind_var_run_t, winbind_var_run_t)
 allow swat_t winbind_var_run_t:dir { add_entry_dir_perms del_entry_dir_perms };
 allow swat_t winbind_var_run_t:sock_file { create_sock_file_perms delete_sock_file_perms };
 
-read_files_pattern(swat_t, nmbd_var_run_t, nmbd_var_run_t)
-stream_connect_pattern(swat_t, nmbd_var_run_t, nmbd_var_run_t, nmbd_t)
+read_files_pattern(swat_t, samba_var_run_t, samba_var_run_t)
+stream_connect_pattern(swat_t, samba_var_run_t, samba_var_run_t, nmbd_t)
 
 samba_domtrans_smbd(swat_t)
 samba_domtrans_nmbd(swat_t)
@@ -852,8 +864,8 @@ allow winbind_t self:tcp_socket { accept listen };
 
 allow winbind_t nmbd_t:process { signal signull };
 
-allow winbind_t nmbd_var_run_t:file read_file_perms;
-stream_connect_pattern(winbind_t, nmbd_var_run_t, nmbd_var_run_t, nmbd_t)
+allow winbind_t samba_var_run_t:file read_file_perms;
+stream_connect_pattern(winbind_t, samba_var_run_t, samba_var_run_t, nmbd_t)
 
 allow winbind_t samba_etc_t:dir list_dir_perms;
 read_files_pattern(winbind_t, samba_etc_t, samba_etc_t)
@@ -885,15 +897,15 @@ manage_files_pattern(winbind_t, winbind_tmp_t, winbind_tmp_t)
 manage_sock_files_pattern(winbind_t, winbind_tmp_t, winbind_tmp_t)
 files_tmp_filetrans(winbind_t, winbind_tmp_t, { file dir })
 
-manage_dirs_pattern(winbind_t, { smbd_var_run_t winbind_var_run_t }, winbind_var_run_t)
+manage_dirs_pattern(winbind_t, { samba_var_run_t winbind_var_run_t }, winbind_var_run_t)
 manage_files_pattern(winbind_t, winbind_var_run_t, winbind_var_run_t)
 manage_sock_files_pattern(winbind_t, winbind_var_run_t, winbind_var_run_t)
 files_pid_filetrans(winbind_t, winbind_var_run_t, { sock_file file dir })
-filetrans_pattern(winbind_t, smbd_var_run_t, winbind_var_run_t, dir)
+filetrans_pattern(winbind_t, samba_var_run_t, winbind_var_run_t, dir)
 
-manage_dirs_pattern(winbind_t, smbd_var_run_t, smbd_var_run_t)
-manage_files_pattern(winbind_t, smbd_var_run_t, smbd_var_run_t)
-manage_sock_files_pattern(winbind_t, smbd_var_run_t, smbd_var_run_t)
+manage_dirs_pattern(winbind_t, samba_var_run_t, samba_var_run_t)
+manage_files_pattern(winbind_t, samba_var_run_t, samba_var_run_t)
+manage_sock_files_pattern(winbind_t, samba_var_run_t, samba_var_run_t)
 
 kernel_read_network_state(winbind_t)
 kernel_read_kernel_sysctls(winbind_t)

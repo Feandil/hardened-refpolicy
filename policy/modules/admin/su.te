@@ -1,11 +1,9 @@
-policy_module(su, 1.13.1)
+policy_module(su, 1.14.2)
 
 ########################################
 #
 # Declarations
 #
-
-attribute su_domain_type;
 
 type su_exec_t;
 corecmd_executable_file(su_exec_t)

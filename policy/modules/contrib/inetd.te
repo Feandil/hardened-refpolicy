@@ -1,4 +1,4 @@
-policy_module(inetd, 1.13.1)
+policy_module(inetd, 1.14.1)
 
 ########################################
 #
@@ -37,7 +37,7 @@ ifdef(`enable_mcs',`
 # Local policy
 #
 
-allow inetd_t self:capability { setuid setgid sys_resource };
+allow inetd_t self:capability { setgid setuid sys_resource };
 dontaudit inetd_t self:capability sys_tty_config;
 allow inetd_t self:process { setsched setexec setrlimit };
 allow inetd_t self:fifo_file rw_fifo_file_perms;
@@ -61,6 +61,7 @@ kernel_read_system_state(inetd_t)
 kernel_tcp_recvfrom_unlabeled(inetd_t)
 
 corecmd_bin_domtrans(inetd_t, inetd_child_t)
+corecmd_bin_entry_type(inetd_child_t)
 
 corenet_all_recvfrom_unlabeled(inetd_t)
 corenet_all_recvfrom_netlabel(inetd_t)
@@ -204,7 +205,7 @@ optional_policy(`
 # Child local policy
 #
 
-allow inetd_child_t self:capability { setuid setgid };
+allow inetd_child_t self:capability { setgid setuid };
 allow inetd_child_t self:process signal_perms;
 allow inetd_child_t self:fifo_file rw_fifo_file_perms;
 allow inetd_child_t self:tcp_socket { accept listen };

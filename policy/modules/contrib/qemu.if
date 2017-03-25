@@ -27,7 +27,7 @@ template(`qemu_domain_template',`
 	# Policy
 	#
 
-	allow $1_t self:capability { dac_read_search dac_override };
+	allow $1_t self:capability { dac_override dac_read_search };
 	allow $1_t self:process { execstack execmem signal getsched };
 	allow $1_t self:fifo_file rw_file_perms;
 	allow $1_t self:shm create_shm_perms;
@@ -260,6 +260,44 @@ interface(`qemu_kill',`
 	')
 
 	allow $1 qemu_t:process sigkill;
+')
+
+########################################
+## <summary>
+##	Connect to qemu with a unix
+##	domain stream socket.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`qemu_stream_connect',`
+	gen_require(`
+		type qemu_t, qemu_var_run_t;
+	')
+
+	files_search_pids($1)
+	stream_connect_pattern($1, qemu_var_run_t, qemu_var_run_t, qemu_t)
+')
+
+########################################
+## <summary>
+##	Unlink qemu socket
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`qemu_delete_pid_sock_file',`
+	gen_require(`
+		type qemu_var_run_t;
+	')
+
+	allow $1 qemu_var_run_t:sock_file unlink;
 ')
 
 ########################################

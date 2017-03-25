@@ -1,4 +1,4 @@
-policy_module(procmail, 1.14.0)
+policy_module(procmail, 1.14.1)
 
 ########################################
 #
@@ -24,7 +24,7 @@ files_tmp_file(procmail_tmp_t)
 # Local policy
 #
 
-allow procmail_t self:capability { sys_nice chown fsetid setuid setgid dac_override };
+allow procmail_t self:capability { chown dac_override fsetid setgid setuid sys_nice };
 allow procmail_t self:process { setsched signal signull };
 allow procmail_t self:fifo_file rw_fifo_file_perms;
 allow procmail_t self:tcp_socket { accept listen };
@@ -93,6 +93,11 @@ tunable_policy(`use_samba_home_dirs',`
 optional_policy(`
 	clamav_domtrans_clamscan(procmail_t)
 	clamav_search_lib(procmail_t)
+')
+
+optional_policy(`
+	courier_read_config(procmail_t)
+	courier_stream_connect_authdaemon(procmail_t)
 ')
 
 optional_policy(`

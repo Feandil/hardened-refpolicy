@@ -185,7 +185,7 @@ ifdef(`distro_suse', `
 
 ifdef(`distro_debian',`
 # this is a static /dev dir "backup mount"
-# if you want to disable udev, you'll have to boot permissive and relabel!
+# if you want to disable udev, you will have to boot permissive and relabel!
 /dev/\.static		-d	gen_context(system_u:object_r:device_t,s0)
 /dev/\.static/dev	-d	gen_context(system_u:object_r:device_t,s0)
 /dev/\.static/dev/(.*)?		<<none>>
@@ -194,11 +194,6 @@ ifdef(`distro_debian',`
 /etc/udev/devices	-d	gen_context(system_u:object_r:device_t,s0)
 
 # used by init scripts to initally populate udev /dev
-/lib/udev/devices(/.*)?		gen_context(system_u:object_r:device_t,s0)
-/lib/udev/devices/lp.*	-c	gen_context(system_u:object_r:printer_device_t,s0)
-/lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
-/lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
-
 /usr/lib/udev/devices(/.*)?		gen_context(system_u:object_r:device_t,s0)
 /usr/lib/udev/devices/lp.*	-c	gen_context(system_u:object_r:printer_device_t,s0)
 /usr/lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)

@@ -65,6 +65,24 @@ interface(`lvm_run',`
 
 ########################################
 ## <summary>
+##      Send lvm a null signal.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`lvm_signull',`
+	gen_require(`
+		type lvm_t;
+	')
+
+	allow $1 lvm_t:process signull;
+')
+
+########################################
+## <summary>
 ##	Read LVM configuration files.
 ## </summary>
 ## <param name="domain">
@@ -123,6 +141,24 @@ interface(`lvm_create_lock_dirs',`
 
 	create_dirs_pattern($1, lvm_lock_t, lvm_lock_t)
 	files_add_entry_lock_dirs($1)
+')
+
+########################################
+## <summary>
+##      Read and write a lvm unnamed pipe.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`lvm_rw_inherited_pid_pipes',`
+	gen_require(`
+		type lvm_var_run_t;
+	')
+
+	allow $1 lvm_var_run_t:fifo_file rw_inherited_fifo_file_perms;
 ')
 
 ######################################
