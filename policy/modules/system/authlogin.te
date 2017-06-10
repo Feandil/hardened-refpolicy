@@ -1,4 +1,4 @@
-policy_module(authlogin, 2.10.3)
+policy_module(authlogin, 2.10.5)
 
 ########################################
 #
@@ -118,6 +118,9 @@ files_dontaudit_search_var(chkpwd_t)
 
 fs_dontaudit_getattr_xattr_fs(chkpwd_t)
 
+selinux_get_enforce_mode(chkpwd_t)
+selinux_getattr_fs(chkpwd_t)
+
 term_dontaudit_use_console(chkpwd_t)
 term_dontaudit_use_unallocated_ttys(chkpwd_t)
 term_dontaudit_use_generic_ptys(chkpwd_t)
@@ -230,8 +233,8 @@ kernel_dontaudit_search_unlabeled(pam_console_t)
 kernel_read_system_state(pam_console_t)
 
 dev_read_sysfs(pam_console_t)
-dev_getattr_apm_bios_dev(pam_console_t)
-dev_setattr_apm_bios_dev(pam_console_t)
+dev_getattr_acpi_bios_dev(pam_console_t)
+dev_setattr_acpi_bios_dev(pam_console_t)
 dev_getattr_dri_dev(pam_console_t)
 dev_setattr_dri_dev(pam_console_t)
 dev_getattr_input_dev(pam_console_t)

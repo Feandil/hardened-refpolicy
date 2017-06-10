@@ -1,4 +1,4 @@
-policy_module(mozilla, 2.11.1)
+policy_module(mozilla, 2.11.3)
 
 ########################################
 #
@@ -103,6 +103,7 @@ userdom_user_home_dir_filetrans(mozilla_t, mozilla_home_t, dir, ".phoenix")
 filetrans_pattern(mozilla_t, mozilla_home_t, mozilla_plugin_home_t, dir, "plugins")
 
 manage_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
+manage_lnk_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
 manage_dirs_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
 files_tmp_filetrans(mozilla_t, mozilla_tmp_t, { file dir })
 
@@ -161,6 +162,7 @@ corenet_tcp_connect_speech_port(mozilla_t)
 corenet_tcp_sendrecv_speech_port(mozilla_t)
 
 dev_getattr_sysfs_dirs(mozilla_t)
+dev_read_sysfs(mozilla_t)
 dev_read_sound(mozilla_t)
 dev_read_rand(mozilla_t)
 dev_read_urand(mozilla_t)

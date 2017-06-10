@@ -1,4 +1,4 @@
-policy_module(dpkg, 1.11.1)
+policy_module(dpkg, 1.11.8)
 
 ########################################
 #
@@ -34,6 +34,7 @@ domain_type(dpkg_script_t)
 domain_entry_file(dpkg_t, dpkg_var_lib_t)
 domain_entry_file(dpkg_script_t, dpkg_var_lib_t)
 corecmd_shell_entry_type(dpkg_script_t)
+corecmd_bin_entry_type(dpkg_script_t)
 domain_obj_id_change_exemption(dpkg_script_t)
 domain_system_change_exemption(dpkg_script_t)
 domain_interactive_fd(dpkg_script_t)
@@ -41,6 +42,8 @@ role dpkg_roles types dpkg_script_t;
 
 type dpkg_script_tmp_t;
 files_tmp_file(dpkg_script_tmp_t)
+# out of order to work around compiler issue
+domain_entry_file(dpkg_script_t, dpkg_script_tmp_t)
 
 type dpkg_script_tmpfs_t;
 files_tmpfs_file(dpkg_script_tmpfs_t)
@@ -68,6 +71,7 @@ allow dpkg_t self:msg { send receive };
 allow dpkg_t dpkg_lock_t:file manage_file_perms;
 
 spec_domtrans_pattern(dpkg_t, dpkg_var_lib_t, dpkg_script_t)
+spec_domtrans_pattern(dpkg_t, dpkg_script_tmp_t, dpkg_script_t)
 
 manage_dirs_pattern(dpkg_t, dpkg_tmp_t, dpkg_tmp_t)
 manage_files_pattern(dpkg_t, dpkg_tmp_t, dpkg_tmp_t)
@@ -86,6 +90,8 @@ files_var_lib_filetrans(dpkg_t, dpkg_var_lib_t, dir)
 
 kernel_read_system_state(dpkg_t)
 kernel_read_kernel_sysctls(dpkg_t)
+
+corecmd_bin_domtrans(dpkg_t, dpkg_script_t)
 
 corenet_all_recvfrom_unlabeled(dpkg_t)
 corenet_all_recvfrom_netlabel(dpkg_t)
@@ -179,13 +185,13 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_run_depmod(dpkg_t, dpkg_roles)
-	modutils_run_insmod(dpkg_t, dpkg_roles)
+	modutils_run(dpkg_t, dpkg_roles)
 ')
 
 optional_policy(`
 	mta_send_mail(dpkg_t)
 ')
+
 optional_policy(`
 	usermanage_run_groupadd(dpkg_t, dpkg_roles)
 	usermanage_run_useradd(dpkg_t, dpkg_roles)
@@ -229,7 +235,6 @@ kernel_read_system_state(dpkg_script_t)
 
 corecmd_exec_all_executables(dpkg_script_t)
 
-dev_manage_null_service(dpkg_script_t)
 dev_list_sysfs(dpkg_script_t)
 # Use named file transition to fix this
 # dev_manage_generic_blk_files(dpkg_script_t)
@@ -276,16 +281,10 @@ files_manage_non_auth_files(dpkg_script_t)
 auth_manage_shadow(dpkg_script_t)
 
 init_all_labeled_script_domtrans(dpkg_script_t)
-init_get_generic_units_status(dpkg_script_t)
 init_use_script_fds(dpkg_script_t)
-init_get_system_status(dpkg_script_t)
-init_start_generic_units(dpkg_script_t)
-init_stop_generic_units(dpkg_script_t)
-init_reload(dpkg_script_t)
-init_stop_system(dpkg_script_t)
-init_telinit(dpkg_script_t)
 init_manage_script_service(dpkg_script_t)
 init_startstop_all_script_services(dpkg_script_t)
+init_admin(dpkg_script_t)
 
 libs_exec_ld_so(dpkg_script_t)
 libs_exec_lib_files(dpkg_script_t)
@@ -314,8 +313,11 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_run_depmod(dpkg_script_t, dpkg_roles)
-	modutils_run_insmod(dpkg_script_t, dpkg_roles)
+	devicekit_dbus_chat_power(dpkg_script_t)
+')
+
+optional_policy(`
+	modutils_run(dpkg_script_t, dpkg_roles)
 ')
 
 optional_policy(`

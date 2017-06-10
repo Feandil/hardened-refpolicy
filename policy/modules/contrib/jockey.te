@@ -1,4 +1,4 @@
-policy_module(jockey, 1.0.0)
+policy_module(jockey, 1.0.1)
 
 ########################################
 #
@@ -54,6 +54,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_domtrans_insmod(jockey_t)
+	modutils_domtrans(jockey_t)
 	modutils_read_module_config(jockey_t)
 ')

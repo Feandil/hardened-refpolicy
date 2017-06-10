@@ -1,4 +1,4 @@
-policy_module(kdump, 1.5.1)
+policy_module(kdump, 1.5.3)
 
 #######################################
 #
@@ -106,7 +106,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_domtrans_insmod(kdumpctl_t)
+	modutils_domtrans(kdumpctl_t)
 	modutils_read_module_config(kdumpctl_t)
 ')
 

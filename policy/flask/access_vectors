@@ -20,6 +20,7 @@ common file
 	relabelfrom
 	relabelto
 	append
+	map
 	unlink
 	link
 	rename
@@ -47,6 +48,7 @@ common socket
 	relabelfrom
 	relabelto
 	append
+	map
 # socket-specific
 	bind
 	connect
@@ -383,6 +385,7 @@ class process
 	execheap
 	setkeycreate
 	setsockcreate
+	getrlimit
 }
 
 
@@ -926,6 +929,16 @@ inherits database
 	set_value
 }
 
+class infiniband_pkey
+{
+	access
+}
+
+class infiniband_endport
+{
+	manage_subnet
+}
+
 class db_language
 inherits database
 {
@@ -1057,4 +1070,7 @@ class kcm_socket
 inherits socket
 
 class qipcrtr_socket
+inherits socket
+
+class smc_socket
 inherits socket

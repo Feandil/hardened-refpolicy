@@ -1,4 +1,4 @@
-policy_module(firewalld, 1.5.0)
+policy_module(firewalld, 1.5.2)
 
 ########################################
 #
@@ -101,7 +101,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_domtrans_insmod(firewalld_t)
+	modutils_domtrans(firewalld_t)
 ')
 
 optional_policy(`

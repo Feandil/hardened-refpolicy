@@ -71,7 +71,7 @@ AWK ?= gawk
 GREP ?= egrep
 INSTALL ?= install
 M4 ?= m4 -E -E
-PYTHON ?= python -t -t
+PYTHON ?= python -t -t -E -W error
 SED ?= sed
 SORT ?= LC_ALL=C sort
 UMASK ?= umask
@@ -94,22 +94,22 @@ endif
 
 # policy building support tools
 support := support
-genxml := $(PYTHON) -E $(support)/segenxml.py
-gendoc := $(PYTHON) -E $(support)/sedoctool.py
-genperm := $(PYTHON) -E $(support)/genclassperms.py
-policyvers := $(PYTHON) -E $(support)/policyvers.py
+genxml := $(PYTHON) $(support)/segenxml.py
+gendoc := $(PYTHON) $(support)/sedoctool.py
+genperm := $(PYTHON) $(support)/genclassperms.py
+policyvers := $(PYTHON) $(support)/policyvers.py
 fcsort := $(tmpdir)/fc_sort
 setbools := $(AWK) -f $(support)/set_bools_tuns.awk
 get_type_attr_decl := $(SED) -r -f $(support)/get_type_attr_decl.sed
 comment_move_decl := $(SED) -r -f $(support)/comment_move_decl.sed
-gennetfilter := $(PYTHON) -E $(support)/gennetfilter.py
+gennetfilter := $(PYTHON) $(support)/gennetfilter.py
 m4iferror := $(support)/iferror.m4
 m4divert := $(support)/divert.m4
 m4undivert := $(support)/undivert.m4
 m4terminate := $(support)/fatal_error.m4
 # use our own genhomedircon to make sure we have a known usable one,
 # so policycoreutils updates are not required (RHEL4)
-genhomedircon := $(PYTHON) -E $(support)/genhomedircon
+genhomedircon := $(PYTHON) $(support)/genhomedircon.py
 
 # documentation paths
 docs := doc
@@ -257,7 +257,7 @@ seusers := $(appconf)/seusers
 appdir := $(contextpath)
 user_default_contexts := $(wildcard config/appconfig-$(TYPE)/*_default_contexts)
 user_default_contexts_names := $(addprefix $(contextpath)/users/,$(subst _default_contexts,,$(notdir $(user_default_contexts))))
-appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types lxc_contexts virtual_domain_context virtual_image_context) $(contextpath)/files/media $(fcsubspath) $(user_default_contexts_names)
+appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types lxc_contexts openrc_contexts virtual_domain_context virtual_image_context) $(contextpath)/files/media $(fcsubspath) $(user_default_contexts_names)
 net_contexts := $(builddir)net_contexts
 
 all_layers := $(shell find $(wildcard $(moddir)/*) -maxdepth 0 -type d)
@@ -372,7 +372,7 @@ $(moddir)/kernel/corenetwork.if: $(moddir)/kernel/corenetwork.te.in $(moddir)/ke
 	@echo "# $(notdir $@).in or $(notdir $@).m4 file should be modified." >> $@
 	@echo "#" >> $@
 	$(verbose) cat $@.in >> $@
-	$(verbose) $(GREP) "^[[:blank:]]*network_(interface|node|port|packet)(_controlled)?\(.*\)" $< \
+	$(verbose) $(GREP) "^[[:blank:]]*(network_(interface|node|port|packet)(_controlled)?)|ib_(pkey|endport)\(.*\)" $< \
 		| $(M4) -D self_contained_policy $(M4PARAM) $(m4divert) $@.m4 $(m4undivert) - \
 		| $(SED) -e 's/dollarsone/\$$1/g' -e 's/dollarszero/\$$0/g' >> $@
 
@@ -560,7 +560,9 @@ install-docs: $(tmpdir)/html
 #
 install-src:
 	rm -rf $(srcpath)/policy.old
-	-mv $(srcpath)/policy $(srcpath)/policy.old
+	if test -d $(srcpath)/policy; then \
+		mv $(srcpath)/policy $(srcpath)/policy.old ;\
+	fi
 	mkdir -p $(srcpath)/policy
 	cp -R . $(srcpath)/policy
 
@@ -634,6 +636,7 @@ bare: clean
 ifndef LOCAL_ROOT
 	$(verbose) rm -f $(fcsort)
 	$(verbose) rm -f $(support)/*.pyc
+	$(verbose) rm -Rf $(support)/__pycache__/
 ifneq ($(generated_te),)
 	$(verbose) rm -f $(generated_te)
 endif

@@ -6,6 +6,18 @@
 /etc/rc\.d/init\.d/auditd --	gen_context(system_u:object_r:auditd_initrc_exec_t,s0)
 /etc/rc\.d/init\.d/rsyslog --	gen_context(system_u:object_r:syslogd_initrc_exec_t,s0)
 
+/usr/bin/audispd	--	gen_context(system_u:object_r:audisp_exec_t,s0)
+/usr/bin/audisp-remote	--	gen_context(system_u:object_r:audisp_remote_exec_t,s0)
+/usr/bin/auditctl	--	gen_context(system_u:object_r:auditctl_exec_t,s0)
+/usr/bin/auditd		--	gen_context(system_u:object_r:auditd_exec_t,s0)
+/usr/bin/klogd		--	gen_context(system_u:object_r:klogd_exec_t,s0)
+/usr/bin/metalog	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
+/usr/bin/minilogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
+/usr/bin/rklogd		--	gen_context(system_u:object_r:klogd_exec_t,s0)
+/usr/bin/rsyslogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
+/usr/bin/syslog-ng	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
+/usr/bin/syslogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
+
 /usr/lib/systemd/system/auditd.* -- gen_context(system_u:object_r:auditd_unit_t,s0)
 /usr/lib/systemd/system/[^/]*systemd-journal.* -- gen_context(system_u:object_r:syslogd_unit_t,s0)
 /usr/lib/systemd/system/rsyslog.*\.service -- gen_context(system_u:object_r:syslogd_unit_t,s0)
@@ -55,8 +67,6 @@ ifdef(`distro_redhat',`
 /var/named/chroot/dev/log -s	gen_context(system_u:object_r:devlog_t,s0)
 ')
 
-/var/run/systemd/journal/stdout -s gen_context(system_u:object_r:devlog_t,mls_systemhigh)
-
 /run/audit_events	-s	gen_context(system_u:object_r:auditd_var_run_t,mls_systemhigh)
 /run/audispd_events	-s	gen_context(system_u:object_r:audisp_var_run_t,mls_systemhigh)
 /run/auditd\.pid	--	gen_context(system_u:object_r:auditd_var_run_t,mls_systemhigh)
@@ -64,7 +74,6 @@ ifdef(`distro_redhat',`
 /run/klogd\.pid	--	gen_context(system_u:object_r:klogd_var_run_t,s0)
 /run/log		-s	gen_context(system_u:object_r:devlog_t,s0)
 /run/log		-d	gen_context(system_u:object_r:var_log_t,s0-mls_systemhigh)
-/run/log/journal(/.*)?	gen_context(system_u:object_r:var_log_t,mls_systemhigh)
 /run/metalog\.pid	--	gen_context(system_u:object_r:syslogd_var_run_t,s0)
 /run/rsyslogd\.pid	--	gen_context(system_u:object_r:syslogd_var_run_t,mls_systemhigh)
 /run/syslogd\.pid	--	gen_context(system_u:object_r:syslogd_var_run_t,mls_systemhigh)
@@ -72,8 +81,9 @@ ifdef(`distro_redhat',`
 /run/syslog-ng\.pid	--	gen_context(system_u:object_r:syslogd_var_run_t,mls_systemhigh)
 /run/syslog-ng(/.*)?	gen_context(system_u:object_r:syslogd_var_run_t,s0)
 /run/systemd/journal(/.*)?	gen_context(system_u:object_r:syslogd_var_run_t,mls_systemhigh)
-/run/systemd/journal/socket	 -s gen_context(system_u:object_r:devlog_t,mls_systemhigh)
-/run/systemd/journal/syslog	 -s gen_context(system_u:object_r:devlog_t,mls_systemhigh)
+/run/systemd/journal/socket -s	gen_context(system_u:object_r:devlog_t,mls_systemhigh)
+/run/systemd/journal/stdout -s	gen_context(system_u:object_r:devlog_t,mls_systemhigh)
+/run/systemd/journal/syslog -s	gen_context(system_u:object_r:devlog_t,mls_systemhigh)
 /run/systemd/journal/dev-log -s gen_context(system_u:object_r:devlog_t,mls_systemhigh)
 
 /var/spool/audit(/.*)?		gen_context(system_u:object_r:audit_spool_t,mls_systemhigh)

@@ -1,4 +1,4 @@
-policy_module(hal, 1.17.0)
+policy_module(hal, 1.17.3)
 
 ########################################
 #
@@ -197,7 +197,7 @@ logging_send_syslog_msg(hald_t)
 
 miscfiles_read_hwdata(hald_t)
 
-modutils_domtrans_insmod(hald_t)
+modutils_domtrans(hald_t)
 modutils_read_module_deps(hald_t)
 
 seutil_read_config(hald_t)
@@ -221,7 +221,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	apm_stream_connect(hald_t)
+	acpi_stream_connect(hald_t)
 ')
 
 optional_policy(`

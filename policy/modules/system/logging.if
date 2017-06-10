@@ -411,7 +411,6 @@ interface(`logging_check_exec_syslog',`
 	')
 
 	corecmd_list_bin($1)
-	corecmd_read_bin_symlinks($1)
 	allow $1 syslogd_exec_t:file execute;
 ')
 
@@ -432,6 +431,82 @@ interface(`logging_domtrans_syslog',`
 
 	corecmd_search_bin($1)
 	domtrans_pattern($1, syslogd_exec_t, syslogd_t)
+')
+
+########################################
+## <summary>
+##	Set the attributes of syslog temporary files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`logging_setattr_syslogd_tmp_files',`
+	gen_require(`
+		type syslogd_tmp_t;
+	')
+
+	allow $1 syslogd_tmp_t:file setattr;
+')
+
+########################################
+## <summary>
+##	Relabel to and from syslog temporary file type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`logging_relabel_syslogd_tmp_files',`
+	gen_require(`
+		type syslogd_tmp_t;
+	')
+
+	allow $1 syslogd_tmp_t:file { relabelfrom relabelto };
+')
+
+########################################
+## <summary>
+##	Set the attributes of syslog temporary directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`logging_setattr_syslogd_tmp_dirs',`
+	gen_require(`
+		type syslogd_tmp_t;
+	')
+
+	allow $1 syslogd_tmp_t:dir setattr;
+')
+
+########################################
+## <summary>
+##	Relabel to and from syslog temporary directory type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`logging_relabel_syslogd_tmp_dirs',`
+	gen_require(`
+		type syslogd_tmp_t;
+	')
+
+	allow $1 syslogd_tmp_t:dir { relabelfrom relabelto };
 ')
 
 ########################################
@@ -494,6 +569,7 @@ interface(`logging_log_filetrans',`
 
 	files_search_var($1)
 	filetrans_pattern($1, var_log_t, $2, $3, $4)
+	allow $1 var_log_t:lnk_file read_lnk_file_perms;
 ')
 
 ########################################
@@ -568,6 +644,26 @@ interface(`logging_relabelto_devlog_sock_files',`
 	')
 
 	allow $1 devlog_t:sock_file relabelto_sock_file_perms;
+')
+
+########################################
+## <summary>
+##      Connect to the syslog control unix stream socket.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`logging_create_devlog',`
+	gen_require(`
+		type devlog_t;
+	')
+
+	allow $1 devlog_t:sock_file manage_sock_file_perms;
+	dev_filetrans($1, devlog_t, sock_file)
+	init_pid_filetrans($1, devlog_t, sock_file, "syslog")
 ')
 
 ########################################
@@ -686,6 +782,7 @@ interface(`logging_search_logs',`
 
 	files_search_var($1)
 	allow $1 var_log_t:dir search_dir_perms;
+	allow $1 var_log_t:lnk_file read_lnk_file_perms;
 ')
 
 #######################################
@@ -723,6 +820,7 @@ interface(`logging_list_logs',`
 
 	files_search_var($1)
 	allow $1 var_log_t:dir list_dir_perms;
+	allow $1 var_log_t:lnk_file read_lnk_file_perms;
 ')
 
 #######################################
@@ -742,6 +840,7 @@ interface(`logging_rw_generic_log_dirs',`
 
 	files_search_var($1)
 	allow $1 var_log_t:dir rw_dir_perms;
+	allow $1 var_log_t:lnk_file read_lnk_file_perms;
 ')
 
 #######################################
@@ -837,6 +936,7 @@ interface(`logging_append_all_logs',`
 
 	files_search_var($1)
 	append_files_pattern($1, var_log_t, logfile)
+	allow $1 var_log_t:lnk_file read_lnk_file_perms;
 ')
 
 ########################################
@@ -942,6 +1042,46 @@ interface(`logging_manage_all_logs',`
 
 ########################################
 ## <summary>
+##	Create, read, write, and delete generic log directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`logging_manage_generic_log_dirs',`
+	gen_require(`
+		type var_log_t;
+	')
+
+	files_search_var($1)
+	allow $1 var_log_t:dir manage_dir_perms;
+')
+
+########################################
+## <summary>
+##	Relabel from and to generic log directory type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`logging_relabel_generic_log_dirs',`
+	gen_require(`
+		type var_log_t;
+	')
+
+	files_search_var($1)
+	allow $1 var_log_t:dir { relabelfrom relabelto };
+')
+
+########################################
+## <summary>
 ##	Read generic log files.
 ## </summary>
 ## <param name="domain">
@@ -963,6 +1103,25 @@ interface(`logging_read_generic_logs',`
 
 ########################################
 ## <summary>
+##	Map generic log files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`logging_mmap_generic_logs',`
+	gen_require(`
+		type var_log_t;
+	')
+
+	allow $1 var_log_t:file map;
+')
+
+########################################
+## <summary>
 ##	Write generic log files.
 ## </summary>
 ## <param name="domain">
@@ -979,6 +1138,7 @@ interface(`logging_write_generic_logs',`
 	files_search_var($1)
 	allow $1 var_log_t:dir list_dir_perms;
 	write_files_pattern($1, var_log_t, var_log_t)
+	allow $1 var_log_t:lnk_file read_lnk_file_perms;
 ')
 
 ########################################
@@ -1017,6 +1177,7 @@ interface(`logging_rw_generic_logs',`
 	files_search_var($1)
 	allow $1 var_log_t:dir list_dir_perms;
 	rw_files_pattern($1, var_log_t, var_log_t)
+	allow $1 var_log_t:lnk_file read_lnk_file_perms;
 ')
 
 ########################################
@@ -1225,4 +1386,22 @@ interface(`logging_syslog_managed_log_dir',`
 
 	logging_log_file($1)
 	logging_log_filetrans(syslogd_t, $1, dir, $2)
+')
+
+#######################################
+## <summary>
+##	Map files in /run/log/journal/ directory.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_mmap_journal',`
+	gen_require(`
+		type syslogd_var_run_t;
+	')
+
+	allow $1 syslogd_var_run_t:file map;
 ')

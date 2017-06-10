@@ -828,6 +828,26 @@ interface(`fs_read_cgroup_files',`
 
 ########################################
 ## <summary>
+##     Create cgroup lnk_files.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`fs_create_cgroup_links',`
+	gen_require(`
+		type cgroup_t;
+	')
+
+	create_lnk_files_pattern($1, cgroup_t, cgroup_t)
+	rw_lnk_files_pattern($1, cgroup_t, cgroup_t)
+	dev_search_sysfs($1)
+')
+
+########################################
+## <summary>
 ##	Write cgroup files.
 ## </summary>
 ## <param name="domain">
@@ -858,7 +878,6 @@ interface(`fs_write_cgroup_files', `
 interface(`fs_rw_cgroup_files',`
 	gen_require(`
 		type cgroup_t;
-
 	')
 
 	rw_files_pattern($1, cgroup_t, cgroup_t)
@@ -921,6 +940,42 @@ interface(`fs_mounton_cgroup', `
 	')
 
 	allow $1 cgroup_t:dir mounton;
+')
+
+########################################
+## <summary>
+##	Create an object in a cgroup tmpfs filesystem, with a private
+##	type using a type transition.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="private type">
+##	<summary>
+##	The type of the object to be created.
+##	</summary>
+## </param>
+## <param name="object">
+##	<summary>
+##	The object class of the object being created.
+##	</summary>
+## </param>
+## <param name="name" optional="true">
+##	<summary>
+##	The name of the object being created.
+##	</summary>
+## </param>
+#
+interface(`fs_cgroup_filetrans',`
+	gen_require(`
+		type cgroup_t, tmpfs_t;
+	')
+
+	allow $2 tmpfs_t:filesystem associate;
+	filetrans_pattern($1, cgroup_t, $2, $3, $4)
+	dev_search_sysfs($1)
 ')
 
 ########################################
@@ -1950,6 +2005,24 @@ interface(`fs_read_efivarfs_files',`
 # eventpollfs was changed to task SID 20060628
 interface(`fs_read_eventpollfs',`
 	refpolicywarn(`$0($*) has been deprecated.')
+')
+
+########################################
+## <summary>
+##	stat a FUSE filesystem
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_getattr_fusefs',`
+	gen_require(`
+		type fusefs_t;
+	')
+
+	allow $1 fusefs_t:filesystem getattr;
 ')
 
 ########################################
@@ -3499,6 +3572,24 @@ interface(`fs_getattr_pstore_dirs',`
 
 ########################################
 ## <summary>
+##     Relabel to/from pstore_t directories.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`fs_relabel_pstore_dirs',`
+	gen_require(`
+		type pstore_t;
+	')
+
+	relabel_dirs_pattern($1, pstore_t, pstore_t)
+')
+
+########################################
+## <summary>
 ##	Allow the type to associate to ramfs filesystems.
 ## </summary>
 ## <param name="type">
@@ -4160,6 +4251,24 @@ interface(`fs_mounton_tmpfs',`
 
 ########################################
 ## <summary>
+##	Mount on tmpfs files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_mounton_tmpfs_files',`
+	gen_require(`
+		type tmpfs_t;
+	')
+
+	allow $1 tmpfs_t:file mounton;
+')
+
+########################################
+## <summary>
 ##	Set the attributes of tmpfs directories.
 ## </summary>
 ## <param name="domain">
@@ -4267,6 +4376,24 @@ interface(`fs_dontaudit_write_tmpfs_dirs',`
 	')
 
 	dontaudit $1 tmpfs_t:dir write;
+')
+
+########################################
+## <summary>
+##      Relabel from tmpfs_t dir
+## </summary>
+## <param name="type">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_relabelfrom_tmpfs_dirs',`
+	gen_require(`
+		type tmpfs_t;
+	')
+
+	allow $1 tmpfs_t:dir relabelfrom;
 ')
 
 ########################################
@@ -4466,6 +4593,24 @@ interface(`fs_read_tmpfs_symlinks',`
 	')
 
 	read_lnk_files_pattern($1, tmpfs_t, tmpfs_t)
+')
+
+########################################
+## <summary>
+##	Relabelfrom tmpfs link files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_relabelfrom_tmpfs_symlinks',`
+	gen_require(`
+		type tmpfs_t;
+	')
+
+	allow $1 tmpfs_t:lnk_file { getattr relabelfrom };
 ')
 
 ########################################
@@ -4674,6 +4819,24 @@ interface(`fs_getattr_tracefs',`
 	')
 
         allow $1 tracefs_t:filesystem getattr;
+')
+
+########################################
+## <summary>
+##      search directories on a tracefs filesystem
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_search_tracefs',`
+	gen_require(`
+		type tracefs_t;
+	')
+
+        allow $1 tracefs_t:dir search_dir_perms;
 ')
 
 ########################################
@@ -5235,41 +5398,4 @@ interface(`fs_unconfined',`
 	')
 
 	typeattribute $1 filesystem_unconfined_type;
-')
-
-# gentoo specific under here but not allowed ifdef
-
-########################################
-## <summary>
-##	Create an object in a cgroup tmpfs filesystem, with a private
-##	type using a type transition.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-## <param name="private type">
-##	<summary>
-##	The type of the object to be created.
-##	</summary>
-## </param>
-## <param name="object">
-##	<summary>
-##	The object class of the object being created.
-##	</summary>
-## </param>
-## <param name="name" optional="true">
-##	<summary>
-##	The name of the object being created.
-##	</summary>
-## </param>
-#
-interface(`fs_cgroup_filetrans',`
-	gen_require(`
-		type cgroup_t;
-	')
-
-	allow $2 tmpfs_t:filesystem associate;
-	filetrans_pattern($1, cgroup_t, $2, $3, $4)
 ')

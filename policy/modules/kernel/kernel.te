@@ -1,4 +1,4 @@
-policy_module(kernel, 1.22.0)
+policy_module(kernel, 1.22.3)
 
 ########################################
 #
@@ -259,6 +259,11 @@ corenet_tcp_sendrecv_all_nodes(kernel_t)
 corenet_raw_send_generic_node(kernel_t)
 corenet_send_all_packets(kernel_t)
 
+corenet_ib_access_all_pkeys(kernel_t)
+corenet_ib_access_unlabeled_pkeys(kernel_t)
+corenet_ib_manage_subnet_all_endports(kernel_t)
+corenet_ib_manage_subnet_unlabeled_endports(kernel_t)
+
 dev_mounton_sysfs(kernel_t)
 dev_read_sysfs(kernel_t)
 dev_search_usbfs(kernel_t)
@@ -276,6 +281,7 @@ dev_setattr_generic_blk_files(kernel_t)
 dev_setattr_generic_chr_files(kernel_t)
 dev_getattr_fs(kernel_t)
 dev_getattr_sysfs(kernel_t)
+dev_write_kmsg(kernel_t)
 
 # Mount root file system. Used when loading a policy
 # from initrd, then mounting the root filesystem
@@ -384,6 +390,7 @@ optional_policy(`
 
 optional_policy(`
 	plymouthd_read_lib_files(kernel_t)
+	plymouthd_read_pid_files(kernel_t)
 	plymouthd_read_spool_files(kernel_t)
 
 	term_use_ptmx(kernel_t)

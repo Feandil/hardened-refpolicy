@@ -210,6 +210,42 @@ interface(`mount_rw_loopback_files',`
 	allow $1 mount_loopback_t:file rw_file_perms;
 ')
 
+########################################
+## <summary>
+##     Getattr on mount_var_run_t files
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`mount_getattr_runtime_files',`
+	gen_require(`
+		type mount_runtime_t;
+	')
+
+	allow $1 mount_runtime_t:file getattr;
+')
+
+########################################
+## <summary>
+##	Read and write mount runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`mount_rw_runtime_files',`
+	gen_require(`
+		type mount_runtime_t;
+	')
+
+	rw_files_pattern($1, mount_runtime_t, mount_runtime_t)
+')
+
 # gentoo specific under here
 
 ########################################

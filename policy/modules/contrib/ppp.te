@@ -1,4 +1,4 @@
-policy_module(ppp, 1.17.1)
+policy_module(ppp, 1.17.3)
 
 ########################################
 #
@@ -193,7 +193,7 @@ optional_policy(`
 
 optional_policy(`
 	tunable_policy(`pppd_can_insmod',`
-		modutils_domtrans_insmod(pppd_t)
+		modutils_domtrans(pppd_t)
 	')
 ')
 
@@ -257,7 +257,6 @@ kernel_read_system_state(pptp_t)
 kernel_signal(pptp_t)
 
 corecmd_exec_shell(pptp_t)
-corecmd_read_bin_symlinks(pptp_t)
 
 corenet_all_recvfrom_unlabeled(pptp_t)
 corenet_all_recvfrom_netlabel(pptp_t)

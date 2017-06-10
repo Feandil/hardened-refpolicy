@@ -1,4 +1,4 @@
-policy_module(evolution, 2.6.0)
+policy_module(evolution, 2.6.3)
 
 ########################################
 #
@@ -111,7 +111,7 @@ userdom_user_tmpfs_file(evolution_webcal_tmpfs_t)
 #
 
 allow evolution_t self:capability { setgid setuid sys_nice };
-allow evolution_t self:process { signal getsched setsched };
+allow evolution_t self:process { execmem getsched setsched signal signull };
 allow evolution_t self:fifo_file rw_file_perms;
 
 allow evolution_t evolution_home_t:dir manage_dir_perms;
@@ -185,7 +185,9 @@ domain_dontaudit_read_all_domains_state(evolution_t)
 files_read_usr_files(evolution_t)
 
 fs_dontaudit_getattr_xattr_fs(evolution_t)
+fs_getattr_tmpfs(evolution_t)
 fs_search_auto_mountpoints(evolution_t)
+fs_search_cgroup_dirs(evolution_t)
 
 auth_use_nsswitch(evolution_t)
 
@@ -312,10 +314,13 @@ stream_connect_pattern(evolution_alarm_t, evolution_orbit_tmp_t, evolution_orbit
 stream_connect_pattern(evolution_alarm_t, evolution_exchange_orbit_tmp_t, evolution_exchange_orbit_tmp_t, evolution_exchange_t)
 stream_connect_pattern(evolution_alarm_t, evolution_server_orbit_tmp_t, evolution_server_orbit_tmp_t, evolution_server_t)
 
+kernel_dontaudit_read_system_state(evolution_alarm_t)
+
 dev_read_urand(evolution_alarm_t)
 
 files_read_usr_files(evolution_alarm_t)
 
+fs_dontaudit_getattr_xattr_fs(evolution_alarm_t)
 fs_search_auto_mountpoints(evolution_alarm_t)
 
 auth_use_nsswitch(evolution_alarm_t)
@@ -340,6 +345,11 @@ tunable_policy(`use_samba_home_dirs',`
 
 optional_policy(`
 	dbus_all_session_bus_client(evolution_alarm_t)
+	dbus_connect_all_session_bus(evolution_alarm_t)
+
+	optional_policy(`
+		evolution_dbus_chat(evolution_alarm_t)
+	')
 ')
 
 optional_policy(`

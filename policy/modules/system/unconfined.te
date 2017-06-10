@@ -1,4 +1,4 @@
-policy_module(unconfined, 3.9.1)
+policy_module(unconfined, 3.9.4)
 
 ########################################
 #
@@ -96,6 +96,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	init_admin(unconfined_t)
+')
+
+optional_policy(`
 	inn_domtrans(unconfined_t)
 ')
 
@@ -112,11 +116,11 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_run_update_mods(unconfined_t, unconfined_r)
+	modutils_run(unconfined_t, unconfined_r)
 ')
 
 optional_policy(`
-	mono_domtrans(unconfined_t)
+	mono_run(unconfined_t, unconfined_r)
 ')
 
 optional_policy(`
@@ -206,6 +210,11 @@ optional_policy(`
 	wine_domtrans(unconfined_t)
 ')
 
+optional_policy(`
+	xserver_role(unconfined_r, unconfined_t)
+	xserver_dbus_chat_xdm(unconfined_t)
+')
+
 ########################################
 #
 # Unconfined Execmem Local policy
@@ -226,9 +235,5 @@ ifdef(`distro_gentoo',`
 
 	optional_policy(`
 		rtorrent_role(unconfined_r, unconfined_t)
-	')
-
-	optional_policy(`
-		xserver_role(unconfined_r, unconfined_t)
 	')
 ')

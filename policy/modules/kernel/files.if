@@ -2835,6 +2835,43 @@ interface(`files_manage_etc_dirs',`
 
 ########################################
 ## <summary>
+##	Relabel directories to etc_t.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_relabelto_etc_dirs',`
+	gen_require(`
+		type etc_t;
+	')
+
+	allow $1 etc_t:dir relabelto;
+')
+
+########################################
+## <summary>
+##	Mount a filesystem on the
+##	etc directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_mounton_etc_dirs',`
+	gen_require(`
+		type etc_t;
+	')
+
+	allow $1 etc_t:dir mounton;
+')
+
+########################################
+## <summary>
 ##	Read generic files in /etc.
 ## </summary>
 ## <desc>
@@ -3001,6 +3038,42 @@ interface(`files_get_etc_unit_status',`
 	')
 
 	allow $1 etc_t:service status;
+')
+
+########################################
+## <summary>
+##	start etc_t service
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_start_etc_service',`
+	gen_require(`
+		type etc_t;
+	')
+
+	allow $1 etc_t:service start;
+')
+
+########################################
+## <summary>
+##	stop etc_t service
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_stop_etc_service',`
+	gen_require(`
+		type etc_t;
+	')
+
+	allow $1 etc_t:service stop;
 ')
 
 #######################################
@@ -3188,6 +3261,24 @@ interface(`files_mounton_etc_runtime_dirs',`
 
 ########################################
 ## <summary>
+##	Relabel to etc_runtime_t dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_relabelto_etc_runtime_dirs',`
+	gen_require(`
+		type etc_runtime_t;
+	')
+
+	allow $1 etc_runtime_t:dir relabelto;
+')
+
+########################################
+## <summary>
 ##	Do not audit attempts to set the attributes of the etc_runtime files
 ## </summary>
 ## <param name="domain">
@@ -3323,6 +3414,24 @@ interface(`files_manage_etc_runtime_files',`
 	')
 
 	manage_files_pattern($1, { etc_t etc_runtime_t }, etc_runtime_t)
+')
+
+########################################
+## <summary>
+##	Relabel to etc_runtime_t files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_relabelto_etc_runtime_files',`
+	gen_require(`
+		type etc_runtime_t;
+	')
+
+	allow $1 etc_runtime_t:file relabelto;
 ')
 
 ########################################
@@ -3809,6 +3918,24 @@ interface(`files_relabelto_home',`
 	')
 
 	allow $1 home_root_t:dir relabelto;
+')
+
+########################################
+## <summary>
+##	Relabel from user home root (/home).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_relabelfrom_home',`
+	gen_require(`
+		type home_root_t;
+	')
+
+	allow $1 home_root_t:dir relabelfrom;
 ')
 
 ########################################
@@ -5500,6 +5627,24 @@ interface(`files_manage_var_dirs',`
 
 ########################################
 ## <summary>
+##	relabelto/from var directories
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_relabel_var_dirs',`
+	gen_require(`
+		type var_t;
+	')
+
+	allow $1 var_t:dir { relabelfrom relabelto };
+')
+
+########################################
+## <summary>
 ##	Read files in the /var directory.
 ## </summary>
 ## <param name="domain">
@@ -5763,6 +5908,44 @@ interface(`files_rw_var_lib_dirs',`
 	')
 
 	rw_dirs_pattern($1, var_lib_t, var_lib_t)
+')
+
+########################################
+## <summary>
+##	manage var_lib_t dirs
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_manage_var_lib_dirs',`
+	gen_require(`
+		type var_t, var_lib_t;
+	')
+
+	allow $1 var_t:dir search_dir_perms;
+	allow $1 var_lib_t:dir manage_dir_perms;
+')
+
+########################################
+## <summary>
+##	relabel var_lib_t dirs
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_relabel_var_lib_dirs',`
+	gen_require(`
+		type var_t, var_lib_t;
+	')
+
+	allow $1 var_t:dir search_dir_perms;
+	allow $1 var_lib_t:dir { relabelfrom relabelto };
 ')
 
 ########################################
@@ -6248,6 +6431,24 @@ interface(`files_dontaudit_getattr_pid_dirs',`
 
 ########################################
 ## <summary>
+##	mounton a /var/run directory.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_mounton_pid_dirs',`
+	gen_require(`
+		type var_run_t;
+	')
+
+	allow $1 var_run_t:dir mounton;
+')
+
+########################################
+## <summary>
 ##	Set the attributes of the /var/run directory.
 ## </summary>
 ## <param name="domain">
@@ -6323,6 +6524,24 @@ interface(`files_list_pids',`
 
 	allow $1 var_run_t:lnk_file read_lnk_file_perms;
 	list_dirs_pattern($1, var_t, var_run_t)
+')
+
+########################################
+## <summary>
+##	Create a /var/run directory.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_create_pid_dirs',`
+	gen_require(`
+		type var_run_t;
+	')
+
+	allow $1 var_run_t:dir create_dir_perms;
 ')
 
 ########################################
@@ -7029,26 +7248,6 @@ interface(`files_unconfined',`
 ')
 
 # should be in an ifdef distro_gentoo but cannot do so for interfaces
-
-########################################
-## <summary>
-##	Create PID directories.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`files_create_pid_dirs',`
-	gen_require(`
-		type var_t, var_run_t;
-	')
-
-	allow $1 var_t:dir search_dir_perms;
-	allow $1 var_run_t:lnk_file read_lnk_file_perms;
-	create_dirs_pattern($1, var_run_t, var_run_t)
-')
 
 ########################################
 ## <summary>

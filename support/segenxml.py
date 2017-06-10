@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #  Author(s): Donald Miner <dminer@tresys.com>
 #	     Dave Sugar <dsugar@tresys.com>
@@ -17,21 +17,12 @@
 
 import sys
 import os
-import glob
 import re
 import getopt
 
 # GLOBALS
 
 # Default values of command line arguments:
-warn = False
-meta = "metadata"
-third_party = "third-party"
-layers = {}
-tunable_files = []
-bool_files = []
-xml_tunable_files = []
-xml_bool_files = []
 output_dir = ""
 
 # Pre compiled regular expressions:
@@ -43,7 +34,7 @@ output_dir = ""
 #	 -> ("interface", "kernel_read_system_state")
 #	"template(`base_user_template',`"
 #	 -> ("template", "base_user_template")
-INTERFACE = re.compile("^\s*(interface|template)\(`(\w*)'")
+INTERFACE = re.compile(r"^\s*(interface|template)\(`(\w*)'")
 
 # Matches either a gen_bool or a gen_tunable statement. Will give the tuple:
 #	("tunable" or "bool", name, "true" or "false")
@@ -52,7 +43,7 @@ INTERFACE = re.compile("^\s*(interface|template)\(`(\w*)'")
 #	 -> ("bool", "secure_mode", "false")
 #	"gen_tunable(allow_kerberos, false)"
 #	 -> ("tunable", "allow_kerberos", "false")
-BOOLEAN = re.compile("^\s*gen_(tunable|bool)\(\s*(\w*)\s*,\s*(true|false)\s*\)")
+BOOLEAN = re.compile(r"^\s*gen_(tunable|bool)\(\s*(\w*)\s*,\s*(true|false)\s*\)")
 
 # Matches a XML comment in the policy, which is defined as any line starting
 #  with two # and at least one character of white space. Will give the single
@@ -63,7 +54,7 @@ BOOLEAN = re.compile("^\s*gen_(tunable|bool)\(\s*(\w*)\s*,\s*(true|false)\s*\)")
 #	 -> ("<summary>")
 #	"##		The domain allowed access.	"
 #	 -> ("The domain allowed access.")
-XML_COMMENT = re.compile("^##\s+(.*?)\s*$")
+XML_COMMENT = re.compile(r"^##\s+(.*?)\s*$")
 
 
 # FUNCTIONS
@@ -83,7 +74,7 @@ def getModuleXML(file_name):
 		module_file = open(module_if, "r")
 		module_code = module_file.readlines()
 		module_file.close()
-	except:
+	except OSError:
 		warning("cannot open file %s for read, skipping" % file_name)
 		return []
 
@@ -200,7 +191,7 @@ def getTunableXML(file_name, kind):
 		tunable_file = open(file_name, "r")
 		tunable_code = tunable_file.readlines()
 		tunable_file.close()
-	except:
+	except OSError:
 		warning("cannot open file %s for read, skipping" % file_name)
 		return []
 
@@ -250,60 +241,10 @@ def getTunableXML(file_name, kind):
 			for tunable_line in tunable_buf:
 				xml_outfile.write (tunable_line)
 			xml_outfile.close()
-		except:
+		except OSError:
 			warning ("cannot write to file %s, skipping creation" % xmlfile)
 
 	return tunable_buf
-
-def getXMLFileContents (file_name):
-	'''
-	Return all the XML in the file specified.
-	'''
-
-	tunable_buf = []
-	# Try to open the xml file for this type of file
-	# append the contents to the buffer.
-	try:
-		tunable_xml = open(file_name, "r")
-		tunable_buf += tunable_xml.readlines()
-		tunable_xml.close()
-	except:
-		warning("cannot open file %s for read, assuming no data" % file_name)
-
-	return tunable_buf
-
-def getPolicyXML():
-	'''
-	Return the compelete reference policy XML documentation through a list,
-	one line per item.
-	'''
-
-	policy_buf = []
-	policy_buf.append("<policy>\n")
-
-	# Add to the XML each layer specified by the user.
-	for layer in layers.keys ():
-		policy_buf += getLayerXML(layer, layers[layer])
-
-	# Add to the XML each tunable file specified by the user.
-	for tunable_file in tunable_files:
-		policy_buf += getTunableXML(tunable_file, "tunable")
-
-	# Add to the XML each XML tunable file specified by the user.
-	for tunable_file in xml_tunable_files:
-		policy_buf += getXMLFileContents (tunable_file)
-
-	# Add to the XML each bool file specified by the user.
-	for bool_file in bool_files:
-		policy_buf += getTunableXML(bool_file, "bool")
-
-	# Add to the XML each XML bool file specified by the user.
-	for bool_file in xml_bool_files:
-		policy_buf += getXMLFileContents (bool_file)
-
-	policy_buf.append("</policy>\n")
-
-	return policy_buf
 
 def usage():
 	"""
@@ -388,4 +329,3 @@ elif boolean:
 else:
 	usage()
 	sys.exit(2)
-

@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.11.1)
+policy_module(sysadm, 2.11.9)
 
 ########################################
 #
@@ -27,6 +27,9 @@ ifndef(`enable_mls',`
 
 corecmd_exec_shell(sysadm_t)
 
+corenet_ib_access_unlabeled_pkeys(sysadm_t)
+corenet_ib_manage_subnet_unlabeled_endports(sysadm_t)
+
 dev_read_kmsg(sysadm_t)
 
 mls_process_read_all_levels(sysadm_t)
@@ -38,15 +41,9 @@ ubac_file_exempt(sysadm_t)
 ubac_fd_exempt(sysadm_t)
 
 init_exec(sysadm_t)
-init_get_system_status(sysadm_t)
-init_disable(sysadm_t)
-init_enable(sysadm_t)
-init_reload(sysadm_t)
-init_reboot_system(sysadm_t)
-init_shutdown_system(sysadm_t)
-init_start_generic_units(sysadm_t)
-init_stop_generic_units(sysadm_t)
-init_reload_generic_units(sysadm_t)
+init_admin(sysadm_t)
+
+selinux_read_policy(sysadm_t)
 
 # Add/remove user home directories
 userdom_manage_user_home_dirs(sysadm_t)
@@ -91,6 +88,11 @@ optional_policy(`
 ')
 
 optional_policy(`
+	acpi_admin(sysadm_t, sysadm_r)
+	acpi_run_client(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
 	afs_admin(sysadm_t, sysadm_r)
 ')
 
@@ -128,11 +130,6 @@ optional_policy(`
 
 optional_policy(`
 	apcupsd_admin(sysadm_t, sysadm_r)
-')
-
-optional_policy(`
-	apm_admin(sysadm_t, sysadm_r)
-	apm_run_client(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -557,6 +554,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	libmtp_role(sysadm_r, sysadm_t)
+')
+
+optional_policy(`
 	libs_run_ldconfig(sysadm_t, sysadm_r)
 ')
 
@@ -619,13 +620,15 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_run_depmod(sysadm_t, sysadm_r)
-	modutils_run_insmod(sysadm_t, sysadm_r)
-	modutils_run_update_mods(sysadm_t, sysadm_r)
+	modutils_run(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
 	mongodb_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	monit_admin(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -1262,6 +1265,10 @@ ifndef(`distro_redhat',`
 		optional_policy(`
 			wm_role_template(sysadm, sysadm_r, sysadm_t)
 		')
+	')
+
+	optional_policy(`
+		dirmngr_role(sysadm_r, sysadm_t)
 	')
 
 	optional_policy(`

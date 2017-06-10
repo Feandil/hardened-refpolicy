@@ -1,4 +1,4 @@
-policy_module(networkmanager, 1.20.2)
+policy_module(networkmanager, 1.20.8)
 
 ########################################
 #
@@ -228,6 +228,7 @@ optional_policy(`
 
 	optional_policy(`
 		consolekit_dbus_chat(NetworkManager_t)
+		consolekit_use_inhibit_lock(NetworkManager_t)
 	')
 
 	optional_policy(`
@@ -285,7 +286,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_domtrans_insmod(NetworkManager_t)
+	modutils_domtrans(NetworkManager_t)
 ')
 
 optional_policy(`
@@ -342,6 +343,10 @@ optional_policy(`
 
 optional_policy(`
 	seutil_sigchld_newrole(NetworkManager_t)
+')
+
+optional_policy(`
+	systemd_read_logind_sessions_files(NetworkManager_t)
 ')
 
 optional_policy(`

@@ -182,6 +182,8 @@ template(`ssh_server_template', `
 	files_pid_file($1_var_run_t)
 
 	allow $1_t self:capability { chown dac_override fowner fsetid kill setgid setuid sys_chroot sys_nice sys_resource sys_tty_config };
+	# net_admin is for SO_SNDBUFFORCE
+	dontaudit $1_t self:capability net_admin;
 	allow $1_t self:fifo_file rw_fifo_file_perms;
 	allow $1_t self:process { signal getsched setsched setrlimit setexec setkeycreate };
 	allow $1_t self:tcp_socket create_stream_socket_perms;
@@ -229,8 +231,6 @@ template(`ssh_server_template', `
 	auth_rw_login_records($1_t)
 	auth_rw_faillog($1_t)
 
-	corecmd_read_bin_symlinks($1_t)
-	corecmd_getattr_bin_files($1_t)
 	# for sshd subsystems, such as sftp-server.
 	corecmd_getattr_bin_files($1_t)
 
@@ -270,6 +270,10 @@ template(`ssh_server_template', `
 	optional_policy(`
 		files_read_var_lib_symlinks($1_t)
 		nx_spec_domtrans_server($1_t)
+	')
+
+	optional_policy(`
+		systemd_read_logind_sessions_files($1_t)
 	')
 ')
 
@@ -348,6 +352,7 @@ template(`ssh_role_template',`
 
 	allow $1_ssh_agent_t self:process { setrlimit signal };
 	allow $1_ssh_agent_t self:capability setgid;
+	allow $1_ssh_agent_t self:fifo_file rw_file_perms;
 
 	allow $1_ssh_agent_t { $1_ssh_agent_t $3 }:process signull;
 
@@ -432,6 +437,7 @@ template(`ssh_role_template',`
 	optional_policy(`
 		xserver_use_xdm_fds($1_ssh_agent_t)
 		xserver_rw_xdm_pipes($1_ssh_agent_t)
+		xserver_sigchld_xdm($1_ssh_agent_t)
 	')
 ')
 
