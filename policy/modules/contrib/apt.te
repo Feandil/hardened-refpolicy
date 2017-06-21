@@ -1,4 +1,4 @@
-policy_module(apt, 1.10.3)
+policy_module(apt, 1.10.4)
 
 ########################################
 #
@@ -145,6 +145,11 @@ optional_policy(`
 
 optional_policy(`
 	nis_use_ypbind(apt_t)
+')
+
+optional_policy(`
+	# rkhunter trigger
+	rkhunter_domtrans(apt_t)
 ')
 
 optional_policy(`

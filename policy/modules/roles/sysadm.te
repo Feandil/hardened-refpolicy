@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.11.9)
+policy_module(sysadm, 2.11.11)
 
 ########################################
 #
@@ -233,6 +233,10 @@ optional_policy(`
 
 optional_policy(`
 	cgroup_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	chkrootkit_run(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -903,6 +907,10 @@ optional_policy(`
 
 optional_policy(`
 	ricci_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	rkhunter_run(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
