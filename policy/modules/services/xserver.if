@@ -197,7 +197,7 @@ interface(`xserver_ro_session',`
 	# Xserver read/write client shm
 	allow xserver_t $1:fd use;
 	allow xserver_t $1:shm rw_shm_perms;
-	allow xserver_t $2:file rw_file_perms;
+	allow xserver_t $2:file { rw_file_perms map };
 
 	# Connect to xserver
 	allow $1 xserver_t:unix_stream_socket connectto;
@@ -210,6 +210,8 @@ interface(`xserver_ro_session',`
 	allow $1 xserver_t:fd use;
 	allow $1 xserver_t:shm r_shm_perms;
 	allow $1 xserver_tmpfs_t:file read_file_perms;
+
+	allow $1 $2:file map;
 ')
 
 #######################################
@@ -268,65 +270,6 @@ interface(`xserver_non_drawing_client',`
 	allow $1 xextension_t:x_extension { query use };
 	allow $1 root_xdrawable_t:x_drawable { getattr get_property };
 	allow $1 xproperty_t:x_property read;
-')
-
-#######################################
-## <summary>
-##	Create full client sessions
-##	on a user X server.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-## <param name="tmpfs_type">
-##	<summary>
-##	The type of the domain SYSV tmpfs files.
-##	</summary>
-## </param>
-#
-interface(`xserver_user_client',`
-	refpolicywarn(`$0() has been deprecated, please use xserver_user_x_domain_template instead.')
-	gen_require(`
-		type xdm_t, xdm_tmp_t;
-		type xauth_home_t, iceauth_home_t, xserver_t, xserver_tmpfs_t;
-	')
-
-	allow $1 self:shm create_shm_perms;
-	allow $1 self:unix_dgram_socket create_socket_perms;
-	allow $1 self:unix_stream_socket { connectto create_stream_socket_perms };
-
-	# Read .Xauthority file
-	allow $1 xauth_home_t:file { getattr read };
-	allow $1 iceauth_home_t:file { getattr read };
-
-	# for when /tmp/.X11-unix is created by the system
-	allow $1 xdm_t:fd use;
-	allow $1 xdm_t:fifo_file { getattr read write ioctl };
-	allow $1 xdm_tmp_t:dir search;
-	allow $1 xdm_tmp_t:sock_file { read write };
-	dontaudit $1 xdm_t:tcp_socket { read write };
-
-	# Allow connections to X server.
-	files_search_tmp($1)
-
-	miscfiles_read_fonts($1)
-
-	userdom_search_user_home_dirs($1)
-	# for .xsession-errors
-	xserver_rw_xsession_log($1)
-
-	xserver_ro_session($1,$2)
-	xserver_use_user_fonts($1)
-
-	xserver_read_xdm_tmp_files($1)
-
-	# Client write xserver shm
-	tunable_policy(`allow_write_xshm',`
-		allow $1 xserver_t:shm rw_shm_perms;
-		allow $1 xserver_tmpfs_t:file rw_file_perms;
-	')
 ')
 
 #######################################
@@ -523,7 +466,7 @@ interface(`xserver_use_user_fonts',`
 
 	# Read per user fonts
 	allow $1 user_fonts_t:dir list_dir_perms;
-	allow $1 user_fonts_t:file read_file_perms;
+	allow $1 user_fonts_t:file { map read_file_perms };
 
 	# Manipulate the global font cache
 	manage_dirs_pattern($1, user_fonts_cache_t, user_fonts_cache_t)
@@ -618,22 +561,6 @@ interface(`xserver_user_home_dir_filetrans_user_xsession_log',`
 	')
 
 	userdom_user_home_dir_filetrans($1, xsession_log_t, file, ".xsession-errors")
-')
-
-########################################
-## <summary>
-##	Read all users fonts, user font configurations,
-##	and manage all users font caches.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`xserver_use_all_users_fonts',`
-	refpolicywarn(`$0() has been deprecated, please use xserver_use_user_fonts.')
-	xserver_use_user_fonts($1)
 ')
 
 ########################################
@@ -1131,6 +1058,26 @@ interface(`xserver_xsession_spec_domtrans',`
 
 ########################################
 ## <summary>
+##	Write to inherited  xsession log
+##	files such as .xsession-errors.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_write_inherited_xsession_log',`
+	gen_require(`
+		type xsession_log_t;
+	')
+
+	allow $1 xsession_log_t:file write_inherited_file_perms;
+')
+
+
+########################################
+## <summary>
 ##	Read and write xsession log
 ##	files such as .xsession-errors.
 ## </summary>
@@ -1169,6 +1116,25 @@ interface(`xserver_manage_xsession_log',`
 
 ########################################
 ## <summary>
+##	Write to inherited X server log
+##  files like /var/log/lightdm/lightdm.log
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_write_inherited_log',`
+	gen_require(`
+		type xserver_log_t;
+	')
+
+	allow $1 xserver_log_t:file write_inherited_file_perms;
+')
+
+########################################
+## <summary>
 ##	Get the attributes of X server logs.
 ## </summary>
 ## <param name="domain">
@@ -1202,7 +1168,7 @@ interface(`xserver_dontaudit_write_log',`
 		type xserver_log_t;
 	')
 
-	dontaudit $1 xserver_log_t:file { append write };
+	dontaudit $1 xserver_log_t:file { append ioctl write };
 ')
 
 ########################################
@@ -1586,7 +1552,7 @@ interface(`xserver_manage_core_devices',`
 		class x_keyboard all_x_keyboard_perms;
 	')
 
-	allow $1 xserver_t:{ x_device x_pointer x_keyboard } *;
+	allow $1 xserver_t:{ x_device x_pointer x_keyboard } { getattr setattr use read write getfocus setfocus bell force_cursor freeze grab manage list_property get_property set_property add remove create destroy };
 ')
 
 ########################################
@@ -1609,4 +1575,22 @@ interface(`xserver_unconfined',`
 
 	typeattribute $1 x_domain;
 	typeattribute $1 xserver_unconfined_type;
+')
+
+########################################
+## <summary>
+##	Manage keys for xdm.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_rw_xdm_keys',`
+	gen_require(`
+		type xdm_t;
+	')
+
+	allow $1 xdm_t:key { read write setattr };
 ')

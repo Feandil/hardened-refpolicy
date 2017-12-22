@@ -58,6 +58,7 @@ ifdef(`distro_redhat',`
 /etc/mcelog/.*\.local		--	gen_context(system_u:object_r:bin_t,s0)
 
 ifdef(`distro_redhat',`
+/etc/mcelog/mcelog.setup	--	gen_context(system_u:object_r:bin_t,s0)
 /etc/mcelog/triggers(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 ')
 
@@ -137,6 +138,7 @@ ifdef(`distro_gentoo',`
 # /usr
 #
 /usr/(.*/)?Bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+/usr/(.*/)?bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/bin(/.*)?				gen_context(system_u:object_r:bin_t,s0)
 /usr/bin/d?ash			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/bash			--	gen_context(system_u:object_r:shell_exec_t,s0)
@@ -166,7 +168,10 @@ ifdef(`distro_gentoo',`
 
 /usr/lib/at-spi2-core(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/avahi/avahi-daemon-check-dns\.sh	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/bridge-utils/.*\.sh	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ccache/bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+#/usr/lib/dhcpcd/dhcpcd-hooks(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+#/usr/lib/dhcpcd/dhcpcd-run-hooks --	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/dovecot/.+			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/fence(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/pgsql/test/regress/.*\.sh --	gen_context(system_u:object_r:bin_t,s0)
@@ -260,6 +265,7 @@ ifdef(`distro_gentoo',`
 /usr/libexec(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/libexec/git-core/git-shell	--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/libexec/sesh		--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/libexec/sudo/sesh	--	gen_context(system_u:object_r:shell_exec_t,s0)
 
 /usr/libexec/openssh/sftp-server --	gen_context(system_u:object_r:bin_t,s0)
 
@@ -307,6 +313,7 @@ ifdef(`distro_gentoo',`
 /usr/share/GNUstep/Makefiles/mkinstalldirs	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/hal/device-manager/hal-device-manager -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/hal/scripts(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/share/libalpm/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/mc/extfs/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/Modules/init(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/org.gnome.Weather/org\.gnome\.Weather\.Application	--	gen_context(system_u:object_r:bin_t,s0)
@@ -344,8 +351,6 @@ ifdef(`distro_gentoo', `
 /usr/[^/]+-[^/]+-linux-gnu/binutils-bin(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/[^/]+-[^/]+-linux-gnu/[^/]+/gcc-bin/.*(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/[^/]+-[^/]+-linux-gnu/[^/]+/binutils-bin(/.*)?	gen_context(system_u:object_r:bin_t,s0)
-
-#/usr/lib/dhcpcd/dhcpcd-run-hooks --	gen_context(system_u:object_r:bin_t,s0)
 
 /usr/lib/rcscripts/addons(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/rcscripts/sh(/.*)?		gen_context(system_u:object_r:bin_t,s0)

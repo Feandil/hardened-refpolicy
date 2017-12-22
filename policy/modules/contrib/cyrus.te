@@ -1,4 +1,4 @@
-policy_module(cyrus, 1.16.0)
+policy_module(cyrus, 1.16.1)
 
 ########################################
 #
@@ -31,7 +31,7 @@ files_pid_file(cyrus_var_run_t)
 
 allow cyrus_t self:capability { dac_override setgid setuid sys_resource };
 dontaudit cyrus_t self:capability sys_tty_config;
-allow cyrus_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+allow cyrus_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow cyrus_t self:process setrlimit;
 allow cyrus_t self:fd use;
 allow cyrus_t self:fifo_file rw_fifo_file_perms;
@@ -109,6 +109,7 @@ logging_send_syslog_msg(cyrus_t)
 
 miscfiles_read_localization(cyrus_t)
 miscfiles_read_generic_certs(cyrus_t)
+miscfiles_read_generic_tls_privkey(cyrus_t)
 
 userdom_use_unpriv_users_fds(cyrus_t)
 userdom_dontaudit_search_user_home_dirs(cyrus_t)

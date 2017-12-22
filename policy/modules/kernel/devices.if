@@ -1992,6 +1992,7 @@ interface(`dev_manage_dri_dev',`
 	')
 
 	manage_chr_files_pattern($1, device_t, dri_device_t)
+	allow $1 dri_device_t:chr_file map;
 ')
 
 ########################################
@@ -3058,64 +3059,6 @@ interface(`dev_getattr_mtrr_dev',`
 
 ########################################
 ## <summary>
-##	Read the memory type range
-##	registers (MTRR).  (Deprecated)
-## </summary>
-## <desc>
-##	<p>
-##	Read the memory type range
-##	registers (MTRR).  This interface has
-##	been deprecated, dev_rw_mtrr() should be
-##	used instead.
-##	</p>
-##	<p>
-##	The MTRR device ioctls can be used for
-##	reading and writing; thus, read access to the
-##	device cannot be separated from write access.
-##	</p>
-## </desc>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_read_mtrr',`
-	refpolicywarn(`$0($*) has been replaced with dev_rw_mtrr().')
-	dev_rw_mtrr($1)
-')
-
-########################################
-## <summary>
-##	Write the memory type range
-##	registers (MTRR).  (Deprecated)
-## </summary>
-## <desc>
-##	<p>
-##	Write the memory type range
-##	registers (MTRR).  This interface has
-##	been deprecated, dev_rw_mtrr() should be
-##	used instead.
-##	</p>
-##	<p>
-##	The MTRR device ioctls can be used for
-##	reading and writing; thus, write access to the
-##	device cannot be separated from read access.
-##	</p>
-## </desc>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_write_mtrr',`
-	refpolicywarn(`$0($*) has been replaced with dev_rw_mtrr().')
-	dev_rw_mtrr($1)
-')
-
-########################################
-## <summary>
 ##	Do not audit attempts to write the memory type
 ##	range registers (MTRR).
 ## </summary>
@@ -3808,6 +3751,7 @@ interface(`dev_read_sound',`
 	')
 
 	read_chr_files_pattern($1, device_t, sound_device_t)
+	allow $1 sound_device_t:chr_file map;
 ')
 
 ########################################
@@ -3826,6 +3770,7 @@ interface(`dev_write_sound',`
 	')
 
 	write_chr_files_pattern($1, device_t, sound_device_t)
+	allow $1 sound_device_t:chr_file map;
 ')
 
 ########################################
@@ -3863,6 +3808,7 @@ interface(`dev_write_sound_mixer',`
 	')
 
 	write_chr_files_pattern($1, device_t, sound_device_t)
+	allow $1 sound_device_t:chr_file map;
 ')
 
 ########################################
@@ -5038,6 +4984,7 @@ interface(`dev_rw_xen',`
 	')
 
 	rw_chr_files_pattern($1, device_t, xen_device_t)
+	allow $1 xen_device_t:chr_file map;
 ')
 
 ########################################

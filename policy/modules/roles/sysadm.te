@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.11.11)
+policy_module(sysadm, 2.12.2)
 
 ########################################
 #
@@ -379,6 +379,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	dphysswapfile_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
 	dpkg_run(sysadm_t, sysadm_r)
 ')
 
@@ -448,6 +452,10 @@ optional_policy(`
 
 optional_policy(`
 	gpsd_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	gssproxy_admin(sysadm_t)
 ')
 
 optional_policy(`

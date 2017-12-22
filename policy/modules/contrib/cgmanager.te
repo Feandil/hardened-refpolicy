@@ -1,4 +1,4 @@
-policy_module(cgmanager, 1.0.0)
+policy_module(cgmanager, 1.0.1)
 
 ########################################
 #
@@ -39,6 +39,8 @@ allow cgmanager_t cgmanager_run_t:dir mounton;
 # for the release agent
 kernel_domtrans_to(cgmanager_t, cgmanager_exec_t)
 kernel_read_system_state(cgmanager_t)
+
+auth_use_nsswitch(cgmanager_t)
 
 corecmd_exec_bin(cgmanager_t)
 

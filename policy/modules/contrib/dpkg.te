@@ -1,4 +1,4 @@
-policy_module(dpkg, 1.11.8)
+policy_module(dpkg, 1.12.0)
 
 ########################################
 #
@@ -84,7 +84,7 @@ manage_sock_files_pattern(dpkg_t, dpkg_tmpfs_t, dpkg_tmpfs_t)
 manage_fifo_files_pattern(dpkg_t, dpkg_tmpfs_t, dpkg_tmpfs_t)
 fs_tmpfs_filetrans(dpkg_t, dpkg_tmpfs_t, { dir file lnk_file sock_file fifo_file })
 
-allow dpkg_t dpkg_var_lib_t:file mmap_file_perms;
+allow dpkg_t dpkg_var_lib_t:file mmap_exec_file_perms;
 manage_files_pattern(dpkg_t, dpkg_var_lib_t, dpkg_var_lib_t)
 files_var_lib_filetrans(dpkg_t, dpkg_var_lib_t, dir)
 
@@ -203,7 +203,7 @@ optional_policy(`
 #
 
 allow dpkg_script_t self:capability { audit_write chown dac_override dac_read_search fowner fsetid ipc_lock kill mknod net_admin setfcap setgid setuid sys_chroot sys_nice sys_ptrace };
-allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setrlimit execmem execstack execheap };
+allow dpkg_script_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setfscreate noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow dpkg_script_t self:fd use;
 allow dpkg_script_t self:fifo_file rw_fifo_file_perms;
 allow dpkg_script_t self:unix_dgram_socket create_socket_perms;

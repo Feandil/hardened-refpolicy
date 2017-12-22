@@ -1,4 +1,4 @@
-policy_module(gpg, 2.11.3)
+policy_module(gpg, 2.12.4)
 
 ########################################
 #
@@ -13,6 +13,14 @@ policy_module(gpg, 2.11.3)
 ##	</p>
 ## </desc>
 gen_tunable(gpg_agent_env_file, false)
+
+## <desc>
+##	<p>
+##	Determine whether GPG agent can use OpenPGP
+##	cards or Yubikeys over USB
+##	</p>
+## </desc>
+gen_tunable(gpg_agent_use_card, false)
 
 attribute_role gpg_roles;
 roleattribute system_r gpg_roles;
@@ -31,6 +39,7 @@ role gpg_roles types gpg_t;
 
 type gpg_runtime_t;
 files_pid_file(gpg_runtime_t)
+userdom_user_runtime_content(gpg_runtime_t)
 
 type gpg_agent_t;
 type gpg_agent_exec_t;
@@ -39,6 +48,7 @@ role gpg_agent_roles types gpg_agent_t;
 
 type gpg_agent_tmp_t;
 userdom_user_tmp_file(gpg_agent_tmp_t)
+userdom_user_runtime_content(gpg_agent_tmp_t)
 
 type gpg_secret_t;
 userdom_user_home_content(gpg_secret_t)
@@ -274,6 +284,11 @@ tunable_policy(`gpg_agent_env_file',`
 	userdom_user_home_dir_filetrans_user_home_content(gpg_agent_t, file)
 ')
 
+tunable_policy(`gpg_agent_use_card',`
+	dev_read_sysfs(gpg_agent_t)
+	dev_rw_generic_usb_dev(gpg_agent_t)
+')
+
 tunable_policy(`use_nfs_home_dirs',`
 	fs_manage_nfs_dirs(gpg_agent_t)
 	fs_manage_nfs_files(gpg_agent_t)
@@ -338,6 +353,7 @@ dev_read_rand(gpg_pinentry_t)
 
 domain_use_interactive_fds(gpg_pinentry_t)
 
+files_map_usr_files(gpg_pinentry_t)
 files_read_usr_files(gpg_pinentry_t)
 
 fs_dontaudit_getattr_xattr_fs(gpg_pinentry_t)

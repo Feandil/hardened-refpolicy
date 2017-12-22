@@ -57,7 +57,7 @@ template(`ssh_basic_client_template',`
 	#
 
 	allow $1_ssh_t self:capability { dac_override dac_read_search setgid setuid };
-	allow $1_ssh_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+	allow $1_ssh_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 	allow $1_ssh_t self:fd use;
 	allow $1_ssh_t self:fifo_file rw_fifo_file_perms;
 	allow $1_ssh_t self:unix_dgram_socket { create_socket_perms sendto };
@@ -338,6 +338,7 @@ template(`ssh_role_template',`
 	# for rsync
 	allow ssh_t $3:unix_stream_socket rw_socket_perms;
 	allow ssh_t $3:unix_stream_socket connectto;
+	allow ssh_t $3:key manage_key_perms;
 
 	# user can manage the keys and config
 	manage_files_pattern($3, ssh_home_t, ssh_home_t)
@@ -583,20 +584,6 @@ interface(`ssh_dontaudit_rw_tcp_sockets',`
 	')
 
 	dontaudit $1 sshd_t:tcp_socket { read write };
-')
-
-########################################
-## <summary>
-##	Connect to SSH daemons over TCP sockets.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`ssh_tcp_connect',`
-	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ########################################

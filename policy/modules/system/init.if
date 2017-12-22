@@ -129,8 +129,12 @@ interface(`init_domain',`
 
 	domtrans_pattern(init_t, $2, $1)
 
+	allow init_t $1:process rlimitinh;
+
 	ifdef(`init_systemd',`
 		allow $1 init_t:unix_stream_socket { getattr read write ioctl };
+
+		allow init_t $1:process2 { nnp_transition nosuid_transition };
 	')
 ')
 
@@ -169,6 +173,65 @@ interface(`init_ranged_domain',`
 	ifdef(`enable_mls',`
 		range_transition init_t $2:process $3;
 		mls_rangetrans_target($1)
+	')
+')
+
+########################################
+## <summary>
+##	Setup a domain which can be manually transitioned to from init.
+## </summary>
+## <desc>
+##	<p>
+##	Create a domain used for systemd services where the SELinuxContext
+##  option is specified in the .service file.  This allows for the
+##  manual transition from systemd into the new domain.  This is used
+##  when automatic transitions won't work.  Used for the case where the
+##  same binary is used for multiple target domains.
+##	</p>
+## </desc>
+## <param name="domain">
+##	<summary>
+##	Type to be used as a domain.
+##	</summary>
+## </param>
+## <param name="entry_point">
+##	<summary>
+##	Type of the program being executed when starting this domain.
+##	</summary>
+## </param>
+#
+interface(`init_spec_daemon_domain',`
+	gen_require(`
+		type init_t;
+		role system_r;
+	')
+
+	domain_type($1)
+	domain_entry_file($1, $2)
+
+	role system_r types $1;
+
+	spec_domtrans_pattern(init_t, $2, $1)
+
+	allow init_t $1:process rlimitinh;
+
+	ifdef(`init_systemd',`
+		allow $1 init_t:unix_stream_socket { getattr read write ioctl };
+
+		allow init_t $1:process2 { nnp_transition nosuid_transition };
+	')
+
+	# daemons started from init will
+	# inherit fds from init for the console
+	init_dontaudit_use_fds($1)
+	term_dontaudit_use_console($1)
+
+	# init script ptys are the stdin/out/err
+	# when using run_init
+	init_use_script_ptys($1)
+
+	ifdef(`direct_sysadm_daemon',`
+		userdom_dontaudit_use_user_terminals($1)
 	')
 ')
 
@@ -232,6 +295,8 @@ interface(`init_daemon_domain',`
 	# when using run_init
 	init_use_script_ptys($1)
 
+	allow init_t $1:process rlimitinh;
+
 	ifdef(`direct_sysadm_daemon',`
 		userdom_dontaudit_use_user_terminals($1)
 	')
@@ -247,6 +312,7 @@ interface(`init_daemon_domain',`
 	optional_policy(`
 		nscd_use($1)
 	')
+
 ')
 
 ########################################
@@ -567,32 +633,6 @@ interface(`init_daemon_lock_file',`
 
 ########################################
 ## <summary>
-##	Mark the file type as a daemon run dir, allowing initrc_t
-##	to create it
-## </summary>
-## <param name="filetype">
-##	<summary>
-##	Type to mark as a daemon run dir
-##	</summary>
-## </param>
-## <param name="filename">
-##	<summary>
-##	Filename of the directory that the init script creates
-##	</summary>
-## </param>
-#
-interface(`init_daemon_run_dir',`
-	gen_require(`
-		attribute daemonrundir;
-		type initrc_t;
-	')
-
-	refpolicywarn(`$0($*) has been deprecated, use init_daemon_pid_file() instead.')
-	init_daemon_pid_file($1, dir, $2)
-')
-
-########################################
-## <summary>
 ##	Execute init (/sbin/init) with a domain transition.
 ## </summary>
 ## <param name="domain">
@@ -866,20 +906,6 @@ interface(`init_rw_stream_sockets',`
 	')
 
 	allow $1 init_t:unix_stream_socket rw_stream_socket_perms;
-')
-
-########################################
-## <summary>
-##	Send UDP network traffic to init.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`init_udp_send',`
-	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ########################################
@@ -1689,10 +1715,10 @@ interface(`init_startstop_service',`
 			# all callers are updated to provide unit files.
 			ifelse(`$5',`',`',`
 				gen_require(`
-					class service { start stop };
+					class service { start status stop };
 				')
 
-				allow $1 $5:service { start stop };
+				allow $1 $5:service { start status stop };
 			')
 		')
 	')
@@ -2127,20 +2153,6 @@ interface(`init_rw_script_pipes',`
 	')
 
 	allow $1 initrc_t:fifo_file { read write };
-')
-
-########################################
-## <summary>
-##	Send UDP network traffic to init scripts.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`init_udp_send_script',`
-	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ########################################

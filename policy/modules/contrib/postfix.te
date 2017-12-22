@@ -1,4 +1,4 @@
-policy_module(postfix, 1.17.3)
+policy_module(postfix, 1.18.3)
 
 ########################################
 #
@@ -115,12 +115,12 @@ allow postfix_domain self:fifo_file rw_fifo_file_perms;
 allow postfix_domain self:unix_stream_socket { accept connectto listen };
 
 allow postfix_domain postfix_etc_t:dir list_dir_perms;
-allow postfix_domain postfix_etc_t:file read_file_perms;
+allow postfix_domain postfix_etc_t:file { read_file_perms map };
 allow postfix_domain postfix_etc_t:lnk_file read_lnk_file_perms;
 
 allow postfix_domain postfix_master_t:file read_file_perms;
 
-allow postfix_domain postfix_exec_t:file { mmap_file_perms lock };
+allow postfix_domain postfix_exec_t:file { mmap_exec_file_perms lock };
 
 allow postfix_domain postfix_master_t:process sigchld;
 
@@ -159,6 +159,7 @@ logging_send_syslog_msg(postfix_domain)
 
 miscfiles_read_localization(postfix_domain)
 miscfiles_read_generic_certs(postfix_domain)
+miscfiles_read_generic_tls_privkey(postfix_domain)
 
 userdom_dontaudit_use_unpriv_user_fds(postfix_domain)
 
@@ -171,7 +172,7 @@ optional_policy(`
 # Common postfix server domain local policy
 #
 
-allow postfix_server_domain self:capability { dac_override setgid setuid };
+allow postfix_server_domain self:capability { dac_read_search dac_override setgid setuid };
 allow postfix_master_t self:process getsched;
 
 allow postfix_server_domain postfix_master_t:unix_stream_socket { connectto rw_stream_socket_perms };
@@ -190,7 +191,7 @@ corenet_tcp_sendrecv_all_ports(postfix_server_domain)
 # Common postfix user domain local policy
 #
 
-allow postfix_user_domains self:capability dac_override;
+allow postfix_user_domains self:capability { dac_read_search dac_override };
 
 domain_use_interactive_fds(postfix_user_domains)
 
@@ -199,7 +200,7 @@ domain_use_interactive_fds(postfix_user_domains)
 # Master local policy
 #
 
-allow postfix_master_t self:capability { chown dac_override fowner kill setgid setuid sys_tty_config };
+allow postfix_master_t self:capability { chown dac_read_search dac_override fowner kill setgid setuid sys_tty_config };
 allow postfix_master_t self:capability2 block_suspend;
 allow postfix_master_t self:process setrlimit;
 allow postfix_master_t self:tcp_socket create_stream_socket_perms;
@@ -216,7 +217,7 @@ allow postfix_master_t postfix_data_t:file manage_file_perms;
 
 allow postfix_master_t postfix_keytab_t:file read_file_perms;
 
-allow postfix_master_t postfix_map_exec_t:file { mmap_file_perms ioctl lock };
+allow postfix_master_t postfix_map_exec_t:file { mmap_exec_file_perms ioctl lock };
 
 allow postfix_master_t { postfix_postdrop_exec_t postfix_postqueue_exec_t }:file getattr_file_perms;
 
@@ -405,6 +406,7 @@ corenet_tcp_connect_kismet_port(postfix_cleanup_t)
 corenet_tcp_sendrecv_kismet_port(postfix_cleanup_t)
 
 mta_read_aliases(postfix_cleanup_t)
+mta_map_aliases(postfix_cleanup_t)
 
 optional_policy(`
 	dkim_stream_connect(postfix_cleanup_t)
@@ -436,6 +438,7 @@ logging_dontaudit_search_logs(postfix_local_t)
 
 mta_delete_spool(postfix_local_t)
 mta_read_aliases(postfix_local_t)
+mta_map_aliases(postfix_local_t)
 mta_read_config(postfix_local_t)
 mta_send_mail(postfix_local_t)
 
@@ -485,11 +488,11 @@ optional_policy(`
 # Map local policy
 #
 
-allow postfix_map_t self:capability { dac_override setgid setuid };
+allow postfix_map_t self:capability { dac_read_search dac_override setgid setuid };
 allow postfix_map_t self:tcp_socket { accept listen };
 
 allow postfix_map_t postfix_etc_t:dir manage_dir_perms;
-allow postfix_map_t postfix_etc_t:file manage_file_perms;
+allow postfix_map_t postfix_etc_t:file { manage_file_perms map };
 allow postfix_map_t postfix_etc_t:lnk_file manage_lnk_file_perms;
 
 manage_dirs_pattern(postfix_map_t, postfix_map_tmp_t, postfix_map_tmp_t)
@@ -776,6 +779,7 @@ fs_getattr_all_dirs(postfix_smtpd_t)
 fs_getattr_all_fs(postfix_smtpd_t)
 
 mta_read_aliases(postfix_smtpd_t)
+mta_map_aliases(postfix_smtpd_t)
 
 optional_policy(`
 	dovecot_stream_connect_auth(postfix_smtpd_t)
@@ -817,6 +821,7 @@ stream_connect_pattern(postfix_virtual_t, { postfix_private_t postfix_public_t }
 corecmd_exec_bin(postfix_virtual_t)
 
 mta_read_aliases(postfix_virtual_t)
+mta_map_aliases(postfix_virtual_t)
 mta_delete_spool(postfix_virtual_t)
 mta_read_config(postfix_virtual_t)
 mta_manage_spool(postfix_virtual_t)

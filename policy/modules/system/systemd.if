@@ -138,6 +138,26 @@ interface(`systemd_write_inherited_logind_sessions_pipes',`
 	allow systemd_logind_t $1:process signal;
 ')
 
+######################################
+## <summary>
+##      Write inherited logind inhibit pipes.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`systemd_write_inherited_logind_inhibit_pipes',`
+	gen_require(`
+		type systemd_logind_inhibit_var_run_t;
+		type systemd_logind_t;
+	')
+
+	allow $1 systemd_logind_t:fd use;
+	allow $1 systemd_logind_inhibit_var_run_t:fifo_file write;
+')
+
 ########################################
 ## <summary>
 ##   Send and receive messages from
@@ -348,6 +368,161 @@ interface(`systemd_manage_journal_files',`
 	manage_files_pattern($1, systemd_journal_t, systemd_journal_t)
 ')
 
+
+########################################
+## <summary>
+##	Relabel to systemd-journald directory type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_relabelto_journal_dirs',`
+	gen_require(`
+		type systemd_journal_t;
+	')
+
+	files_search_var($1)
+	allow $1 systemd_journal_t:dir relabelto_dir_perms;
+')
+
+########################################
+## <summary>
+##	Relabel to systemd-journald file type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_relabelto_journal_files',`
+	gen_require(`
+		type systemd_journal_t;
+	')
+
+	files_search_var($1)
+	list_dirs_pattern($1,systemd_journal_t,systemd_journal_t)
+	allow $1 systemd_journal_t:file relabelto_file_perms;
+')
+
+########################################
+## <summary>
+##	Allow domain to read systemd_networkd_t unit files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	 </summary>
+## </param>
+#
+interface(`systemd_read_networkd_units',`
+	gen_require(`
+		type systemd_networkd_t;
+	')
+
+	init_search_units($1)
+	list_dirs_pattern($1, systemd_networkd_unit_t, systemd_networkd_unit_t)
+	read_files_pattern($1, systemd_networkd_unit_t, systemd_networkd_unit_t)
+')
+
+########################################
+## <summary>
+##	Allow domain to create/manage systemd_networkd_t unit files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	 </summary>
+## </param>
+#
+interface(`systemd_manage_networkd_units',`
+	gen_require(`
+		type systemd_networkd_unit_t;
+	')
+
+	init_search_units($1)
+	manage_dirs_pattern($1, systemd_networkd_unit_t, systemd_networkd_unit_t)
+	manage_files_pattern($1, systemd_networkd_unit_t, systemd_networkd_unit_t)
+')
+
+########################################
+## <summary>
+##	Allow specified domain to start systemd-networkd units
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_startstop_networkd',`
+	gen_require(`
+		type systemd_networkd_unit_t;
+		class service { start stop };
+	')
+
+	allow $1 systemd_networkd_unit_t:service { start stop };
+')
+
+########################################
+## <summary>
+##	Allow specified domain to get status of systemd-networkd
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_status_networkd',`
+	gen_require(`
+		type systemd_networkd_unit_t;
+		class service status;
+	')
+
+	allow $1 systemd_networkd_unit_t:service status;
+')
+
+#######################################
+## <summary>
+## Relabel systemd_networkd tun socket.
+## </summary>
+## <param name="domain">
+## <summary>
+## Domain allowed access.
+## </summary>
+## </param>
+#
+interface(`systemd_relabelfrom_networkd_tun_sockets',`
+	gen_require(`
+		type systemd_networkd_t;
+	')
+
+	allow $1 systemd_networkd_t:tun_socket relabelfrom;
+')
+
+#######################################
+## <summary>
+## Read/Write from systemd_networkd netlink route socket.
+## </summary>
+## <param name="domain">
+## <summary>
+## Domain allowed access.
+## </summary>
+## </param>
+#
+interface(`systemd_rw_networkd_netlink_route_sockets',`
+	gen_require(`
+		type systemd_networkd_t;
+	')
+
+	allow $1 systemd_networkd_t:netlink_route_socket client_stream_socket_perms;
+')
+
+
 ########################################
 ## <summary>
 ##     Allow systemd_logind_t to read process state for cgroup file
@@ -397,7 +572,7 @@ interface(`systemd_start_power_units',`
 ##	</summary>
 ## </param>
 #
-	interface(`systemd_tmpfiles_conf_file',`
+interface(`systemd_tmpfiles_conf_file',`
 	gen_require(`
 		attribute systemd_tmpfiles_conf_type;
 	')
@@ -461,6 +636,60 @@ interface(`systemd_tmpfiles_conf_filetrans',`
 
 	files_search_pids($1)
 	filetrans_pattern($1, systemd_tmpfiles_conf_t, $2, $3, $4)
+')
+
+########################################
+## <summary>
+##	Allow domain to list systemd tmpfiles config directory
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_list_tmpfiles_conf',`
+	gen_require(`
+		type systemd_tmpfiles_conf_t;
+	')
+
+	allow $1 systemd_tmpfiles_conf_t:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##	Allow domain to relabel to systemd tmpfiles config directory
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_relabelto_tmpfiles_conf_dirs',`
+	gen_require(`
+		type systemd_tmpfiles_conf_t;
+	')
+
+	allow $1 systemd_tmpfiles_conf_t:dir relabelto_dir_perms;
+')
+
+########################################
+## <summary>
+##	Allow domain to relabel to systemd tmpfiles config files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_relabelto_tmpfiles_conf_files',`
+	gen_require(`
+		attribute systemd_tmpfiles_conf_type;
+	')
+
+	allow $1 systemd_tmpfiles_conf_type:file relabelto_file_perms;
 ')
 
 #######################################

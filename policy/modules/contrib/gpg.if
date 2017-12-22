@@ -125,20 +125,6 @@ interface(`gpg_spec_domtrans',`
 
 ######################################
 ## <summary>
-##	Execute gpg in the gpg web domain.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed to transition.
-##	</summary>
-## </param>
-#
-interface(`gpg_domtrans_web',`
-	refpolicywarn(`$0($*) has been deprecated.')
-')
-
-######################################
-## <summary>
 ##	Make gpg executable files an
 ##	entrypoint for the specified domain.
 ## </summary>
@@ -205,11 +191,11 @@ interface(`gpg_rw_agent_pipes',`
 interface(`gpg_stream_connect_agent',`
 	gen_require(`
 		type gpg_agent_t, gpg_agent_tmp_t;
-		type gpg_secret_t;
+		type gpg_secret_t, gpg_runtime_t;
 	')
 
 	stream_connect_pattern($1, gpg_agent_tmp_t, gpg_agent_tmp_t, gpg_agent_t)
-	allow $1 gpg_secret_t:dir search_dir_perms;
+	allow $1 { gpg_secret_t gpg_runtime_t }:dir search_dir_perms;
 	userdom_search_user_runtime($1)
 	userdom_search_user_home_dirs($1)
 ')
@@ -248,6 +234,25 @@ interface(`gpg_agent_tmp_filetrans',`
 	')
 
 	filetrans_pattern($1, gpg_agent_tmp_t, $2, $3, $4)
+	userdom_search_user_runtime($1)
+')
+
+########################################
+## <summary>
+##	filetrans in gpg_runtime_t dirs
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`gpg_runtime_filetrans',`
+	gen_require(`
+		type gpg_runtime_t;
+	')
+
+	filetrans_pattern($1, gpg_runtime_t, $2, $3, $4)
 	userdom_search_user_runtime($1)
 ')
 

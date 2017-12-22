@@ -1,4 +1,4 @@
-policy_module(gnome, 2.7.4)
+policy_module(gnome, 2.8.2)
 
 ##############################
 #
@@ -45,9 +45,11 @@ userdom_user_home_content(gnome_keyring_home_t)
 
 type gnome_keyring_tmp_t;
 userdom_user_tmp_file(gnome_keyring_tmp_t)
+userdom_user_runtime_content(gnome_keyring_tmp_t)
 
 type gstreamer_orcexec_t;
 application_executable_file(gstreamer_orcexec_t)
+userdom_user_runtime_content(gstreamer_orcexec_t)
 
 ##############################
 #
@@ -106,6 +108,10 @@ optional_policy(`
 	dbus_all_session_domain(gconfd_t, gconfd_exec_t)
 
 	dbus_system_bus_client(gconfd_t)
+
+	optional_policy(`
+		pulseaudio_dbus_chat(gconfd_t)
+	')
 ')
 
 optional_policy(`
@@ -114,6 +120,10 @@ optional_policy(`
 
 optional_policy(`
 	ooffice_stream_connect(gconfd_t)
+')
+
+optional_policy(`
+	pulseaudio_stream_connect(gconfd_t)
 ')
 
 ##############################
@@ -149,6 +159,8 @@ files_read_usr_files(gkeyringd_domain)
 fs_getattr_all_fs(gkeyringd_domain)
 
 selinux_getattr_fs(gkeyringd_domain)
+
+seutil_read_config(gkeyringd_domain)
 
 optional_policy(`
 	ssh_read_user_home_files(gkeyringd_domain)

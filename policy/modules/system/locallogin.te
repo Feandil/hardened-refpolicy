@@ -1,4 +1,4 @@
-policy_module(locallogin, 1.15.7)
+policy_module(locallogin, 1.16.2)
 
 ########################################
 #
@@ -32,7 +32,7 @@ role system_r types sulogin_t;
 # Local login local policy
 #
 
-allow local_login_t self:capability { chown dac_override fowner fsetid kill setgid setuid sys_nice sys_resource sys_tty_config };
+allow local_login_t self:capability { chown dac_read_search dac_override fowner fsetid kill setgid setuid sys_nice sys_resource sys_tty_config };
 dontaudit local_login_t self:capability net_admin;
 allow local_login_t self:process { setexec setrlimit setsched };
 allow local_login_t self:fd use;
@@ -209,6 +209,7 @@ optional_policy(`
 optional_policy(`
 	xserver_read_xdm_tmp_files(local_login_t)
 	xserver_rw_xdm_tmp_files(local_login_t)
+	xserver_rw_xdm_keys(local_login_t)
 ')
 
 #################################

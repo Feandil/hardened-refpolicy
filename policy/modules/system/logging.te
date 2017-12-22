@@ -1,4 +1,4 @@
-policy_module(logging, 1.25.12)
+policy_module(logging, 1.26.4)
 
 ########################################
 #
@@ -105,6 +105,7 @@ allow auditctl_t self:netlink_audit_socket nlmsg_readpriv;
 
 read_files_pattern(auditctl_t, auditd_etc_t, auditd_etc_t)
 allow auditctl_t auditd_etc_t:dir list_dir_perms;
+dontaudit auditctl_t auditd_etc_t:file map;
 
 # Needed for adding watches
 files_getattr_all_dirs(auditctl_t)
@@ -126,6 +127,8 @@ init_dontaudit_use_fds(auditctl_t)
 
 logging_set_audit_parameters(auditctl_t)
 logging_send_syslog_msg(auditctl_t)
+
+miscfiles_read_localization(auditctl_t)
 
 ifdef(`init_systemd',`
 	init_rw_stream_sockets(auditctl_t)
@@ -150,6 +153,7 @@ allow auditd_t self:tcp_socket create_stream_socket_perms;
 
 allow auditd_t auditd_etc_t:dir list_dir_perms;
 allow auditd_t auditd_etc_t:file read_file_perms;
+dontaudit auditd_t auditd_etc_t:file map;
 
 manage_files_pattern(auditd_t, auditd_log_t, auditd_log_t)
 allow auditd_t auditd_log_t:dir setattr;
@@ -392,6 +396,7 @@ allow syslogd_t self:udp_socket create_socket_perms;
 allow syslogd_t self:tcp_socket create_stream_socket_perms;
 
 allow syslogd_t syslog_conf_t:file read_file_perms;
+allow syslogd_t syslog_conf_t:dir list_dir_perms;
 
 # Create and bind to /dev/log or /var/run/log.
 allow syslogd_t devlog_t:sock_file manage_sock_file_perms;
@@ -416,6 +421,7 @@ manage_files_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
 files_tmp_filetrans(syslogd_t, syslogd_tmp_t, { dir file })
 
 manage_files_pattern(syslogd_t, syslogd_var_lib_t, syslogd_var_lib_t)
+allow syslogd_t syslogd_var_lib_t:file map;
 files_search_var_lib(syslogd_t)
 
 # manage pid file

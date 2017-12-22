@@ -1,4 +1,4 @@
-policy_module(mls, 1.9.0)
+policy_module(mls, 1.9.2)
 
 ########################################
 #
@@ -10,9 +10,10 @@ attribute mlsfilereadtoclr;
 attribute mlsfilewrite;
 attribute mlsfilewritetoclr;
 attribute mlsfilewriteinrange;
+attribute mlsfilerelabel;
+attribute mlsfilerelabeltoclr;
 attribute mlsfileupgrade;
 attribute mlsfiledowngrade;
-attribute mlsfilerelabeltoclr;
 
 attribute mlsnetread;
 attribute mlsnetreadtoclr;
@@ -29,6 +30,9 @@ attribute mlsipcread;
 attribute mlsipcreadtoclr;
 attribute mlsipcwrite;
 attribute mlsipcwritetoclr;
+
+attribute mlskeywrite;
+attribute mlskeywritetoclr;
 
 attribute mlsprocread;
 attribute mlsprocreadtoclr;

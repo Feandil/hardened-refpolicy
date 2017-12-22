@@ -1,4 +1,4 @@
-policy_module(samba, 1.20.2)
+policy_module(samba, 1.21.1)
 
 #################################
 #
@@ -269,7 +269,7 @@ optional_policy(`
 
 allow smbd_t self:capability { chown dac_override dac_read_search fowner fsetid kill lease setgid setuid sys_admin sys_chroot sys_nice sys_resource };
 dontaudit smbd_t self:capability sys_tty_config;
-allow smbd_t self:process ~{ ptrace setcurrent setexec setfscreate execmem execstack execheap };
+allow smbd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow smbd_t self:fd use;
 allow smbd_t self:fifo_file rw_fifo_file_perms;
 allow smbd_t self:msg { send receive };
@@ -518,7 +518,7 @@ optional_policy(`
 #
 
 dontaudit nmbd_t self:capability sys_tty_config;
-allow nmbd_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+allow nmbd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow nmbd_t self:fd use;
 allow nmbd_t self:fifo_file rw_fifo_file_perms;
 allow nmbd_t self:msg { send receive };
@@ -763,7 +763,7 @@ manage_files_pattern(swat_t, samba_var_t, samba_var_t)
 manage_lnk_files_pattern(swat_t, samba_var_t, samba_var_t)
 files_var_filetrans(swat_t, samba_var_t, dir, "samba")
 
-allow swat_t smbd_exec_t:file mmap_file_perms ;
+allow swat_t smbd_exec_t:file mmap_exec_file_perms ;
 
 allow swat_t { winbind_t smbd_t }:process { signal signull };
 
@@ -943,6 +943,7 @@ logging_send_syslog_msg(winbind_t)
 
 miscfiles_read_localization(winbind_t)
 miscfiles_read_generic_certs(winbind_t)
+miscfiles_read_generic_tls_privkey(winbind_t)
 
 userdom_dontaudit_use_unpriv_user_fds(winbind_t)
 userdom_manage_user_home_content_dirs(winbind_t)

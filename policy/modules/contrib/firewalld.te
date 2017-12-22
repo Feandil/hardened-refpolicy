@@ -1,4 +1,4 @@
-policy_module(firewalld, 1.5.2)
+policy_module(firewalld, 1.6.0)
 
 ########################################
 #
@@ -47,7 +47,7 @@ logging_log_filetrans(firewalld_t, firewalld_var_log_t, file)
 
 manage_files_pattern(firewalld_t, firewalld_tmp_t, firewalld_tmp_t)
 files_tmp_filetrans(firewalld_t, firewalld_tmp_t, file)
-allow firewalld_t firewalld_tmp_t:file mmap_file_perms;
+allow firewalld_t firewalld_tmp_t:file mmap_exec_file_perms;
 
 manage_dirs_pattern(firewalld_t, firewalld_var_run_t, firewalld_var_run_t)
 manage_files_pattern(firewalld_t, firewalld_var_run_t, firewalld_var_run_t)

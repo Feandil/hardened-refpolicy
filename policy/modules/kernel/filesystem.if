@@ -926,6 +926,24 @@ interface(`fs_manage_cgroup_files',`
 
 ########################################
 ## <summary>
+##	Relabel cgroup symbolic links.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_relabel_cgroup_symlinks',`
+	gen_require(`
+		type cgroup_t;
+	')
+
+	relabel_lnk_files_pattern($1, cgroup_t, cgroup_t)
+')
+
+########################################
+## <summary>
 ##	Mount on cgroup directories.
 ## </summary>
 ## <param name="domain">
@@ -1981,30 +1999,6 @@ interface(`fs_read_efivarfs_files',`
         ')
 
         read_files_pattern($1, efivarfs_t, efivarfs_t)
-')
-
-########################################
-## <summary>
-##	Read eventpollfs files.
-## </summary>
-## <desc>
-##	<p>
-##	Read eventpollfs files
-##	</p>
-##	<p>
-##	This interface has been deprecated, and will
-##	be removed in the future.
-##	</p>
-## </desc>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-# eventpollfs was changed to task SID 20060628
-interface(`fs_read_eventpollfs',`
-	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ########################################
@@ -4593,6 +4587,24 @@ interface(`fs_read_tmpfs_symlinks',`
 	')
 
 	read_lnk_files_pattern($1, tmpfs_t, tmpfs_t)
+')
+
+########################################
+## <summary>
+##	Relabelfrom socket files on tmpfs filesystems.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_relabelfrom_tmpfs_sockets',`
+	gen_require(`
+		type tmpfs_t;
+	')
+
+	allow $1 tmpfs_t:sock_file relabelfrom_sock_file_perms;
 ')
 
 ########################################

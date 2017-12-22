@@ -20,20 +20,6 @@ interface(`ftp_dyntrans_anon_sftpd',`
 
 ########################################
 ## <summary>
-##	Connect to over ftpd over TCP.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`ftp_tcp_connect',`
-	refpolicywarn(`$0($*) has been deprecated.')
-')
-
-########################################
-## <summary>
 ##	Read ftpd configuration files.
 ## </summary>
 ## <param name="domain">
@@ -67,7 +53,7 @@ interface(`ftp_check_exec',`
 	')
 
 	corecmd_search_bin($1)
-	allow $1 ftpd_exec_t:file mmap_file_perms;
+	allow $1 ftpd_exec_t:file mmap_exec_file_perms;
 ')
 
 ########################################

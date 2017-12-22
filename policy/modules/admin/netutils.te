@@ -1,4 +1,4 @@
-policy_module(netutils, 1.16.4)
+policy_module(netutils, 1.17.1)
 
 ########################################
 #
@@ -33,14 +33,14 @@ init_system_domain(traceroute_t, traceroute_exec_t)
 #
 
 # Perform network administration operations and have raw access to the network.
-allow netutils_t self:capability { dac_read_search net_admin net_raw setgid setuid sys_chroot };
+allow netutils_t self:capability { dac_read_search net_admin net_raw setgid setpcap setuid sys_chroot };
 dontaudit netutils_t self:capability { dac_override sys_tty_config };
-allow netutils_t self:process { setcap signal_perms };
+allow netutils_t self:process { getcap setcap signal_perms };
 allow netutils_t self:netlink_route_socket create_netlink_socket_perms;
 allow netutils_t self:netlink_socket create_socket_perms;
 # For tcpdump.
 allow netutils_t self:netlink_netfilter_socket create_socket_perms;
-allow netutils_t self:packet_socket create_socket_perms;
+allow netutils_t self:packet_socket { create_socket_perms map };
 allow netutils_t self:udp_socket create_socket_perms;
 allow netutils_t self:tcp_socket create_stream_socket_perms;
 allow netutils_t self:socket create_socket_perms;
@@ -165,12 +165,15 @@ optional_policy(`
 #
 
 allow traceroute_t self:capability { net_admin net_raw setgid setuid };
+allow traceroute_t self:process signal;
 allow traceroute_t self:rawip_socket create_socket_perms;
 allow traceroute_t self:packet_socket create_socket_perms;
 allow traceroute_t self:udp_socket create_socket_perms;
 
 kernel_read_system_state(traceroute_t)
 kernel_read_network_state(traceroute_t)
+
+corecmd_search_bin(traceroute_t)
 
 corenet_all_recvfrom_unlabeled(traceroute_t)
 corenet_all_recvfrom_netlabel(traceroute_t)
@@ -191,9 +194,14 @@ corenet_tcp_connect_all_ports(traceroute_t)
 corenet_sendrecv_all_client_packets(traceroute_t)
 corenet_sendrecv_traceroute_server_packets(traceroute_t)
 
+dev_read_rand(traceroute_t)
+dev_read_urand(traceroute_t)
+dev_read_sysfs(traceroute_t)
+
 domain_use_interactive_fds(traceroute_t)
 
 files_read_etc_files(traceroute_t)
+files_read_usr_files(traceroute_t)
 
 init_use_fds(traceroute_t)
 
@@ -205,10 +213,9 @@ miscfiles_read_localization(traceroute_t)
 
 userdom_use_inherited_user_terminals(traceroute_t)
 
-#rules needed for nmap
-dev_read_rand(traceroute_t)
-dev_read_urand(traceroute_t)
-files_read_usr_files(traceroute_t)
+# nmap searches .
+userdom_dontaudit_search_user_home_dirs(traceroute_t)
+userdom_dontaudit_search_user_home_content(traceroute_t)
 
 ifdef(`distro_gentoo',`
 	########################################
@@ -217,9 +224,6 @@ ifdef(`distro_gentoo',`
 	#
 
 	# Fix bug 535988
-	allow netutils_t self:process getcap;
-	allow netutils_t self:capability setpcap;
-
 	kernel_request_load_module(netutils_t)
 	kernel_dontaudit_search_debugfs(netutils_t)
 

@@ -1,4 +1,4 @@
-policy_module(devicekit, 1.6.4)
+policy_module(devicekit, 1.7.1)
 
 ########################################
 #
@@ -342,6 +342,10 @@ optional_policy(`
 
 optional_policy(`
 	readahead_domtrans(devicekit_power_t)
+')
+
+optional_policy(`
+	systemd_write_inherited_logind_inhibit_pipes(devicekit_power_t)
 ')
 
 optional_policy(`

@@ -1,4 +1,4 @@
-policy_module(dbus, 1.22.8)
+policy_module(dbus, 1.23.4)
 
 gen_require(`
 	class dbus all_dbus_perms;
@@ -49,6 +49,7 @@ init_daemon_pid_file(system_dbusd_var_run_t, dir, "dbus")
 
 type session_dbusd_runtime_t;
 files_pid_file(session_dbusd_runtime_t)
+userdom_user_runtime_content(session_dbusd_runtime_t)
 
 ifdef(`enable_mcs',`
 	init_ranged_system_domain(system_dbusd_t, dbusd_exec_t, s0 - mcs_systemhigh)
@@ -133,6 +134,7 @@ auth_read_pam_console_data(system_dbusd_t)
 init_use_fds(system_dbusd_t)
 init_use_script_ptys(system_dbusd_t)
 init_all_labeled_script_domtrans(system_dbusd_t)
+init_start_system(system_dbusd_t) # needed by dbus-broker
 
 logging_send_audit_msgs(system_dbusd_t)
 logging_send_syslog_msg(system_dbusd_t)
@@ -145,6 +147,8 @@ seutil_read_default_contexts(system_dbusd_t)
 
 userdom_dontaudit_use_unpriv_user_fds(system_dbusd_t)
 userdom_dontaudit_search_user_home_dirs(system_dbusd_t)
+# read a file in ~/.local/share
+userdom_read_user_home_content_files(system_dbusd_t)
 
 ifdef(`distro_gentoo',`
 	optional_policy(`
@@ -161,8 +165,8 @@ ifdef(`init_systemd', `
 optional_policy(`
 	# for /run/systemd/users/*
 	systemd_read_logind_pids(system_dbusd_t)
+	systemd_write_inherited_logind_inhibit_pipes(system_dbusd_t)
 	systemd_write_inherited_logind_sessions_pipes(system_dbusd_t)
-	systemd_write_logind_pid_pipes(system_dbusd_t)
 ')
 
 optional_policy(`

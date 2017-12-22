@@ -1,4 +1,4 @@
-policy_module(openoffice, 1.1.3)
+policy_module(openoffice, 1.2.2)
 
 ##############################
 #
@@ -80,6 +80,7 @@ files_getattr_all_dirs(ooffice_t)
 files_getattr_all_files(ooffice_t)
 files_getattr_all_symlinks(ooffice_t)
 files_read_etc_files(ooffice_t)
+files_map_usr_files(ooffice_t)
 files_read_usr_files(ooffice_t)
 
 fs_getattr_xattr_fs(ooffice_t)
@@ -100,6 +101,7 @@ userdom_manage_user_home_content_files(ooffice_t)
 userdom_manage_user_home_content_symlinks(ooffice_t)
 userdom_user_home_dir_filetrans_user_home_content(ooffice_t, { dir file lnk_file fifo_file sock_file })
 
+userdom_manage_user_tmp_dirs(ooffice_t)
 userdom_manage_user_tmp_sockets(ooffice_t)
 
 userdom_use_inherited_user_terminals(ooffice_t)

@@ -1,4 +1,4 @@
-policy_module(modemmanager, 1.4.1)
+policy_module(modemmanager, 1.5.1)
 
 ########################################
 #
@@ -50,6 +50,10 @@ optional_policy(`
 	optional_policy(`
 		policykit_dbus_chat(modemmanager_t)
 	')
+')
+
+optional_policy(`
+	systemd_write_inherited_logind_inhibit_pipes(modemmanager_t)
 ')
 
 optional_policy(`
