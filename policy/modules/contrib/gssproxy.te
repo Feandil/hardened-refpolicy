@@ -1,4 +1,4 @@
-policy_module(gssproxy, 1.0.0)
+policy_module(gssproxy, 1.1.0)
 
 ########################################
 #
@@ -63,4 +63,5 @@ optional_policy(`
 	kerberos_manage_host_rcache(gssproxy_t)
 	kerberos_read_keytab(gssproxy_t)
 	kerberos_use(gssproxy_t)
+	kerberos_tmp_filetrans_host_rcache(gssproxy_t, file)
 ')
