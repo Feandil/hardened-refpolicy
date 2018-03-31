@@ -1,3 +1,4 @@
+/etc/chrony\.conf			--	gen_context(system_u:object_r:chronyd_conf_t,s0)
 /etc/chrony\.keys			--	gen_context(system_u:object_r:chronyd_keys_t,s0)
 
 /etc/rc\.d/init\.d/chronyd		--	gen_context(system_u:object_r:chronyd_initrc_exec_t,s0)
@@ -8,6 +9,7 @@
 /usr/lib/systemd/system/[^/]*chrony-wait.* --	gen_context(system_u:object_r:chronyd_unit_t,s0)
 /usr/lib/systemd/system/[^/]*chronyd.*	--	gen_context(system_u:object_r:chronyd_unit_t,s0)
 
+/usr/bin/chronyc			--	gen_context(system_u:object_r:chronyc_exec_t,s0)
 /usr/sbin/chronyd			--	gen_context(system_u:object_r:chronyd_exec_t,s0)
 
 /var/lib/chrony(/.*)?				gen_context(system_u:object_r:chronyd_var_lib_t,s0)

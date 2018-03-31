@@ -985,6 +985,8 @@ class sctp_socket
 inherits socket
 {
 	node_bind
+	name_connect
+	association
 }
 
 class icmp_socket
@@ -1079,3 +1081,12 @@ inherits socket
 
 class smc_socket
 inherits socket
+
+class bpf
+{
+	map_create
+	map_read
+	map_write
+	prog_load
+	prog_run
+}
