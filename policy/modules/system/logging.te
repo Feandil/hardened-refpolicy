@@ -1,4 +1,4 @@
-policy_module(logging, 1.27.1)
+policy_module(logging, 1.27.3)
 
 ########################################
 #
@@ -31,7 +31,7 @@ type auditd_initrc_exec_t;
 init_script_file(auditd_initrc_exec_t)
 
 type auditd_unit_t;
-init_unit_file(auditd_unit_t);
+init_unit_file(auditd_unit_t)
 
 type auditd_var_run_t;
 files_pid_file(auditd_var_run_t)
@@ -434,6 +434,7 @@ allow syslogd_t syslogd_var_run_t:file map;
 files_pid_filetrans(syslogd_t, syslogd_var_run_t, file)
 allow syslogd_t syslogd_var_run_t:dir create_dir_perms;
 
+kernel_read_crypto_sysctls(syslogd_t)
 kernel_read_system_state(syslogd_t)
 kernel_read_network_state(syslogd_t)
 kernel_read_kernel_sysctls(syslogd_t)

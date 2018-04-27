@@ -1,4 +1,4 @@
-policy_module(ifplugd, 1.4.0)
+policy_module(ifplugd, 1.4.1)
 
 ########################################
 #
@@ -52,6 +52,8 @@ domain_read_confined_domains_state(ifplugd_t)
 domain_dontaudit_read_all_domains_state(ifplugd_t)
 
 auth_use_nsswitch(ifplugd_t)
+
+init_domtrans_script(ifplugd_t)
 
 logging_send_syslog_msg(ifplugd_t)
 

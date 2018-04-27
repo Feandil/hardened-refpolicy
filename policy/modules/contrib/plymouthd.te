@@ -1,4 +1,4 @@
-policy_module(plymouthd, 1.5.0)
+policy_module(plymouthd, 1.5.1)
 
 ########################################
 #
@@ -92,7 +92,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	xserver_manage_xdm_spool_files(plymouthd_t)
 	xserver_read_xdm_state(plymouthd_t)
 ')
 
