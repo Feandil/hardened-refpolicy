@@ -145,6 +145,100 @@ template(`userdom_base_user_template',`
 
 #######################################
 ## <summary>
+##	Template for handling user content through standard tunables
+## </summary>
+## <desc>
+##	<p>
+##	This template generates the tunable blocks for accessing
+##	end user content, either the generic one (user_home_t)
+##	or the complete one (based on user_home_content_type).
+##	</p>
+##	<p>
+##	It calls the *_read_generic_user_content,
+##	*_read_all_user_content, *_manage_generic_user_content, and
+##	*_manage_all_user_content booleans.
+##	</p>
+## </desc>
+## <param name="prefix">
+##	<summary>
+##	The application domain prefix to use, meant for the boolean
+##	calls
+##	</summary>
+## </param>
+## <param name="domain">
+##	<summary>
+##	The application domain which is granted the necessary privileges
+##	</summary>
+## </param>
+## <rolebase/>
+#
+template(`userdom_user_content_access_template',`
+	## <desc>
+	##	<p>
+	##	Grant the $1 domains read access to generic user content
+	##	</p>
+	## </desc>
+	gen_tunable(`$1_read_generic_user_content', true)
+
+	## <desc>
+	##	<p>
+	##	Grant the $1 domains read access to all user content
+	##	</p>
+	## </desc>
+	gen_tunable(`$1_read_all_user_content', false)
+
+	## <desc>
+	##	<p>
+	##	Grant the $1 domains manage rights on generic user content
+	##	</p>
+	## </desc>
+	gen_tunable(`$1_manage_generic_user_content', false)
+
+	## <desc>
+	##	<p>
+	##	Grant the $1 domains manage rights on all user content
+	##	</p>
+	## </desc>
+	gen_tunable(`$1_manage_all_user_content', false)
+
+	tunable_policy(`$1_read_generic_user_content',`
+		userdom_list_user_tmp($2)
+		userdom_list_user_home_content($2)
+		userdom_read_user_home_content_files($2)
+		userdom_read_user_home_content_symlinks($2)
+		userdom_read_user_tmp_files($2)
+		userdom_read_user_tmp_symlinks($2)
+	',`
+		files_dontaudit_list_home($2)
+		files_dontaudit_list_tmp($2)
+
+		userdom_dontaudit_list_user_home_dirs($2)
+		userdom_dontaudit_list_user_tmp($2)
+		userdom_dontaudit_read_user_home_content_files($2)
+		userdom_dontaudit_read_user_tmp_files($2)
+	')
+
+	tunable_policy(`$1_read_all_user_content',`
+		userdom_list_user_tmp($2)
+		userdom_read_all_user_home_content($2)
+	')
+
+	tunable_policy(`$1_manage_generic_user_content',`
+		userdom_manage_user_tmp_dirs($2)
+		userdom_manage_user_tmp_files($2)
+		userdom_manage_user_tmp_symlinks($2)
+		userdom_manage_user_home_content_dirs($2)
+		userdom_manage_user_home_content_files($2)
+		userdom_manage_user_home_content_symlinks($2)
+	')
+
+	tunable_policy(`$1_manage_all_user_content',`
+		userdom_manage_all_user_home_content($2)
+	')
+')
+
+#######################################
+## <summary>
 ##	Allow a home directory for which the
 ##	role has read-only access.
 ## </summary>
@@ -300,20 +394,6 @@ interface(`userdom_manage_home_role',`
 		optional_policy(`
 			flash_manage_home($2)
 			flash_relabel_home($2)
-		')
-
-		optional_policy(`
-			xdg_manage_all_cache_home($2)
-			xdg_manage_all_config_home($2)
-			xdg_manage_all_data_home($2)
-			xdg_manage_documents_home($2)
-			xdg_manage_downloads_home($2)
-			xdg_manage_music_home($2)
-			xdg_manage_pictures_home($2)
-			xdg_manage_videos_home($2)
-			xdg_relabel_all_cache_home($2)
-			xdg_relabel_all_config_home($2)
-			xdg_relabel_all_data_home($2)
 		')
 	')
 ')
@@ -2023,6 +2103,50 @@ interface(`userdom_dontaudit_read_user_home_content_files',`
 
 	dontaudit $1 user_home_t:dir list_dir_perms;
 	dontaudit $1 user_home_t:file read_file_perms;
+')
+
+########################################
+## <summary>
+##	Read all user home content, including application-specific resources.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access
+##	</summary>
+## </param>
+#
+interface(`userdom_read_all_user_home_content',`
+	gen_require(`
+		attribute user_home_content_type;
+	')
+
+	list_dirs_pattern($1, user_home_content_type, user_home_content_type)
+	read_files_pattern($1, user_home_content_type, user_home_content_type)
+	read_lnk_files_pattern($1, user_home_content_type, user_home_content_type)
+	read_fifo_files_pattern($1, user_home_content_type, user_home_content_type)
+	read_sock_files_pattern($1, user_home_content_type, user_home_content_type)
+')
+
+########################################
+## <summary>
+##	Manage all user home content, including application-specific resources.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access
+##	</summary>
+## </param>
+#
+interface(`userdom_manage_all_user_home_content',`
+	gen_require(`
+		attribute user_home_content_type;
+	')
+
+	manage_dirs_pattern($1, user_home_content_type, user_home_content_type)
+	manage_files_pattern($1, user_home_content_type, user_home_content_type)
+	manage_lnk_files_pattern($1, user_home_content_type, user_home_content_type)
+	manage_fifo_files_pattern($1, user_home_content_type, user_home_content_type)
+	manage_sock_files_pattern($1, user_home_content_type, user_home_content_type)
 ')
 
 ########################################
@@ -4364,136 +4488,6 @@ interface(`userdom_dbus_send_all_users',`
 ')
 
 # Gentoo added stuff, but cannot use an ifdef distro_gentoo for this
-
-########################################
-## <summary>
-##	Support creation of tunable access to user content
-## </summary>
-## <param name="prefix">
-##	<summary>
-##	The prefix of the application domain to create the
-##	tunables for
-##	</summary>
-## </param>
-## <param name="domain">
-##	<summary>
-##	Domain to create the tunables for
-##	</summary>
-## </param>
-#
-template(`userdom_user_content_access_template',`
-
-	########################################
-	#
-	# Declarations
-	#
-
-	## <desc>
-	##	<p>
-	##	Please update doc/gentoo_tunables.xml.
-	##	</p>
-	## </desc>
-	gen_tunable(`$1_read_generic_user_content', true)
-
-	## <desc>
-	##	<p>
-	##	Please update doc/gentoo_tunables.xml.
-	##	</p>
-	## </desc>
-	gen_tunable(`$1_read_all_user_content', false)
-
-	## <desc>
-	##	<p>
-	##	Please update doc/gentoo_tunables.xml.
-	##	</p>
-	## </desc>
-	gen_tunable(`$1_manage_generic_user_content', false)
-
-	## <desc>
-	##	<p>
-	##	Please update doc/gentoo_tunables.xml.
-	##	</p>
-	## </desc>
-	gen_tunable(`$1_manage_all_user_content', false)
-
-	tunable_policy(`$1_read_generic_user_content',`
-		userdom_list_user_tmp($2)
-		userdom_list_user_home_content($2)
-		userdom_read_user_home_content_files($2)
-		userdom_read_user_home_content_symlinks($2)
-		userdom_read_user_tmp_files($2)
-		userdom_read_user_tmp_symlinks($2)
-	',`
-		files_dontaudit_list_home($2)
-		files_dontaudit_list_tmp($2)
-	
-		userdom_dontaudit_list_user_home_dirs($2)
-		userdom_dontaudit_list_user_tmp($2)
-		userdom_dontaudit_read_user_home_content_files($2)
-		userdom_dontaudit_read_user_tmp_files($2)
-	')
-
-	tunable_policy(`$1_read_all_user_content',`
-		userdom_list_user_tmp($2)
-		userdom_read_all_user_home_content($2)
-	')
-
-	tunable_policy(`$1_manage_generic_user_content',`
-		userdom_manage_user_tmp_dirs($2)
-		userdom_manage_user_tmp_files($2)
-		userdom_manage_user_home_content_dirs($2)
-		userdom_manage_user_home_content_files($2)
-	')
-
-	tunable_policy(`$1_manage_all_user_content',`
-		userdom_manage_all_user_home_content($2)
-	')
-')
-
-########################################
-## <summary>
-##	Read all user home content, including application-specific home content.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access
-##	</summary>
-## </param>
-#
-interface(`userdom_read_all_user_home_content',`
-	gen_require(`
-		attribute user_home_content_type;
-	')
-
-	list_dirs_pattern($1, user_home_content_type, user_home_content_type)
-	read_files_pattern($1, user_home_content_type, user_home_content_type)
-	read_lnk_files_pattern($1, user_home_content_type, user_home_content_type)
-	read_fifo_files_pattern($1, user_home_content_type, user_home_content_type)
-	read_sock_files_pattern($1, user_home_content_type, user_home_content_type)
-')
-
-########################################
-## <summary>
-##	Manage all user home content, including application-specific home
-##	content.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access
-##	</summary>
-## </param>
-#
-interface(`userdom_manage_all_user_home_content',`
-	gen_require(`
-		attribute user_home_content_type;
-	')
-
-	manage_dirs_pattern($1, user_home_content_type, user_home_content_type)
-	manage_files_pattern($1, user_home_content_type, user_home_content_type)
-	manage_lnk_files_pattern($1, user_home_content_type, user_home_content_type)
-	manage_fifo_files_pattern($1, user_home_content_type, user_home_content_type)
-	manage_sock_files_pattern($1, user_home_content_type, user_home_content_type)
-')
 
 ########################################
 ## <summary>

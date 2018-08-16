@@ -1,0 +1,54 @@
+policy_module(xdg, 1.1.0)
+
+########################################
+#
+# Declarations
+#
+
+attribute xdg_cache_type;
+
+attribute xdg_config_type;
+
+attribute xdg_data_type;
+
+
+type xdg_cache_t;
+xdg_cache_content(xdg_cache_t)
+
+type xdg_config_t;
+xdg_config_content(xdg_config_t)
+
+type xdg_data_t;
+xdg_data_content(xdg_data_t)
+
+# Various user location types (see ~/.config/user-dirs.dirs)
+type xdg_documents_t; # customizable
+userdom_user_home_content(xdg_documents_t)
+
+type xdg_downloads_t; # customizable
+userdom_user_home_content(xdg_downloads_t)
+
+type xdg_music_t; # customizable
+userdom_user_home_content(xdg_music_t)
+
+type xdg_pictures_t; # customizable
+userdom_user_home_content(xdg_pictures_t)
+
+type xdg_videos_t; # customizable
+userdom_user_home_content(xdg_videos_t)
+
+ifdef(`distro_gentoo',`
+	# Compat aliases for the old gentoo-specific names
+	attribute xdg_cache_home_type;
+	attribute xdg_config_home_type;
+	attribute xdg_data_home_type;
+
+	typealias xdg_cache_t alias xdg_cache_home_t;
+	typealias xdg_config_t alias xdg_config_home_t;
+	typealias xdg_data_t alias xdg_data_home_t;
+	typealias xdg_documents_t alias xdg_documents_home_t;
+	typealias xdg_downloads_t alias xdg_downloads_home_t;
+	typealias xdg_music_t alias xdg_music_home_t;
+	typealias xdg_pictures_t alias xdg_pictures_home_t;
+	typealias xdg_videos_t alias xdg_videos_home_t;
+')

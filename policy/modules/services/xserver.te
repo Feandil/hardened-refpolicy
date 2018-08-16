@@ -1,4 +1,4 @@
-policy_module(xserver, 3.15.1)
+policy_module(xserver, 3.16.1)
 
 gen_require(`
 	class x_drawable all_x_drawable_perms;
@@ -125,7 +125,7 @@ userdom_user_home_content(user_fonts_t)
 type user_fonts_cache_t;
 typealias user_fonts_cache_t alias { staff_fonts_cache_t sysadm_fonts_cache_t };
 typealias user_fonts_cache_t alias { auditadm_fonts_cache_t secadm_fonts_cache_t };
-userdom_user_home_content(user_fonts_cache_t)
+xdg_cache_content(user_fonts_cache_t)
 
 type user_fonts_config_t;
 typealias user_fonts_config_t alias { staff_fonts_config_t sysadm_fonts_config_t };
@@ -228,6 +228,9 @@ userdom_user_home_content(xsession_log_t)
 # Type for the X server log file.
 type xserver_log_t;
 logging_log_file(xserver_log_t)
+
+type mesa_shader_cache_t;
+xdg_cache_content(mesa_shader_cache_t)
 
 ifdef(`enable_mcs',`
 	init_ranged_domain(xdm_t, xdm_exec_t, s0 - mcs_systemhigh)
@@ -693,6 +696,12 @@ manage_files_pattern(xserver_t, xkb_var_lib_t, xkb_var_lib_t)
 manage_lnk_files_pattern(xserver_t, xkb_var_lib_t, xkb_var_lib_t)
 files_search_var_lib(xserver_t)
 
+manage_dirs_pattern(xserver_t, mesa_shader_cache_t, mesa_shader_cache_t)
+manage_files_pattern(xserver_t, mesa_shader_cache_t, mesa_shader_cache_t)
+allow xserver_t mesa_shader_cache_t:file map;
+xdg_cache_filetrans(xserver_t, mesa_shader_cache_t, dir, "mesa_shader_cache")
+xdg_generic_user_home_dir_filetrans_cache(xserver_t, dir, ".cache")
+
 domtrans_pattern(xserver_t, xauth_exec_t, xauth_t)
 allow xserver_t xauth_home_t:file read_file_perms;
 
@@ -740,6 +749,7 @@ dev_read_raw_memory(xserver_t)
 dev_wx_raw_memory(xserver_t)
 # for other device nodes such as the NVidia binary-only driver
 dev_rw_xserver_misc(xserver_t)
+dev_map_xserver_misc(xserver_t)
 # read events - the synaptics touchpad driver reads raw events
 dev_rw_input_dev(xserver_t)
 dev_rwx_zero(xserver_t)
@@ -1064,13 +1074,15 @@ ifdef(`distro_gentoo',`
 	# xserver_t policy
 	#
 
-	type xserver_xdg_data_home_t;
-	xdg_data_home_content(xserver_xdg_data_home_t)
+	type xserver_xdg_data_t;
+	typealias xserver_xdg_data_t alias xserver_xdg_data_home_t;
+	xdg_data_content(xserver_xdg_data_t)
 
 	# Mark data in ~/.local/share as xserver_t XDG data, see bug #516512
-	manage_dirs_pattern(xserver_t, xserver_xdg_data_home_t, xserver_xdg_data_home_t)
-	allow xserver_t xserver_xdg_data_home_t:file manage_file_perms;
-	xdg_data_home_filetrans(xserver_t, xserver_xdg_data_home_t, dir)
+	manage_dirs_pattern(xserver_t, xserver_xdg_data_t, xserver_xdg_data_t)
+	allow xserver_t xserver_xdg_data_t:file manage_file_perms;
+	xdg_data_filetrans(xserver_t, xserver_xdg_data_home_t, dir)
+	xdg_generic_user_home_dir_filetrans_data(xserver_t, dir, ".local")
 
 	userdom_read_user_tmp_files(xserver_t)
 

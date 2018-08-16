@@ -1,4 +1,4 @@
-policy_module(init, 2.4.4)
+policy_module(init, 2.5.1)
 
 gen_require(`
 	class passwd rootok;
@@ -145,6 +145,7 @@ allow init_t init_var_run_t:file manage_lnk_file_perms;
 
 allow init_t initctl_t:fifo_file manage_fifo_file_perms;
 dev_filetrans(init_t, initctl_t, fifo_file)
+files_pid_filetrans(init_t, initctl_t, fifo_file)
 
 # Modify utmp.
 allow init_t initrc_var_run_t:file { rw_file_perms setattr };
@@ -406,6 +407,7 @@ ifdef(`init_systemd',`
 	# lvm2-activation-generator checks file labels
 	seutil_read_file_contexts(init_t)
 
+	systemd_getattr_updated_runtime(init_t)
 	systemd_manage_passwd_runtime_symlinks(init_t)
 	systemd_use_passwd_agent(init_t)
 	systemd_list_tmpfiles_conf(init_t)
@@ -633,6 +635,7 @@ dev_delete_generic_symlinks(initrc_t)
 dev_getattr_all_blk_files(initrc_t)
 dev_getattr_all_chr_files(initrc_t)
 dev_rw_xserver_misc(initrc_t)
+dev_map_xserver_misc(initrc_t)
 
 domain_kill_all_domains(initrc_t)
 domain_signal_all_domains(initrc_t)

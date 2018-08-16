@@ -1,6 +1,8 @@
 #
 # HOME_DIR
 #
+HOME_DIR/\.cache/mesa_shader_cache(/.*)?	gen_context(system_u:object_r:mesa_shader_cache_t,s0)
+HOME_DIR/\.cache/fontconfig(/.*)?	gen_context(system_u:object_r:user_fonts_cache_t,s0)
 HOME_DIR/\.dmrc		--	gen_context(system_u:object_r:dmrc_home_t,s0)
 HOME_DIR/\.fonts\.conf	--	gen_context(system_u:object_r:user_fonts_config_t,s0)
 HOME_DIR/\.fonts(/.*)?		gen_context(system_u:object_r:user_fonts_t,s0)
@@ -147,5 +149,5 @@ ifdef(`distro_suse',`
 ')
 
 ifdef(`distro_gentoo',`
-HOME_DIR/\.local/share/xorg(/.*)?	gen_context(system_u:object_r:xserver_xdg_data_home_t,s0)
+HOME_DIR/\.local/share/xorg(/.*)?	gen_context(system_u:object_r:xserver_xdg_data_t,s0)
 ')
