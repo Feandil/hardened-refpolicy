@@ -765,7 +765,7 @@ class key
 
 class context
 {
-	translate
+	unused_perm
 	contains
 }
 
@@ -1090,3 +1090,6 @@ class bpf
 	prog_load
 	prog_run
 }
+
+class xdp_socket
+inherits socket

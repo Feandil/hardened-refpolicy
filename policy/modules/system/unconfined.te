@@ -1,4 +1,4 @@
-policy_module(unconfined, 3.11.0)
+policy_module(unconfined, 3.11.1)
 
 ########################################
 #
@@ -56,6 +56,12 @@ ifdef(`direct_sysadm_daemon',`
                 seutil_run_runinit(unconfined_t, unconfined_r)
                 seutil_init_script_run_runinit(unconfined_t, unconfined_r)
         ')
+')
+
+ifdef(`init_systemd',`
+	optional_policy(`
+		systemd_dbus_chat_resolved(unconfined_t)
+	')
 ')
 
 optional_policy(`

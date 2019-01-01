@@ -469,6 +469,25 @@ interface(`systemd_manage_networkd_units',`
 
 ########################################
 ## <summary>
+##	Allow specified domain to enable systemd-networkd units
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_enabledisable_networkd',`
+	gen_require(`
+		type systemd_networkd_unit_t;
+		class service { enable disable };
+	')
+
+	allow $1 systemd_networkd_unit_t:service { enable disable };
+')
+
+########################################
+## <summary>
 ##	Allow specified domain to start systemd-networkd units
 ## </summary>
 ## <param name="domain">
@@ -751,6 +770,27 @@ interface(`systemd_tmpfilesd_managed',`
 	')
 
 	allow systemd_tmpfiles_t $1:$2 { setattr relabelfrom relabelto create };
+')
+
+########################################
+## <summary>
+##   Send and receive messages from
+##   systemd resolved over dbus.
+## </summary>
+## <param name="domain">
+##   <summary>
+##     Domain allowed access.
+##   </summary>
+## </param>
+#
+interface(`systemd_dbus_chat_resolved',`
+	gen_require(`
+		type systemd_resolved_t;
+		class dbus send_msg;
+	')
+
+	allow $1 systemd_resolved_t:dbus send_msg;
+	allow systemd_resolved_t $1:dbus send_msg;
 ')
 
 #######################################

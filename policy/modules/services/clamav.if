@@ -35,6 +35,8 @@ interface(`clamav_stream_connect',`
 		type clamd_t, clamd_var_run_t;
 	')
 
+	allow clamd_t $1:fd use;
+
 	files_search_pids($1)
 	stream_connect_pattern($1, clamd_var_run_t, clamd_var_run_t, clamd_t)
 ')
@@ -175,6 +177,128 @@ interface(`clamav_read_state_clamd',`
 	allow $1 clamd_t:dir list_dir_perms;
 	read_files_pattern($1, clamd_t, clamd_t)
 	read_lnk_files_pattern($1, clamd_t, clamd_t)
+')
+
+#######################################
+## <summary>
+##	Read clam virus signature files
+## </summary>
+## <desc>
+##	<p>
+##	Useful for when using things like 'sigtool'
+##	which provides useful information about
+##	ClamAV signature files.
+##	</p>
+## </desc>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`clamav_read_signatures',`
+	gen_require(`
+		type clamd_var_lib_t;
+	')
+
+	clamav_search_lib($1)
+	allow $1 clamd_var_lib_t:dir list_dir_perms;
+	read_files_pattern($1, clamd_var_lib_t, clamd_var_lib_t)
+	read_lnk_files_pattern($1, clamd_var_lib_t, clamd_var_lib_t)
+')
+
+#######################################
+## <summary>
+##	Denote a particular type to be scanned by ClamAV
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Type that clamd_t and clamscan_t can read.
+##	</summary>
+## </param>
+#
+interface(`clamav_scannable_files',`
+	gen_require(`
+		attribute clam_scannable_type;
+	')
+
+	typeattribute $1 clam_scannable_type;
+')
+
+########################################
+## <summary>
+##	Allow specified domain to enable clamd units
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`clamav_enabledisable_clamd',`
+	gen_require(`
+		type clamav_unit_t;
+		class service { enable disable };
+	')
+
+	allow $1 clamav_unit_t:service { enable disable };
+')
+
+########################################
+## <summary>
+##	Allow specified domain to start clamd units
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`clamav_startstop_clamd',`
+	gen_require(`
+		type clamd_unit_t;
+		class service { start stop };
+	')
+
+	allow $1 clamd_unit_t:service { start stop };
+')
+
+########################################
+## <summary>
+##	Allow specified domain to get status of clamd
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`clamav_status_clamd',`
+	gen_require(`
+		type clamd_unit_t;
+		class service status;
+	')
+
+	allow $1 clamd_unit_t:service status;
+')
+
+########################################
+## <summary>
+##	Allow specified domain reload of clamd
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`clamav_reload_clamd',`
+	gen_require(`
+		type clamd_unit_t;
+		class service reload;
+	')
+
+	allow $1 clamd_unit_t:service reload;
 ')
 
 ########################################

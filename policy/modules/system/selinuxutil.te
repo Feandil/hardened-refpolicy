@@ -1,4 +1,4 @@
-policy_module(selinuxutil, 1.24.0)
+policy_module(selinuxutil, 1.24.1)
 
 gen_require(`
 	bool secure_mode;
@@ -558,6 +558,13 @@ ifdef(`distro_ubuntu',`
 
 optional_policy(`
 	portage_eselect_module(semanage_t)
+')
+
+ifdef(`init_systemd',`
+	optional_policy(`
+		init_dbus_chat(semanage_t)
+		dbus_system_bus_client(semanage_t)
+	')
 ')
 
 optional_policy(`
