@@ -1,4 +1,4 @@
-policy_module(ssh, 2.11.1)
+policy_module(ssh, 2.12.0)
 
 ########################################
 #
@@ -178,6 +178,7 @@ logging_read_generic_logs(ssh_t)
 
 auth_use_nsswitch(ssh_t)
 
+miscfiles_read_generic_certs(ssh_t)
 miscfiles_read_localization(ssh_t)
 
 seutil_read_config(ssh_t)
@@ -248,6 +249,9 @@ optional_policy(`
 # sshd_t is the domain for the sshd program.
 #
 
+# for /run/user/UID/bus access, probably pam_systemd.so
+allow sshd_t self:capability dac_read_search;
+
 # so a tunnel can point to another ssh tunnel
 allow sshd_t self:netlink_route_socket r_netlink_socket_perms;
 allow sshd_t self:key { search link write };
@@ -275,6 +279,7 @@ ifdef(`distro_debian',`
 ')
 
 ifdef(`init_systemd',`
+	init_dbus_chat(sshd_t)
 	systemd_dbus_chat_logind(sshd_t)
 	init_rw_stream_sockets(sshd_t)
 ')
@@ -329,6 +334,7 @@ optional_policy(`
 
 optional_policy(`
 	xserver_domtrans_xauth(sshd_t)
+	xserver_link_xdm_keys(sshd_t)
 ')
 
 ########################################

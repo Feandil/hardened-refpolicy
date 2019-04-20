@@ -1,4 +1,4 @@
-policy_module(xserver, 3.16.2)
+policy_module(xserver, 3.17.0)
 
 gen_require(`
 	class x_drawable all_x_drawable_perms;
@@ -147,6 +147,7 @@ type xauth_t;
 type xauth_exec_t;
 typealias xauth_t alias { user_xauth_t staff_xauth_t sysadm_xauth_t };
 typealias xauth_t alias { auditadm_xauth_t secadm_xauth_t };
+userdom_manage_user_tmp_dirs(xauth_t)
 userdom_user_application_domain(xauth_t, xauth_exec_t)
 
 type xauth_home_t;
@@ -289,6 +290,8 @@ allow xauth_t xdm_t:unix_stream_socket { read write };
 
 kernel_request_load_module(xauth_t)
 
+dev_read_sysfs(xauth_t)
+
 domain_use_interactive_fds(xauth_t)
 
 files_read_etc_files(xauth_t)
@@ -306,6 +309,7 @@ userdom_use_user_terminals(xauth_t)
 userdom_read_user_tmp_files(xauth_t)
 
 xserver_rw_xdm_tmp_files(xauth_t)
+xserver_stream_connect(xauth_t)
 
 tunable_policy(`use_nfs_home_dirs',`
 	fs_manage_nfs_files(xauth_t)
@@ -484,7 +488,6 @@ term_setattr_unallocated_ttys(xdm_t)
 auth_domtrans_pam_console(xdm_t)
 auth_manage_pam_pid(xdm_t)
 auth_manage_pam_console_data(xdm_t)
-auth_rw_faillog(xdm_t)
 auth_write_login_records(xdm_t)
 
 # Run telinit->init to shutdown.
@@ -566,11 +569,18 @@ optional_policy(`
 ')
 
 optional_policy(`
+	allow xdm_t self:process getcap;
+
+	dbus_exec(xdm_t)
 	dbus_system_bus_client(xdm_t)
 	dbus_connect_system_bus(xdm_t)
 
 	optional_policy(`
 		accountsd_dbus_chat(xdm_t)
+	')
+
+	optional_policy(`
+		systemd_read_logind_pids(xdm_t)
 	')
 ')
 
@@ -702,6 +712,9 @@ allow xserver_t mesa_shader_cache_t:file map;
 xdg_cache_filetrans(xserver_t, mesa_shader_cache_t, dir, "mesa_shader_cache")
 xdg_generic_user_home_dir_filetrans_cache(xserver_t, dir, ".cache")
 
+# for writing to ~/.local/share/sddm/xorg-session.log
+xdg_manage_data(xauth_t)
+
 domtrans_pattern(xserver_t, xauth_exec_t, xauth_t)
 allow xserver_t xauth_home_t:file read_file_perms;
 
@@ -709,6 +722,7 @@ allow xserver_t xauth_home_t:file read_file_perms;
 manage_files_pattern(xserver_t, xserver_log_t, xserver_log_t)
 logging_log_filetrans(xserver_t, xserver_log_t, file)
 
+kernel_read_crypto_sysctls(xserver_t)
 kernel_read_system_state(xserver_t)
 kernel_read_device_sysctls(xserver_t)
 kernel_read_modprobe_sysctls(xserver_t)

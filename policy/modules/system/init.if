@@ -204,6 +204,7 @@ interface(`init_spec_daemon_domain',`
 	gen_require(`
 		type init_t;
 		role system_r;
+		attribute daemon;
 	')
 
 	typeattribute $1 daemon;
@@ -1133,6 +1134,25 @@ interface(`init_dbus_chat',`
 
 ########################################
 ## <summary>
+##      read/follow symlinks under /var/lib/systemd/
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`init_read_var_lib_links',`
+	gen_require(`
+		type init_var_lib_t;
+	')
+
+	allow $1 init_var_lib_t:dir list_dir_perms;
+	allow $1 init_var_lib_t:lnk_file read_lnk_file_perms;
+')
+
+########################################
+## <summary>
 ##      List /var/lib/systemd/ dir
 ## </summary>
 ## <param name="domain">
@@ -1303,23 +1323,13 @@ interface(`init_pid_filetrans',`
 ## </param>
 #
 interface(`init_getattr_initctl',`
-	ifdef(`init_systemd',`
-		# stat /run/systemd/initctl/fifo
-		gen_require(`
-			type init_var_run_t;
-		')
-
-		allow $1 init_var_run_t:fifo_file getattr;
-		allow $1 init_var_run_t:dir list_dir_perms;
-	',`
-		gen_require(`
-			type initctl_t;
-		')
-
-		dev_list_all_dev_nodes($1)
-		files_search_pids($1)
-		allow $1 initctl_t:fifo_file getattr;
+	gen_require(`
+		type initctl_t;
 	')
+
+	files_search_pids($1)
+	dev_list_all_dev_nodes($1)
+	allow $1 initctl_t:fifo_file getattr;
 ')
 
 ########################################
@@ -1859,6 +1869,25 @@ interface(`init_ptrace',`
 	')
 
 	allow $1 init_t:process ptrace;
+')
+
+########################################
+## <summary>
+##	get init process stats
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`init_getattr',`
+	gen_require(`
+		type init_t;
+	')
+
+	allow $1 init_t:process getattr;
 ')
 
 ########################################
@@ -2690,6 +2719,22 @@ interface(`init_relabel_utmp',`
 ## </param>
 #
 interface(`init_pid_filetrans_utmp',`
+	refpolicywarn(`$0($*) has been deprecated, please use init_runtime_filetrans_utmp() instead.')
+	init_runtime_filetrans_utmp($1)
+')
+
+########################################
+## <summary>
+##	Create files in /var/run with the
+##	utmp file type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_runtime_filetrans_utmp',`
 	gen_require(`
 		type initrc_var_run_t;
 	')
@@ -2708,6 +2753,21 @@ interface(`init_pid_filetrans_utmp',`
 ## </param>
 #
 interface(`init_create_pid_dirs',`
+	refpolicywarn(`$0($*) has been deprecated, please use init_create_runtime_dirs() instead.')
+	init_create_runtime_dirs($1)
+')
+
+#######################################
+## <summary>
+##	Create a directory in the /run/systemd directory.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_create_runtime_dirs',`
 	gen_require(`
 		type init_var_run_t;
 	')
@@ -2727,6 +2787,21 @@ interface(`init_create_pid_dirs',`
 ## </param>
 #
 interface(`init_rename_pid_files',`
+	refpolicywarn(`$0($*) has been deprecated, please use init_rename_runtime_files() instead.')
+	init_rename_runtime_files($1)
+')
+
+########################################
+## <summary>
+##      Rename init_var_run_t files
+## </summary>
+## <param name="domain">
+##      <summary>
+##      domain
+##      </summary>
+## </param>
+#
+interface(`init_rename_runtime_files',`
 	gen_require(`
 		type init_var_run_t;
 	')
@@ -2736,7 +2811,7 @@ interface(`init_rename_pid_files',`
 
 ########################################
 ## <summary>
-##      Rename and de init_var_run_t files
+##      Delete init_var_run_t files
 ## </summary>
 ## <param name="domain">
 ##      <summary>
@@ -2745,6 +2820,21 @@ interface(`init_rename_pid_files',`
 ## </param>
 #
 interface(`init_delete_pid_files',`
+	refpolicywarn(`$0($*) has been deprecated, please use init_delete_runtime_files() instead.')
+	init_delete_runtime_files($1)
+')
+
+########################################
+## <summary>
+##      Delete init_var_run_t files
+## </summary>
+## <param name="domain">
+##      <summary>
+##      domain
+##      </summary>
+## </param>
+#
+interface(`init_delete_runtime_files',`
 	gen_require(`
 		type init_var_run_t;
 	')
@@ -2764,6 +2854,22 @@ interface(`init_delete_pid_files',`
 ## </param>
 #
 interface(`init_write_pid_socket',`
+	refpolicywarn(`$0($*) has been deprecated, please use init_write_runtime_socket() instead.')
+	init_write_runtime_socket($1)
+')
+
+#######################################
+## <summary>
+##  Allow the specified domain to write to
+##  init sock file.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_write_runtime_socket',`
 	gen_require(`
 		type init_var_run_t;
 	')
@@ -2782,11 +2888,44 @@ interface(`init_write_pid_socket',`
 ## </param>
 #
 interface(`init_read_pid_pipes',`
+	refpolicywarn(`$0($*) has been deprecated, please use init_read_runtime_pipes() instead.')
+	init_read_runtime_pipes($1)
+')
+
+########################################
+## <summary>
+##	Read init unnamed pipes.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_read_runtime_pipes',`
 	gen_require(`
 		type init_var_run_t;
 	')
 
 	read_fifo_files_pattern($1, init_var_run_t, init_var_run_t)
+')
+
+######################################
+## <summary>
+##	read systemd unit symlinks (usually under /run/systemd/units/)
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_read_runtime_symlinks',`
+	gen_require(`
+		type init_var_run_t;
+	')
+
+	read_lnk_files_pattern($1, init_var_run_t, init_var_run_t)
 ')
 
 ########################################
@@ -2904,6 +3043,24 @@ interface(`init_search_units',`
 	libs_search_lib($1)
 
 	fs_search_tmpfs($1)
+')
+
+########################################
+## <summary>
+##	Read systemd unit links
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_read_generic_units_symlinks',`
+	gen_require(`
+		type systemd_unit_t;
+	')
+
+	allow $1 systemd_unit_t:lnk_file read_lnk_file_perms;
 ')
 
 ########################################
@@ -3113,4 +3270,22 @@ interface(`init_admin',`
 	init_stop_generic_units($1)
 	init_stop_system($1)
 	init_telinit($1)
+')
+
+########################################
+## <summary>
+##      Allow getting init_t rlimit
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Source domain
+##      </summary>
+## </param>
+#
+interface(`init_getrlimit',`
+	gen_require(`
+		type init_t;
+	')
+
+	allow $1 init_t:process getrlimit;
 ')

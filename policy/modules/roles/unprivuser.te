@@ -1,4 +1,4 @@
-policy_module(unprivuser, 2.9.0)
+policy_module(unprivuser, 2.10.0)
 
 # this module should be named user, but that is
 # a compile error since user is a keyword.
@@ -18,6 +18,10 @@ optional_policy(`
 
 optional_policy(`
 	git_role(user_r, user_t)
+')
+
+optional_policy(`
+	modemmanager_dbus_chat(user_t)
 ')
 
 optional_policy(`
@@ -47,6 +51,10 @@ ifndef(`distro_redhat',`
 
 	optional_policy(`
 		cdrecord_role(user_r, user_t)
+	')
+
+	optional_policy(`
+		chromium_role(user_r, user_t)
 	')
 
 	optional_policy(`
@@ -150,6 +158,10 @@ ifndef(`distro_redhat',`
 	')
 
 	optional_policy(`
+		sigrok_run(user_r, user_t)
+	')
+
+	optional_policy(`
 		spamassassin_role(user_r, user_t)
 	')
 
@@ -202,10 +214,6 @@ ifdef(`distro_gentoo',`
 
 	optional_policy(`
 		at_role(user_r, user_t)
-	')
-
-	optional_policy(`
-		chromium_role(user_r, user_t)
 	')
 
 	optional_policy(`

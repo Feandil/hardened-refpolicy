@@ -1,4 +1,4 @@
-policy_module(logging, 1.28.0)
+policy_module(logging, 1.29.2)
 
 ########################################
 #
@@ -106,6 +106,8 @@ allow auditctl_t self:netlink_audit_socket nlmsg_readpriv;
 read_files_pattern(auditctl_t, auditd_etc_t, auditd_etc_t)
 allow auditctl_t auditd_etc_t:dir list_dir_perms;
 dontaudit auditctl_t auditd_etc_t:file map;
+
+corecmd_search_bin(auditctl_t)
 
 # Needed for adding watches
 files_getattr_all_dirs(auditctl_t)
@@ -539,14 +541,17 @@ ifdef(`init_systemd',`
 	dev_read_urand(syslogd_t)
 	dev_write_kmsg(syslogd_t)
 
+	domain_getattr_all_domains(syslogd_t)
 	domain_read_all_domains_state(syslogd_t)
 
-	init_create_pid_dirs(syslogd_t)
+	init_create_runtime_dirs(syslogd_t)
 	init_daemon_pid_file(syslogd_var_run_t, dir, "syslogd")
-	init_rename_pid_files(syslogd_t)
-	init_delete_pid_files(syslogd_t)
+	init_getattr(syslogd_t)
+	init_rename_runtime_files(syslogd_t)
+	init_delete_runtime_files(syslogd_t)
 	init_dgram_send(syslogd_t)
-	init_read_pid_pipes(syslogd_t)
+	init_read_runtime_pipes(syslogd_t)
+	init_read_runtime_symlinks(syslogd_t)
 	init_read_state(syslogd_t)
 
 	systemd_manage_journal_files(syslogd_t)

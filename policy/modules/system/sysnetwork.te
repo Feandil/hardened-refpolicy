@@ -1,4 +1,4 @@
-policy_module(sysnetwork, 1.23.1)
+policy_module(sysnetwork, 1.24.0)
 
 ########################################
 #
@@ -68,6 +68,7 @@ exec_files_pattern(dhcpc_t, dhcp_etc_t, dhcp_etc_t)
 allow dhcpc_t dhcp_state_t:file read_file_perms;
 manage_files_pattern(dhcpc_t, dhcpc_state_t, dhcpc_state_t)
 filetrans_pattern(dhcpc_t, dhcp_state_t, dhcpc_state_t, file)
+allow dhcpc_t dhcpc_state_t:file map;
 
 # create pid file
 manage_files_pattern(dhcpc_t, dhcpc_var_run_t, dhcpc_var_run_t)
@@ -148,6 +149,8 @@ init_rw_utmp(dhcpc_t)
 logging_send_syslog_msg(dhcpc_t)
 
 miscfiles_read_localization(dhcpc_t)
+# dhclient reads /etc/ssl
+miscfiles_read_generic_certs(dhcpc_t)
 
 sysnet_run_ifconfig(dhcpc_t, dhcpc_roles)
 
@@ -372,6 +375,7 @@ ifdef(`hide_broken_symptoms',`
 
 optional_policy(`
 	devicekit_read_pid_files(ifconfig_t)
+	devicekit_append_inherited_log_files(ifconfig_t)
 ')
 
 optional_policy(`

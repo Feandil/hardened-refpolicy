@@ -1,4 +1,4 @@
-policy_module(selinuxutil, 1.24.1)
+policy_module(selinuxutil, 1.25.1)
 
 gen_require(`
 	bool secure_mode;
@@ -359,6 +359,7 @@ kernel_use_fds(restorecond_t)
 
 fs_dontaudit_list_nfs(restorecond_t)
 fs_getattr_all_xattr_fs(restorecond_t)
+fs_getattr_cgroup(restorecond_t)
 fs_getattr_pstore_dirs(restorecond_t)
 fs_getattr_tracefs(restorecond_t)
 fs_list_inotifyfs(restorecond_t)
@@ -372,7 +373,7 @@ selinux_compute_relabel_context(restorecond_t)
 selinux_compute_user_contexts(restorecond_t)
 
 files_relabel_non_auth_files(restorecond_t )
-files_read_non_auth_files(restorecond_t)
+files_dontaudit_read_all_symlinks(restorecond_t)
 auth_use_nsswitch(restorecond_t)
 
 logging_send_syslog_msg(restorecond_t)
@@ -380,6 +381,7 @@ logging_send_syslog_msg(restorecond_t)
 miscfiles_read_localization(restorecond_t)
 
 seutil_libselinux_linked(restorecond_t)
+seutil_read_default_contexts(restorecond_t)
 
 ifdef(`distro_ubuntu',`
 	optional_policy(`
@@ -614,6 +616,7 @@ files_read_usr_symlinks(setfiles_t)
 files_dontaudit_read_all_symlinks(setfiles_t)
 
 fs_getattr_all_xattr_fs(setfiles_t)
+fs_getattr_cgroup(setfiles_t)
 fs_getattr_nfs(setfiles_t)
 fs_getattr_pstore_dirs(setfiles_t)
 fs_getattr_pstorefs(setfiles_t)

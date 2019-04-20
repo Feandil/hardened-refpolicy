@@ -1,4 +1,4 @@
-policy_module(backup, 1.8.0)
+policy_module(backup, 1.9.0)
 
 ########################################
 #
@@ -64,6 +64,8 @@ fs_list_all(backup_t)
 auth_read_shadow(backup_t)
 
 logging_send_syslog_msg(backup_t)
+
+miscfiles_read_localization(backup_t)
 
 sysnet_read_config(backup_t)
 

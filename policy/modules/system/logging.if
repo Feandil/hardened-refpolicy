@@ -422,6 +422,28 @@ interface(`logging_domtrans_syslog',`
 
 	corecmd_search_bin($1)
 	domtrans_pattern($1, syslogd_exec_t, syslogd_t)
+	ifdef(`enable_mls',`
+		range_transition $1 syslogd_exec_t:process mls_systemhigh;
+	')
+')
+
+########################################
+## <summary>
+##	Allow specified domain to check status of syslog unit
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_status_syslog',`
+	gen_require(`
+		type syslogd_unit_t;
+		class service status;
+	')
+
+	allow $1 syslogd_unit_t:service status;
 ')
 
 ########################################
@@ -616,6 +638,11 @@ interface(`logging_send_syslog_msg',`
 	# will write to the console.
 	term_write_console($1)
 	term_dontaudit_read_console($1)
+
+	ifdef(`init_systemd',`
+		# Allow systemd-journald to check whether the process died
+		allow syslogd_t $1:process signull;
+	')
 ')
 
 ########################################

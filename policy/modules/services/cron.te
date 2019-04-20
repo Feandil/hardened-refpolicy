@@ -1,4 +1,4 @@
-policy_module(cron, 2.14.1)
+policy_module(cron, 2.15.1)
 
 gen_require(`
 	class passwd rootok;
@@ -315,9 +315,8 @@ init_start_all_units(system_cronjob_t)
 init_get_generic_units_status(system_cronjob_t)
 init_get_system_status(system_cronjob_t)
 
-auth_domtrans_chk_passwd(crond_t)
 auth_manage_var_auth(crond_t)
-auth_use_nsswitch(crond_t)
+auth_use_pam(crond_t)
 
 logging_send_audit_msgs(crond_t)
 logging_send_syslog_msg(crond_t)
@@ -344,6 +343,7 @@ ifdef(`distro_debian',`
 	allow crond_t self:process setrlimit;
 
 	optional_policy(`
+		apt_domtrans(system_cronjob_t)
 		apt_manage_cache(system_cronjob_t)
 		apt_read_db(system_cronjob_t)
 
@@ -380,6 +380,10 @@ optional_policy(`
 
 	optional_policy(`
 		hal_dbus_chat(crond_t)
+	')
+
+	optional_policy(`
+		init_dbus_chat(crond_t)
 	')
 
 	optional_policy(`
@@ -434,10 +438,13 @@ optional_policy(`
 ')
 
 optional_policy(`
+	systemd_dbus_chat_logind(crond_t)
 	systemd_write_inherited_logind_sessions_pipes(crond_t)
 ')
 
 optional_policy(`
+	init_dbus_chat(crond_t)
+	init_dbus_chat(system_cronjob_t)
 	systemd_dbus_chat_logind(system_cronjob_t)
 	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
 	# so cron jobs can restart daemons
@@ -454,13 +461,13 @@ optional_policy(`
 # System local policy
 #
 
-allow system_cronjob_t self:capability { chown dac_override dac_read_search fowner fsetid net_admin net_bind_service setgid setuid sys_nice };
-allow system_cronjob_t self:process { signal_perms getsched setsched };
+allow system_cronjob_t self:capability { chown dac_override dac_read_search fowner fsetid net_admin net_bind_service setgid setuid sys_nice sys_resource };
+allow system_cronjob_t self:process { signal_perms getsched setsched setrlimit };
 allow system_cronjob_t self:fd use;
 allow system_cronjob_t self:fifo_file rw_fifo_file_perms;
 allow system_cronjob_t self:passwd rootok;
 
-allow system_cronjob_t cron_log_t:file { append_file_perms create_file_perms setattr_file_perms };
+allow system_cronjob_t cron_log_t:file manage_file_perms;
 logging_log_filetrans(system_cronjob_t, cron_log_t, file)
 
 allow system_cronjob_t cron_var_lib_t:file { manage_file_perms relabel_file_perms };
@@ -492,6 +499,12 @@ allow system_cronjob_t cron_spool_t:file rw_file_perms;
 
 allow system_cronjob_t crond_tmp_t:file rw_inherited_file_perms;
 
+# popcon wants to stat /proc/kmsg and /proc/kcore
+kernel_getattr_core_if(system_cronjob_t)
+kernel_getattr_message_if(system_cronjob_t)
+
+kernel_read_crypto_sysctls(system_cronjob_t)
+kernel_read_irq_sysctls(system_cronjob_t)
 kernel_read_kernel_sysctls(system_cronjob_t)
 kernel_read_network_state(system_cronjob_t)
 kernel_read_system_state(system_cronjob_t)
@@ -512,8 +525,12 @@ corenet_udp_sendrecv_all_ports(system_cronjob_t)
 
 dev_getattr_all_blk_files(system_cronjob_t)
 dev_getattr_all_chr_files(system_cronjob_t)
+dev_getattr_mtrr_dev(system_cronjob_t)
+dev_read_rand(system_cronjob_t)
 dev_read_urand(system_cronjob_t)
 dev_read_sysfs(system_cronjob_t)
+# for checkarray to write to sync_action
+dev_rw_sysfs(system_cronjob_t)
 
 fs_getattr_all_fs(system_cronjob_t)
 fs_getattr_all_files(system_cronjob_t)
@@ -524,6 +541,7 @@ fs_getattr_all_sockets(system_cronjob_t)
 domain_dontaudit_read_all_domains_state(system_cronjob_t)
 
 files_exec_etc_files(system_cronjob_t)
+files_exec_usr_files(system_cronjob_t)
 files_read_etc_runtime_files(system_cronjob_t)
 files_list_all(system_cronjob_t)
 files_getattr_all_dirs(system_cronjob_t)
@@ -536,10 +554,12 @@ files_read_var_files(system_cronjob_t)
 files_dontaudit_search_pids(system_cronjob_t)
 files_manage_generic_spool(system_cronjob_t)
 files_create_boot_flag(system_cronjob_t)
+files_read_var_lib_symlinks(system_cronjob_t)
 
 mls_file_read_to_clearance(system_cronjob_t)
 
 init_domtrans_script(system_cronjob_t)
+init_read_generic_units_symlinks(system_cronjob_t)
 init_read_utmp(system_cronjob_t)
 init_use_script_fds(system_cronjob_t)
 
@@ -548,7 +568,7 @@ auth_use_nsswitch(system_cronjob_t)
 libs_exec_lib_files(system_cronjob_t)
 libs_exec_ld_so(system_cronjob_t)
 
-logging_read_generic_logs(system_cronjob_t)
+logging_manage_generic_logs(system_cronjob_t)
 logging_send_audit_msgs(system_cronjob_t)
 logging_send_syslog_msg(system_cronjob_t)
 
@@ -612,6 +632,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	gpg_exec(system_cronjob_t)
+')
+
+optional_policy(`
 	inn_manage_log(system_cronjob_t)
 	inn_manage_pid(system_cronjob_t)
 	inn_read_config(system_cronjob_t)
@@ -658,6 +682,9 @@ optional_policy(`
 
 optional_policy(`
 	userdom_user_home_dir_filetrans_user_home_content(system_cronjob_t, { dir file lnk_file fifo_file sock_file })
+
+	# for gpg-connect-agent to access /run/user/0
+	userdom_manage_user_runtime_dirs(system_cronjob_t)
 ')
 
 ########################################

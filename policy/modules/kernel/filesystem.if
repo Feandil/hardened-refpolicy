@@ -2342,6 +2342,25 @@ interface(`fs_rw_hugetlbfs_files',`
 
 ########################################
 ## <summary>
+##      Read, map and write hugetlbfs files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_mmap_rw_hugetlbfs_files',`
+        gen_require(`
+                type hugetlbfs_t;
+        ')
+
+        fs_rw_hugetlbfs_files($1)
+	allow $1 hugetlbfs_t:file map;
+')
+
+########################################
+## <summary>
 ##	Allow the type to associate to hugetlbfs filesystems.
 ## </summary>
 ## <param name="type">
@@ -2484,6 +2503,25 @@ interface(`fs_remount_iso9660_fs',`
 	')
 
 	allow $1 iso9660_t:filesystem remount;
+')
+
+########################################
+## <summary>
+##	Allow changing of the label of a
+##	filesystem with iso9660 type
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_relabelfrom_iso9660_fs',`
+	gen_require(`
+		type iso9660_t;
+	')
+
+	allow $1 iso9660_t:filesystem relabelfrom;
 ')
 
 ########################################

@@ -1,4 +1,4 @@
-policy_module(dpkg, 1.13.0)
+policy_module(dpkg, 1.14.0)
 
 ########################################
 #
@@ -314,6 +314,10 @@ optional_policy(`
 
 optional_policy(`
 	devicekit_dbus_chat_power(dpkg_script_t)
+')
+
+optional_policy(`
+	init_dbus_chat(dpkg_script_t)
 ')
 
 optional_policy(`

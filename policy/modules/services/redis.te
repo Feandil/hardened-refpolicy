@@ -1,4 +1,4 @@
-policy_module(redis, 1.6.0)
+policy_module(redis, 1.7.0)
 
 ########################################
 #
@@ -29,7 +29,7 @@ files_config_file(redis_conf_t)
 # Local policy
 #
 
-allow redis_t self:process { setrlimit signal_perms };
+allow redis_t self:process { setrlimit signal_perms getsched };
 allow redis_t self:fifo_file rw_fifo_file_perms;
 allow redis_t self:unix_stream_socket create_stream_socket_perms;
 allow redis_t self:tcp_socket create_stream_socket_perms;
@@ -44,6 +44,7 @@ logging_log_filetrans(redis_t, redis_log_t, dir)
 manage_dirs_pattern(redis_t, redis_var_lib_t, redis_var_lib_t)
 manage_files_pattern(redis_t, redis_var_lib_t, redis_var_lib_t)
 manage_lnk_files_pattern(redis_t, redis_var_lib_t, redis_var_lib_t)
+files_search_var_lib(redis_t)
 
 manage_dirs_pattern(redis_t, redis_var_run_t, redis_var_run_t)
 manage_files_pattern(redis_t, redis_var_run_t, redis_var_run_t)

@@ -1,4 +1,4 @@
-policy_module(gpg, 2.14.0)
+policy_module(gpg, 2.15.0)
 
 ########################################
 #
@@ -181,11 +181,6 @@ optional_policy(`
 
 optional_policy(`
 	spamassassin_read_spamd_tmp_files(gpg_t)
-')
-
-optional_policy(`
-	cron_system_entry(gpg_t, gpg_exec_t)
-	cron_read_system_job_tmp_files(gpg_t)
 ')
 
 optional_policy(`

@@ -1,4 +1,4 @@
-policy_module(dbus, 1.25.0)
+policy_module(dbus, 1.26.1)
 
 gen_require(`
 	class dbus all_dbus_perms;
@@ -89,6 +89,7 @@ files_pid_filetrans(system_dbusd_t, system_dbusd_var_run_t, { dir file })
 
 can_exec(system_dbusd_t, dbusd_exec_t)
 
+kernel_read_crypto_sysctls(system_dbusd_t)
 kernel_read_system_state(system_dbusd_t)
 kernel_read_kernel_sysctls(system_dbusd_t)
 
@@ -163,6 +164,13 @@ ifdef(`init_systemd', `
 	# gdm3 causes system_dbusd_t to want this access
 	dev_rw_dri(system_dbusd_t)
 	dev_rw_input_dev(system_dbusd_t)
+
+	# for /run/systemd/dynamic-uid/
+	init_list_pids(system_dbusd_t)
+	init_read_runtime_symlinks(system_dbusd_t)
+
+	# for journald /dev/log
+	kernel_dgram_send(system_dbusd_t)
 ')
 
 optional_policy(`
@@ -233,6 +241,7 @@ manage_files_pattern(session_bus_type, session_dbusd_runtime_t, session_dbusd_ru
 manage_sock_files_pattern(session_bus_type, session_dbusd_runtime_t, session_dbusd_runtime_t)
 userdom_user_runtime_filetrans(session_bus_type, session_dbusd_runtime_t, { dir file sock_file })
 
+kernel_read_crypto_sysctls(session_bus_type)
 kernel_read_system_state(session_bus_type)
 kernel_read_kernel_sysctls(session_bus_type)
 

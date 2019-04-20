@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.13.0)
+policy_module(sysadm, 2.14.2)
 
 ########################################
 #
@@ -69,6 +69,12 @@ ifndef(`enable_mls',`
 	logging_manage_audit_log(sysadm_t)
 	logging_manage_audit_config(sysadm_t)
 	logging_run_auditctl(sysadm_t, sysadm_r)
+')
+
+ifdef(`init_systemd',`
+	# Allow sysadm to resolve the username of dynamic users by calling
+	# LookupDynamicUserByUID on org.freedesktop.systemd1.
+	init_dbus_chat(sysadm_t)
 ')
 
 tunable_policy(`allow_ptrace',`
@@ -711,6 +717,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+        nsd_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
 	nslcd_admin(sysadm_t, sysadm_r)
 ')
 
@@ -1131,6 +1141,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	udevadm_run(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
 	ulogd_admin(sysadm_t, sysadm_r)
 ')
 
@@ -1265,6 +1279,10 @@ ifndef(`distro_redhat',`
 
 	optional_policy(`
 		cdrecord_role(sysadm_r, sysadm_t)
+	')
+
+	optional_policy(`
+		chromium_role(sysadm_r, sysadm_t)
 	')
 
 	optional_policy(`
