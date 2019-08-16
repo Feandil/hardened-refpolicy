@@ -1,4 +1,4 @@
-policy_module(init, 2.6.1)
+policy_module(init, 2.7.0)
 
 gen_require(`
 	class passwd rootok;
@@ -240,7 +240,8 @@ ifdef(`init_systemd',`
 	allow init_t systemprocess:unix_stream_socket create_stream_socket_perms;
 	allow init_t systemprocess:unix_dgram_socket create_socket_perms;
 
-	allow init_t self:process { getcap getsched setsched setpgid setfscreate setsockcreate setcap setrlimit };
+	# setexec and setkeycreate for systemd --user
+	allow init_t self:process { getcap getsched setsched setpgid setfscreate setsockcreate setexec setkeycreate setcap setrlimit };
 	allow init_t self:capability2 { audit_read block_suspend };
 	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
 	allow init_t self:unix_dgram_socket lock;
@@ -272,7 +273,6 @@ ifdef(`init_systemd',`
 
 	kernel_dyntrans_to(init_t)
 	kernel_read_network_state(init_t)
-	kernel_dgram_send(init_t)
 	kernel_stream_connect(init_t)
 	kernel_getattr_proc(init_t)
 	kernel_read_fs_sysctls(init_t)
@@ -316,6 +316,9 @@ ifdef(`init_systemd',`
 	dev_write_watchdog(init_t)
 
 	domain_read_all_domains_state(init_t)
+	# for starting systemd --user in the right domain:
+	domain_subj_id_change_exemption(init_t)
+	domain_role_change_exemption(init_t)
 
 	files_read_all_pids(init_t)
 	files_list_usr(init_t)
@@ -393,6 +396,8 @@ ifdef(`init_systemd',`
 	selinux_validate_context(init_t)
 	selinux_compute_create_context(init_t)
 	selinux_compute_access_vector(init_t)
+	# for starting systemd --user in the right domain:
+	selinux_compute_user_contexts(init_t)
 
 	storage_getattr_removable_dev(init_t)
 
@@ -438,6 +443,9 @@ ifdef(`init_systemd',`
 
 	optional_policy(`
 		systemd_dbus_chat_logind(init_t)
+		systemd_search_all_user_keys(init_t)
+		systemd_create_all_user_keys(init_t)
+		systemd_write_all_user_keys(init_t)
 	')
 
 	optional_policy(`
@@ -446,6 +454,13 @@ ifdef(`init_systemd',`
 
 	optional_policy(`
 		modutils_domtrans(init_t)
+	')
+
+	optional_policy(`
+		# for systemd --user:
+		unconfined_search_keys(init_t)
+		unconfined_create_keys(init_t)
+		unconfined_write_keys(init_t)
 	')
 ',`
 	tunable_policy(`init_upstart',`
@@ -973,8 +988,6 @@ ifdef(`init_systemd',`
 	allow initrc_t systemdunit:service reload;
 	allow initrc_t init_script_file_type:service { stop start status reload };
 
-	kernel_dgram_send(initrc_t)
-
 	# run systemd misc initializations
 	# in the initrc_t domain, as would be
 	# done in traditional sysvinit/upstart.
@@ -990,8 +1003,6 @@ ifdef(`init_systemd',`
 
 	# for logsave in strict configuration
 	fstools_write_log(initrc_t)
-
-	selinux_set_enforce_mode(initrc_t)
 
 	init_get_all_units_status(initrc_t)
 	init_manage_var_lib_files(initrc_t)

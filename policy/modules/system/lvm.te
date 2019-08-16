@@ -1,4 +1,4 @@
-policy_module(lvm, 1.22.0)
+policy_module(lvm, 1.23.0)
 
 ########################################
 #
@@ -373,6 +373,10 @@ optional_policy(`
 optional_policy(`
 	udev_read_db(lvm_t)
 	udev_read_pid_files(lvm_t)
+')
+
+optional_policy(`
+	usermanage_read_crack_db(lvm_t)
 ')
 
 optional_policy(`

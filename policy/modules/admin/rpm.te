@@ -1,4 +1,4 @@
-policy_module(rpm, 1.23.0)
+policy_module(rpm, 1.23.1)
 
 ########################################
 #
@@ -111,6 +111,7 @@ files_lock_filetrans(rpm_t, rpm_lock_t, file)
 
 manage_dirs_pattern(rpm_t, rpm_var_lib_t, rpm_var_lib_t)
 manage_files_pattern(rpm_t, rpm_var_lib_t, rpm_var_lib_t)
+mmap_read_files_pattern(rpm_t, rpm_var_lib_t, rpm_var_lib_t)
 files_var_lib_filetrans(rpm_t, rpm_var_lib_t, { dir file })
 
 manage_dirs_pattern(rpm_t, rpm_var_run_t, rpm_var_run_t)
@@ -203,10 +204,14 @@ libs_exec_ld_so(rpm_t)
 libs_exec_lib_files(rpm_t)
 libs_run_ldconfig(rpm_t, rpm_roles)
 
+logging_send_audit_msgs(rpm_t)
 logging_send_syslog_msg(rpm_t)
+
+miscfiles_read_localization(rpm_t)
 
 seutil_manage_src_policy(rpm_t)
 seutil_manage_bin_policy(rpm_t)
+seutil_read_file_contexts(rpm_t)
 
 userdom_use_user_terminals(rpm_t)
 userdom_use_unpriv_users_fds(rpm_t)
@@ -340,6 +345,8 @@ auth_dontaudit_getattr_shadow(rpm_script_t)
 auth_use_nsswitch(rpm_script_t)
 
 init_domtrans_script(rpm_script_t)
+init_manage_all_units(rpm_script_t)
+init_reload(rpm_script_t)
 init_telinit(rpm_script_t)
 
 libs_exec_ld_so(rpm_script_t)

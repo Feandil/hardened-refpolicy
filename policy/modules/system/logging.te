@@ -1,4 +1,4 @@
-policy_module(logging, 1.29.2)
+policy_module(logging, 1.30.0)
 
 ########################################
 #
@@ -270,10 +270,6 @@ logging_send_syslog_msg(audisp_t)
 miscfiles_read_localization(audisp_t)
 
 sysnet_dns_name_resolve(audisp_t)
-
-ifdef(`init_systemd',`
-	kernel_dgram_send(audisp_t)
-')
 
 optional_policy(`
 	dbus_system_bus_client(audisp_t)

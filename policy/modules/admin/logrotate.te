@@ -1,4 +1,4 @@
-policy_module(logrotate, 1.22.0)
+policy_module(logrotate, 1.23.0)
 
 ########################################
 #
@@ -29,8 +29,6 @@ files_type(logrotate_var_lib_t)
 type logrotate_unit_t;
 init_unit_file(logrotate_unit_t)
 
-mta_base_mail_template(logrotate)
-role system_r types logrotate_mail_t;
 
 ########################################
 #
@@ -131,8 +129,6 @@ userdom_use_user_terminals(logrotate_t)
 userdom_list_user_home_dirs(logrotate_t)
 userdom_use_unpriv_users_fds(logrotate_t)
 
-mta_sendmail_domtrans(logrotate_t, logrotate_mail_t)
-
 ifdef(`distro_debian',`
 	allow logrotate_t logrotate_tmp_t:file relabel_file_perms;
 	can_exec(logrotate_t, logrotate_exec_t)
@@ -193,6 +189,7 @@ optional_policy(`
 ')
 
 optional_policy(`
+	fail2ban_domtrans_client(logrotate_t)
 	fail2ban_stream_connect(logrotate_t)
 ')
 
@@ -278,13 +275,21 @@ optional_policy(`
 # Mail local policy
 #
 
-allow logrotate_mail_t logrotate_t:fd use;
-allow logrotate_mail_t logrotate_t:fifo_file rw_fifo_file_perms;
-allow logrotate_mail_t logrotate_t:process sigchld;
+optional_policy(`
+	mta_base_mail_template(logrotate)
+	role system_r types logrotate_mail_t;
 
-manage_files_pattern(logrotate_mail_t, logrotate_tmp_t, logrotate_tmp_t)
+	allow logrotate_mail_t logrotate_t:fd use;
+	allow logrotate_mail_t logrotate_t:fifo_file rw_fifo_file_perms;
+	allow logrotate_mail_t logrotate_t:process sigchld;
 
-logging_read_all_logs(logrotate_mail_t)
+	manage_files_pattern(logrotate_mail_t, logrotate_tmp_t, logrotate_tmp_t)
+
+	mta_sendmail_domtrans(logrotate_t, logrotate_mail_t)
+
+	logging_read_all_logs(logrotate_mail_t)
+')
+
 
 ifdef(`distro_gentoo',`
 	# Fix bug 534256 - fail2ban installs a logrotate file that calls fail2ban-client so allow transition

@@ -1,4 +1,4 @@
-policy_module(authlogin, 2.14.2)
+policy_module(authlogin, 2.15.0)
 
 ########################################
 #
@@ -142,11 +142,6 @@ ifdef(`distro_ubuntu',`
 	optional_policy(`
 		unconfined_domain(chkpwd_t)
 	')
-')
-
-ifdef(`init_systemd',`
-	# for journald /dev/log
-	kernel_dgram_send(chkpwd_t)
 ')
 
 optional_policy(`

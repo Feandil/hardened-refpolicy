@@ -1,4 +1,4 @@
-policy_module(kernel, 1.25.0)
+policy_module(kernel, 1.26.0)
 
 ########################################
 #
@@ -84,7 +84,7 @@ genfscon proc /fs/openafs gen_context(system_u:object_r:proc_afs_t,s0)
 # kernel message interface
 type proc_kmsg_t, proc_type;
 genfscon proc /kmsg gen_context(system_u:object_r:proc_kmsg_t,mls_systemhigh)
-neverallow ~{ can_receive_kernel_messages kern_unconfined } proc_kmsg_t:file ~getattr;
+neverallow ~{ can_receive_kernel_messages kern_unconfined } proc_kmsg_t:file read;
 
 # /proc kcore: inaccessible
 type proc_kcore_t, proc_type;
@@ -131,6 +131,10 @@ genfscon proc /sys/fs gen_context(system_u:object_r:sysctl_fs_t,s0)
 # /proc/sys/kernel directory and files
 type sysctl_kernel_t, sysctl_type;
 genfscon proc /sys/kernel gen_context(system_u:object_r:sysctl_kernel_t,s0)
+
+# /sys/kernel/ns_last_pid file
+type sysctl_kernel_ns_last_pid_t, sysctl_type;
+genfscon proc /sys/kernel/ns_last_pid gen_context(system_u:object_r:sysctl_kernel_ns_last_pid_t,s0)
 
 # /proc/sys/kernel/modprobe file
 type sysctl_modprobe_t, sysctl_type;
@@ -231,6 +235,8 @@ allow kernel_t proc_kmsg_t:file getattr;
 allow kernel_t sysctl_kernel_t:dir list_dir_perms;
 allow kernel_t sysctl_kernel_t:file read_file_perms;
 allow kernel_t sysctl_t:dir list_dir_perms;
+
+allow kernel_t sysctl_kernel_ns_last_pid_t:file read_file_perms;
 
 # Other possible mount points for the root fs are in files
 allow kernel_t unlabeled_t:dir mounton;
@@ -391,9 +397,12 @@ optional_policy(`
 ')
 
 optional_policy(`
-	plymouthd_read_lib_files(kernel_t)
+	dev_ioctl_dri_dev(kernel_t)
+
+	plymouthd_delete_pid_files(kernel_t)
 	plymouthd_read_pid_files(kernel_t)
 	plymouthd_read_spool_files(kernel_t)
+	plymouthd_rw_lib_files(kernel_t)
 
 	term_use_ptmx(kernel_t)
 	term_use_unallocated_ttys(kernel_t)
