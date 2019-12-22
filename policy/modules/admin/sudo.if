@@ -52,7 +52,7 @@ template(`sudo_role_template',`
 	#
 
 	# Use capabilities.
-	allow $1_sudo_t self:capability { chown dac_override fowner setgid setuid sys_nice sys_resource };
+	allow $1_sudo_t self:capability { chown dac_override fowner kill setgid setuid sys_nice sys_resource };
 	allow $1_sudo_t self:process { signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr getrlimit rlimitinh siginh transition setsockcreate dyntransition noatsecure setkeycreate };
 	allow $1_sudo_t self:process { setexec setrlimit };
 	allow $1_sudo_t self:fd use;
@@ -68,6 +68,9 @@ template(`sudo_role_template',`
 	allow $1_sudo_t self:key manage_key_perms;
 
 	allow $1_sudo_t $3:key search;
+
+	# Transmit SIGWINCH to children
+	allow $1_sudo_t $3:process signal;
 
 	# Enter this derived domain from the user domain
 	domtrans_pattern($3, sudo_exec_t, $1_sudo_t)
@@ -131,10 +134,12 @@ template(`sudo_role_template',`
 
 	userdom_spec_domtrans_all_users($1_sudo_t)
 	userdom_create_all_users_keys($1_sudo_t)
+	userdom_create_user_pty($1_sudo_t)
 	userdom_manage_user_home_content_files($1_sudo_t)
 	userdom_manage_user_home_content_symlinks($1_sudo_t)
 	userdom_manage_user_tmp_files($1_sudo_t)
 	userdom_manage_user_tmp_symlinks($1_sudo_t)
+	userdom_setattr_user_ptys($1_sudo_t)
 	userdom_use_user_terminals($1_sudo_t)
 	# for some PAM modules and for cwd
 	userdom_dontaudit_search_user_home_content($1_sudo_t)

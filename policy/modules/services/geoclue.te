@@ -1,4 +1,4 @@
-policy_module(geoclue, 1.1.0)
+policy_module(geoclue, 1.1.1)
 
 ########################################
 #
@@ -29,6 +29,8 @@ corenet_tcp_connect_http_port(geoclue_t)
 dev_read_urand(geoclue_t)
 
 auth_use_nsswitch(geoclue_t)
+
+logging_send_syslog_msg(geoclue_t)
 
 miscfiles_read_generic_certs(geoclue_t)
 miscfiles_read_localization(geoclue_t)

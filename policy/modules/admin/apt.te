@@ -1,4 +1,4 @@
-policy_module(apt, 1.13.0)
+policy_module(apt, 1.13.2)
 
 ########################################
 #
@@ -25,10 +25,10 @@ files_tmp_file(apt_tmp_t)
 type apt_tmpfs_t;
 files_tmpfs_file(apt_tmpfs_t)
 
-type apt_var_cache_t alias var_cache_apt_t;
+type apt_var_cache_t;
 files_type(apt_var_cache_t)
 
-type apt_var_lib_t alias var_lib_apt_t;
+type apt_var_lib_t;
 files_type(apt_var_lib_t)
 
 type apt_var_log_t;
@@ -142,13 +142,17 @@ optional_policy(`
 	')
 
 	optional_policy(`
+		systemd_dbus_chat_logind(apt_t)
+	')
+
+	optional_policy(`
 		unconfined_dbus_send(apt_t)
 	')
 ')
 
 optional_policy(`
 	dpkg_read_db(apt_t)
-	dpkg_domtrans(apt_t)
+	dpkg_nnp_domtrans(apt_t)
 	dpkg_lock_db(apt_t)
 ')
 

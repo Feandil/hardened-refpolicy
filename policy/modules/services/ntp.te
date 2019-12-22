@@ -1,4 +1,4 @@
-policy_module(ntp, 1.20.0)
+policy_module(ntp, 1.20.2)
 
 ########################################
 #
@@ -32,7 +32,6 @@ type ntpd_log_t;
 logging_log_file(ntpd_log_t)
 
 type ntpd_pid_t;
-typealias ntpd_pid_t alias ntpd_var_run_t;
 files_pid_file(ntpd_pid_t)
 
 type ntpd_tmp_t;
@@ -158,6 +157,8 @@ ifdef(`init_systemd',`
 
 	# for /run/systemd/netif/links
 	systemd_list_networkd_runtime(ntpd_t)
+	# for /run/systemd/netif/state
+	systemd_read_networkd_runtime(ntpd_t)
 
 	optional_policy(`
 		chronyd_enabledisable(ntpd_t)

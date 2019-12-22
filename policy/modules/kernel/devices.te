@@ -1,4 +1,4 @@
-policy_module(devices, 1.25.0)
+policy_module(devices, 1.25.3)
 
 ########################################
 #
@@ -254,6 +254,15 @@ fs_xattr_type(sysfs_t)
 genfscon sysfs / gen_context(system_u:object_r:sysfs_t,s0)
 
 #
+# Types for trusted execution environment interface
+#
+type tee_device_t;
+dev_node(tee_device_t)
+
+type tee_priv_device_t;
+dev_node(tee_priv_device_t)
+
+#
 # Type for /dev/tpm
 #
 type tpm_device_t;
@@ -268,7 +277,7 @@ dev_node(urandom_device_t)
 #
 # usbfs_t is the type for the /proc/bus/usb pseudofs
 #
-type usbfs_t alias usbdevfs_t;
+type usbfs_t;
 files_mountpoint(usbfs_t)
 fs_noxattr_type(usbfs_t)
 genfscon usbfs / gen_context(system_u:object_r:usbfs_t,s0)

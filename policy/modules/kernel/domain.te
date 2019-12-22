@@ -1,4 +1,4 @@
-policy_module(domain, 1.15.0)
+policy_module(domain, 1.15.1)
 
 ########################################
 #
@@ -155,6 +155,9 @@ optional_policy(`
 # unconfined access also allows constraints, but this
 # is handled in the interface as typeattribute cannot
 # be used on an attribute.
+
+# unconfined access to bpf
+allow unconfined_domain_type domain:bpf { map_create map_read map_write prog_load prog_run };
 
 # Use/sendto/connectto sockets created by any domain.
 allow unconfined_domain_type domain:{ socket_class_set socket key_socket } { create_stream_socket_perms send_msg lock relabelto name_bind recv_msg map sendto recvfrom relabelfrom };

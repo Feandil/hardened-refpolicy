@@ -49,7 +49,7 @@ ifdef(`distro_redhat',`
 # despite the extensions, they are actually libs
 /opt/Acrobat[5-9]/Reader/intellinux/plugins/.*\.api -- gen_context(system_u:object_r:lib_t,s0)
 
-/opt/Komodo-Edit-5/lib/python/lib/python2.6/lib-dynload/.*\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
+/opt/Komodo-Edit-5/lib/python/lib/python2\.6/lib-dynload/.*\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 ifdef(`distro_gentoo',`
 # despite the extensions, they are actually libs
@@ -69,16 +69,15 @@ ifdef(`distro_gentoo',`
 
 ifdef(`distro_redhat',`
 /opt/Adobe.*/libcurl\.so 		-- 	gen_context(system_u:object_r:textrel_shlib_t,s0)
-/opt/Adobe(/.*?)/nppdf\.so 		-- 	gen_context(system_u:object_r:textrel_shlib_t,s0)
-/opt/Adobe/Reader.?/Reader/intellinux/plug_ins/.*\.api -- gen_context(system_u:object_r:textrel_shlib_t,s0)
-/opt/Adobe/Reader.?/Reader/intellinux/SPPlugins/.*\.ap[il] -- gen_context(system_u:object_r:lib_t,s0)
+/opt/Adobe(/.*)?/nppdf\.so 		-- 	gen_context(system_u:object_r:textrel_shlib_t,s0)
+/opt/Adobe/Reader[0-9]?/Reader/intellinux/plug_ins/.*\.api -- gen_context(system_u:object_r:textrel_shlib_t,s0)
+/opt/Adobe/Reader[0-9]?/Reader/intellinux/SPPlugins/.*\.ap[il] -- gen_context(system_u:object_r:lib_t,s0)
 /opt/cisco-vpnclient/lib/libvpnapi\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /opt/cx.*/lib/wine/.+\.so		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /opt/f-secure/fspms/libexec/librapi\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 /opt/ibm/java.*/jre/.+\.jar		--	gen_context(system_u:object_r:lib_t,s0)
 /opt/ibm/java.*/jre/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /opt/ibm/java.*/jre/bin/.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
-/opt/netbeans(.*/)?jdk.*/linux/.+\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 ')
 
 #
@@ -171,8 +170,8 @@ ifdef(`distro_redhat',`
 # 	HelixPlayer, SDL, xorg-x11, xorg-x11-libs, Hermes, valgrind, openoffice.org-libs, httpd - php
 HOME_DIR/.*/plugins/nppdf\.so.* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/allegro/(.*/)?alleg-vga\.so --	gen_context(system_u:object_r:textrel_shlib_t,s0)
-/usr/lib/firefox-[^/]*/extensions(/.*)?/libqfaservices.so -- gen_context(system_u:object_r:textrel_shlib_t,s0)
-/usr/lib/firefox-[^/]*/plugins/nppdf.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
+/usr/lib/firefox-[^/]*/extensions(/.*)?/libqfaservices\.so -- gen_context(system_u:object_r:textrel_shlib_t,s0)
+/usr/lib/firefox-[^/]*/plugins/nppdf\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/firefox/plugins/libractrl\.so --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/libFLAC\.so.*			--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/libfglrx_gamma\.so.* 		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -233,7 +232,7 @@ HOME_DIR/.*/plugins/nppdf\.so.* --	gen_context(system_u:object_r:textrel_shlib_t
 /usr/lib/codecs/drv[1-9c]\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 HOME_DIR/.*/plugins/nppdf\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
-HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
+HOME_DIR/\.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/.*/nprhapengine\.so.*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/local/(.*/)?nprhapengine\.so.* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
@@ -243,8 +242,6 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
 /usr/lib/libdivxencore\.so\.0	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 /usr/lib/libdvdcss\.so.*		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
-
-/usr/lib/python2.4/site-packages/M2Crypto/__m2crypto\.so -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 # vmware
 /usr/lib/vmware/lib(/.*)?/libgdk-x11-.*\.so.* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -260,7 +257,7 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
 /usr/lib/(.*/)?jre.*/.*\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 /usr/(local/)?Adobe/(.*/)?intellinux/nppdf\.so -- gen_context(system_u:object_r:textrel_shlib_t,s0)
-/usr/(local/)?Adobe/(.*/)?intellinux/sidecars/* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
+/usr/(local/)?Adobe/(.*/)?intellinux/sidecars/.+ -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 /usr/(local/)?acroread/(.*/)?intellinux/nppdf\.so -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/(local/)?Adobe/(.*/)?lib/[^/]*\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -273,7 +270,7 @@ HOME_DIR/.mozilla/plugins/nprhapengine\.so.* --	gen_context(system_u:object_r:te
 
 /usr/(.*/)?intellinux/SPPlugins/ADMPlugin\.apl -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 
-/usr/lib/acroread/(.*/)?sidecars/*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
+/usr/lib/acroread/(.*/)?sidecars/.+	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/acroread/(.*/)?nppdf\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/acroread/(.*/)?lib/[^/]*\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/acroread/.+\.api		--	gen_context(system_u:object_r:textrel_shlib_t,s0)

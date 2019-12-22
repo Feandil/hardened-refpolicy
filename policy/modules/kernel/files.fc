@@ -72,7 +72,7 @@ ifdef(`distro_suse',`
 /etc/sysconfig/iptables\.save -- gen_context(system_u:object_r:etc_runtime_t,s0)
 /etc/sysconfig/firstboot --	gen_context(system_u:object_r:etc_runtime_t,s0)
 
-/etc/zfs/zpool.cache	--	gen_context(system_u:object_r:etc_runtime_t,s0)
+/etc/zfs/zpool\.cache	--	gen_context(system_u:object_r:etc_runtime_t,s0)
 
 ifdef(`distro_gentoo', `
 /etc/profile\.env	--	gen_context(system_u:object_r:etc_runtime_t,s0)
@@ -197,7 +197,8 @@ HOME_ROOT/lost\+found/.*	<<none>>
 
 /usr/etc(/.*)?			gen_context(system_u:object_r:etc_t,s0)
 
-/usr/inclu.e(/.*)?		gen_context(system_u:object_r:usr_t,s0)
+# Avoid calling m4's include by using en empty string
+/usr/include`'(/.*)?		gen_context(system_u:object_r:usr_t,s0)
 
 /usr/local/\.journal		<<none>>
 

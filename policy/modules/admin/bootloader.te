@@ -1,4 +1,4 @@
-policy_module(bootloader, 1.19.0)
+policy_module(bootloader, 1.19.1)
 
 ########################################
 #
@@ -25,7 +25,7 @@ role bootloader_roles types bootloader_t;
 # bootloader_etc_t is the configuration file,
 # grub.conf, lilo.conf, etc.
 #
-type bootloader_etc_t alias etc_bootloader_t;
+type bootloader_etc_t;
 files_type(bootloader_etc_t)
 
 #

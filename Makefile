@@ -76,8 +76,6 @@ SED ?= sed
 SORT ?= LC_ALL=C sort
 UMASK ?= umask
 
-CFLAGS += -Wall -Wextra -O2
-
 # policy source layout
 poldir := policy
 moddir := $(poldir)/modules
@@ -98,7 +96,7 @@ genxml := $(PYTHON) $(support)/segenxml.py
 gendoc := $(PYTHON) $(support)/sedoctool.py
 genperm := $(PYTHON) $(support)/genclassperms.py
 policyvers := $(PYTHON) $(support)/policyvers.py
-fcsort := $(tmpdir)/fc_sort
+fcsort := $(PYTHON) $(support)/fc_sort.py
 setbools := $(AWK) -f $(support)/set_bools_tuns.awk
 get_type_attr_decl := $(SED) -r -f $(support)/get_type_attr_decl.sed
 comment_move_decl := $(SED) -r -f $(support)/comment_move_decl.sed
@@ -408,26 +406,21 @@ conf.intermediate: $(polxml)
 
 ########################################
 #
-# Generate the fc_sort program
-#
-$(fcsort) : $(support)/fc_sort.c
-	$(verbose) $(CC) $(CFLAGS) $^ -o $@
-
-########################################
-#
 # Documentation generation
 #
-iftemplates:  
+iftemplates: $(tmpdir)/iftemplates
+$(tmpdir)/iftemplates:
 	@echo "Generating interface templates into $(tmpdir)/iftemplates"
 	@test -d $(tmpdir)/iftemplates || mkdir -p $(tmpdir)/iftemplates
 	$(verbose) $(gentemplates) -g -s $(moddir) -t $(tmpdir)/iftemplates
 ifdef LOCAL_ROOT
 	$(verbose) $(gentemplates) -g -s $(local_moddir) -t $(tmpdir)/iftemplates
 endif
+	@touch $(tmpdir)/iftemplates
 
-$(layerxml): %.xml: iftemplates $(all_metaxml) $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods)) $(subst .te,.if, $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods)))
+$(layerxml): %.xml: $(tmpdir)/iftemplates $(all_metaxml) $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods)) $(subst .te,.if, $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods)))
 	@test -d $(tmpdir) || mkdir -p $(tmpdir)
-	$(verbose) cat $(filter %$(notdir $*)/$(metaxml), $(all_metaxml)) > $@
+	$(verbose) cat $(filter %/$(notdir $*)/$(metaxml), $(all_metaxml)) > $@
 	$(verbose) for i in $(basename $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods))); do $(genxml) -w -T $(tmpdir)/iftemplates -m $$i >> $@; done
 ifdef LOCAL_ROOT
 	$(verbose) for i in $(basename $(filter $(addprefix $(local_moddir)/, $(notdir $*))%, $(detected_mods))); do $(genxml) -w -T $(tmpdir)/iftemplates -m $$i >> $@; done
@@ -644,7 +637,6 @@ bare: clean
 	$(verbose) rm -f $(tags)
 # don't remove these files if we're given a local root
 ifndef LOCAL_ROOT
-	$(verbose) rm -f $(fcsort)
 	$(verbose) rm -f $(support)/*.pyc
 	$(verbose) rm -Rf $(support)/__pycache__/
 ifneq ($(generated_te),)

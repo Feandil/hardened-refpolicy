@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.15.0)
+policy_module(sysadm, 2.15.2)
 
 ########################################
 #
@@ -548,6 +548,11 @@ optional_policy(`
 
 optional_policy(`
 	keystone_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	knot_admin(sysadm_t, sysadm_r)
+	knot_run_client(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -1229,6 +1234,11 @@ optional_policy(`
 
 optional_policy(`
 	webalizer_run(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	wireguard_admin(sysadm_t, sysadm_r)
+	wireguard_run(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
