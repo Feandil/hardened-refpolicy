@@ -364,6 +364,8 @@ interface(`userdom_manage_home_role',`
 	# cjp: this should probably be removed:
 	allow $2 user_home_dir_t:dir { manage_dir_perms relabel_dir_perms };
 
+	allow $2 { user_home_t user_home_dir_t }:dir watch;
+
 	userdom_manage_user_certs($2)
 	userdom_user_home_dir_filetrans($2, user_cert_t, dir, ".pki")
 
@@ -626,6 +628,8 @@ template(`userdom_common_user_template',`
 	files_read_var_lib_files($1_t)
 	# Stat lost+found.
 	files_getattr_lost_found_dirs($1_t)
+	files_watch_etc_dirs($1_t)
+	files_watch_usr_dirs($1_t)
 
 	fs_rw_cgroup_files($1_t)
 
@@ -1178,6 +1182,7 @@ template(`userdom_unpriv_user_template', `
 	files_exec_usr_files($1_t)
 
 	miscfiles_manage_public_files($1_t)
+	miscfiles_watch_public_dirs($1_t)
 
 	tunable_policy(`user_dmesg',`
 		kernel_read_ring_buffer($1_t)

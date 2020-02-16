@@ -284,6 +284,25 @@ interface(`miscfiles_manage_generic_tls_privkey_files',`
 
 ########################################
 ## <summary>
+##	Watch fonts.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`miscfiles_watch_fonts',`
+	gen_require(`
+		type fonts_t;
+	')
+
+	allow $1 fonts_t:dir watch;
+')
+
+########################################
+## <summary>
 ##	Read fonts.
 ## </summary>
 ## <param name="domain">
@@ -833,6 +852,24 @@ interface(`miscfiles_manage_public_files',`
 	manage_dirs_pattern($1, public_content_rw_t, public_content_rw_t)
 	manage_files_pattern($1, public_content_rw_t, public_content_rw_t)
 	manage_lnk_files_pattern($1, public_content_rw_t, public_content_rw_t)
+')
+
+########################################
+## <summary>
+##	Watch public files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`miscfiles_watch_public_dirs',`
+	gen_require(`
+		type public_content_rw_t;
+	')
+
+	allow $1 public_content_rw_t:dir watch;
 ')
 
 ########################################
