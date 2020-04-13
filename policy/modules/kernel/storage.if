@@ -108,31 +108,6 @@ interface(`storage_raw_read_fixed_disk_uncond',`
 ##	This is extremely dangerous as it can bypass the
 ##	SELinux protections for filesystem objects, and
 ##	should only be used by trusted domains.
-##	This is a conditional version of the function,
-##	which requires the unconditional part
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`storage_raw_read_fixed_disk_cond',`
-	gen_require(`
-		type fixed_disk_device_t;
-	')
-
-	dev_list_all_dev_nodes($1)
-	allow $1 fixed_disk_device_t:blk_file read_blk_file_perms;
-	allow $1 fixed_disk_device_t:chr_file read_chr_file_perms;
-')
-
-########################################
-## <summary>
-##	Allow the caller to directly read from a fixed disk.
-##	This is extremely dangerous as it can bypass the
-##	SELinux protections for filesystem objects, and
-##	should only be used by trusted domains.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
