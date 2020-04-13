@@ -116,8 +116,15 @@ interface(`storage_raw_read_fixed_disk_uncond',`
 ## </param>
 #
 interface(`storage_raw_read_fixed_disk',`
-	storage_raw_read_fixed_disk_uncond($1)
-	storage_raw_read_fixed_disk_cond($1)
+	gen_require(`
+		attribute fixed_disk_raw_read;
+		type fixed_disk_device_t;
+	')
+
+	dev_list_all_dev_nodes($1)
+	allow $1 fixed_disk_device_t:blk_file read_blk_file_perms;
+	allow $1 fixed_disk_device_t:chr_file read_chr_file_perms;
+	typeattribute $1 fixed_disk_raw_read;
 ')
 
 ########################################
