@@ -1,4 +1,4 @@
-policy_module(mozilla, 2.15.2)
+policy_module(mozilla, 2.15.3)
 
 ########################################
 #
@@ -135,31 +135,24 @@ corenet_tcp_sendrecv_generic_node(mozilla_t)
 
 corenet_sendrecv_http_client_packets(mozilla_t)
 corenet_tcp_connect_http_port(mozilla_t)
-corenet_tcp_sendrecv_http_port(mozilla_t)
 
 corenet_sendrecv_http_cache_client_packets(mozilla_t)
 corenet_tcp_connect_http_cache_port(mozilla_t)
-corenet_tcp_sendrecv_http_cache_port(mozilla_t)
 
 corenet_sendrecv_squid_client_packets(mozilla_t)
 corenet_tcp_connect_squid_port(mozilla_t)
-corenet_tcp_sendrecv_squid_port(mozilla_t)
 
 corenet_sendrecv_ftp_client_packets(mozilla_t)
 corenet_tcp_connect_ftp_port(mozilla_t)
-corenet_tcp_sendrecv_ftp_port(mozilla_t)
 
 corenet_sendrecv_ipp_client_packets(mozilla_t)
 corenet_tcp_connect_ipp_port(mozilla_t)
-corenet_tcp_sendrecv_ipp_port(mozilla_t)
 
 corenet_sendrecv_soundd_client_packets(mozilla_t)
 corenet_tcp_connect_soundd_port(mozilla_t)
-corenet_tcp_sendrecv_soundd_port(mozilla_t)
 
 corenet_sendrecv_speech_client_packets(mozilla_t)
 corenet_tcp_connect_speech_port(mozilla_t)
-corenet_tcp_sendrecv_speech_port(mozilla_t)
 
 dev_getattr_sysfs_dirs(mozilla_t)
 dev_read_sysfs(mozilla_t)
@@ -411,59 +404,45 @@ corenet_tcp_sendrecv_generic_node(mozilla_plugin_t)
 
 corenet_sendrecv_asterisk_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_asterisk_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_asterisk_port(mozilla_plugin_t)
 
 corenet_sendrecv_ftp_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_ftp_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_ftp_port(mozilla_plugin_t)
 
 corenet_sendrecv_gatekeeper_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_gatekeeper_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_gatekeeper_port(mozilla_plugin_t)
 
 corenet_sendrecv_http_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_http_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_http_port(mozilla_plugin_t)
 
 corenet_sendrecv_http_cache_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_http_cache_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_http_cache_port(mozilla_plugin_t)
 
 corenet_sendrecv_ipp_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_ipp_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_ipp_port(mozilla_plugin_t)
 
 corenet_sendrecv_ircd_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_ircd_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_ircd_port(mozilla_plugin_t)
 
 corenet_sendrecv_jabber_client_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_jabber_client_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_jabber_client_port(mozilla_plugin_t)
 
 corenet_sendrecv_mmcc_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_mmcc_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_mmcc_port(mozilla_plugin_t)
 
 corenet_sendrecv_monopd_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_monopd_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_monopd_port(mozilla_plugin_t)
 
 corenet_sendrecv_soundd_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_soundd_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_soundd_port(mozilla_plugin_t)
 
 corenet_sendrecv_speech_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_speech_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_speech_port(mozilla_plugin_t)
 
 corenet_sendrecv_squid_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_squid_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_squid_port(mozilla_plugin_t)
 
 corenet_sendrecv_vnc_client_packets(mozilla_plugin_t)
 corenet_tcp_connect_vnc_port(mozilla_plugin_t)
-corenet_tcp_sendrecv_vnc_port(mozilla_plugin_t)
 
 dev_read_generic_usb_dev(mozilla_plugin_t)
 dev_read_rand(mozilla_plugin_t)
@@ -745,10 +724,8 @@ gen_tunable(mozilla_plugin_connect_all_unreserved, false)
 	allow mozilla_t mozilla_xdg_cache_t:file map;
 
 	corenet_dontaudit_tcp_bind_generic_port(mozilla_t)
-	corenet_dontaudit_tcp_sendrecv_generic_port(mozilla_t)
 	corenet_sendrecv_tor_client_packets(mozilla_t)
 	corenet_tcp_connect_tor_port(mozilla_t)
-	corenet_tcp_sendrecv_tor_port(mozilla_t)
 
 	domain_use_interactive_fds(mozilla_t)
 
@@ -759,7 +736,6 @@ gen_tunable(mozilla_plugin_connect_all_unreserved, false)
 	tunable_policy(`mozilla_bind_all_unreserved_ports',`
 		corenet_sendrecv_all_server_packets(mozilla_t)
 		corenet_tcp_bind_all_unreserved_ports(mozilla_t)
-		corenet_tcp_sendrecv_all_ports(mozilla_t)
 	')
 
 	optional_policy(`
@@ -792,7 +768,6 @@ gen_tunable(mozilla_plugin_connect_all_unreserved, false)
 
 	corenet_sendrecv_pulseaudio_client_packets(mozilla_plugin_t)
 	corenet_tcp_connect_pulseaudio_port(mozilla_plugin_t)
-	corenet_tcp_sendrecv_pulseaudio_port(mozilla_plugin_t)
 
 	userdom_dontaudit_use_user_terminals(mozilla_plugin_t)
 	userdom_rw_user_tmpfs_files(mozilla_plugin_t)

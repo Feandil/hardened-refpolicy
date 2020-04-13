@@ -751,6 +751,24 @@ interface(`logging_read_syslog_config',`
 
 ########################################
 ## <summary>
+##	Watch syslog runtime dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_watch_runtime_dirs',`
+	gen_require(`
+		type syslogd_runtime_t;
+	')
+
+	allow $1 syslogd_runtime_t:dir watch;
+')
+
+########################################
+## <summary>
 ##	Delete the syslog socket files
 ## </summary>
 ## <param name="domain">
@@ -1227,6 +1245,24 @@ interface(`logging_manage_generic_logs',`
 
 ########################################
 ## <summary>
+##	Watch generic log dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_watch_generic_logs_dir',`
+	gen_require(`
+		type var_log_t;
+	')
+
+	allow $1 var_log_t:dir watch;
+')
+
+########################################
+## <summary>
 ##	All of the rules required to administrate
 ##	the audit environment
 ## </summary>
@@ -1291,7 +1327,7 @@ interface(`logging_admin_syslog',`
 		type syslogd_t, klogd_t, syslog_conf_t;
 		type syslogd_tmp_t, syslogd_var_lib_t;
 		type syslogd_runtime_t, klogd_runtime_t;
-		type klogd_tmp_t, var_log_t;
+		type klogd_tmp_t;
 		type syslogd_initrc_exec_t, syslogd_unit_t;
 	')
 

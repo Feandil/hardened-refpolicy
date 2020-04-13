@@ -1,4 +1,4 @@
-policy_module(dbus, 1.27.2)
+policy_module(dbus, 1.27.4)
 
 gen_require(`
 	class dbus all_dbus_perms;
@@ -69,7 +69,7 @@ allow system_dbusd_t self:dbus { send_msg acquire_svc };
 allow system_dbusd_t self:unix_stream_socket { accept connectto listen };
 allow system_dbusd_t self:netlink_selinux_socket { create bind read };
 
-allow system_dbusd_t dbusd_etc_t:dir list_dir_perms;
+allow system_dbusd_t dbusd_etc_t:dir { list_dir_perms watch };
 read_files_pattern(system_dbusd_t, dbusd_etc_t, dbusd_etc_t)
 read_lnk_files_pattern(system_dbusd_t, dbusd_etc_t, dbusd_etc_t)
 
@@ -103,6 +103,7 @@ domain_read_all_domains_state(system_dbusd_t)
 
 files_list_home(system_dbusd_t)
 files_read_usr_files(system_dbusd_t)
+files_watch_usr_dirs(system_dbusd_t)
 
 fs_getattr_all_fs(system_dbusd_t)
 fs_list_inotifyfs(system_dbusd_t)
@@ -224,6 +225,7 @@ allow session_bus_type self:netlink_selinux_socket create_socket_perms;
 allow session_bus_type dbusd_etc_t:dir list_dir_perms;
 read_files_pattern(session_bus_type, dbusd_etc_t, dbusd_etc_t)
 read_lnk_files_pattern(session_bus_type, dbusd_etc_t, dbusd_etc_t)
+allow session_bus_type dbusd_etc_t:dir watch;
 
 manage_dirs_pattern(session_bus_type, session_dbusd_home_t, session_dbusd_home_t)
 manage_files_pattern(session_bus_type, session_dbusd_home_t, session_dbusd_home_t)
@@ -251,7 +253,6 @@ corenet_all_recvfrom_unlabeled(session_bus_type)
 corenet_all_recvfrom_netlabel(session_bus_type)
 corenet_tcp_sendrecv_generic_if(session_bus_type)
 corenet_tcp_sendrecv_generic_node(session_bus_type)
-corenet_tcp_sendrecv_all_ports(session_bus_type)
 corenet_tcp_bind_generic_node(session_bus_type)
 
 corenet_sendrecv_all_server_packets(session_bus_type)
@@ -264,6 +265,7 @@ domain_use_interactive_fds(session_bus_type)
 
 files_list_home(session_bus_type)
 files_read_usr_files(session_bus_type)
+files_watch_usr_dirs(session_bus_type)
 files_dontaudit_search_var(session_bus_type)
 
 fs_getattr_romfs(session_bus_type)

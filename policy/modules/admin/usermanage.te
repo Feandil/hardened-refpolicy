@@ -1,4 +1,4 @@
-policy_module(usermanage, 1.23.0)
+policy_module(usermanage, 1.23.1)
 
 ########################################
 #
@@ -275,6 +275,10 @@ optional_policy(`
 optional_policy(`
 	rpm_use_fds(groupadd_t)
 	rpm_rw_pipes(groupadd_t)
+')
+
+optional_policy(`
+	systemd_use_nss(groupadd_t)
 ')
 
 optional_policy(`

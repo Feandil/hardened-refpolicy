@@ -1,4 +1,4 @@
-policy_module(udev, 1.26.4)
+policy_module(udev, 1.26.6)
 
 ########################################
 #
@@ -86,7 +86,6 @@ manage_files_pattern(udev_t, udev_runtime_t, udev_runtime_t)
 manage_lnk_files_pattern(udev_t, udev_runtime_t, udev_runtime_t)
 manage_sock_files_pattern(udev_t, udev_runtime_t, udev_runtime_t)
 files_pid_filetrans(udev_t, udev_runtime_t, dir, "udev")
-files_pid_filetrans(udev_t, udev_runtime_t, dir, "console-setup")
 
 kernel_load_module(udev_t)
 kernel_read_system_state(udev_t)
@@ -155,6 +154,8 @@ selinux_compute_create_context(udev_t)
 selinux_compute_relabel_context(udev_t)
 selinux_compute_user_contexts(udev_t)
 
+storage_watch_fixed_disk(udev_t)
+
 auth_read_pam_console_data(udev_t)
 auth_domtrans_pam_console(udev_t)
 auth_use_nsswitch(udev_t)
@@ -215,6 +216,12 @@ ifdef(`distro_debian',`
 		avahi_manage_pid_files(udev_t)
 		avahi_setattr_pid_dirs(udev_t)
 		avahi_filetrans_pid(udev_t, dir, "avahi-daemon")
+	')
+
+	optional_policy(`
+		consolesetup_exec_conf(udev_t)
+		consolesetup_manage_runtime(udev_t)
+		consolesetup_pid_filetrans_runtime(udev_t)
 	')
 ')
 
@@ -426,6 +433,11 @@ delete_files_pattern(udevadm_t, udev_runtime_t, udev_runtime_t)
 delete_lnk_files_pattern(udevadm_t, udev_runtime_t, udev_runtime_t)
 list_dirs_pattern(udevadm_t, udev_runtime_t, udev_runtime_t)
 read_files_pattern(udevadm_t, udev_runtime_t, udev_runtime_t)
+allow udevadm_t udev_runtime_t:dir watch;
+
+list_dirs_pattern(udevadm_t, udev_tbl_t, udev_tbl_t)
+read_files_pattern(udevadm_t, udev_tbl_t, udev_tbl_t)
+read_lnk_files_pattern(udevadm_t, udev_tbl_t, udev_tbl_t)
 
 dev_rw_sysfs(udevadm_t)
 dev_read_urand(udevadm_t)

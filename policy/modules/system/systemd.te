@@ -1,4 +1,4 @@
-policy_module(systemd, 1.8.7)
+policy_module(systemd, 1.8.15)
 
 #########################################
 #
@@ -19,6 +19,15 @@ gen_tunable(systemd_tmpfiles_manage_all, false)
 ## </p>
 ## </desc>
 gen_tunable(systemd_nspawn_labeled_namespace, false)
+
+## <desc>
+## <p>
+## Allow systemd-logind to interact with the bootloader (read which one is
+## installed on fixed disks, enumerate entries for dbus property
+## BootLoaderEntries, etc.)
+## </p>
+## </desc>
+gen_tunable(systemd_logind_get_bootloader, false)
 
 attribute systemd_log_parse_env_type;
 attribute systemd_tmpfiles_conf_type;
@@ -48,6 +57,13 @@ init_system_domain(systemd_binfmt_t, systemd_binfmt_exec_t)
 
 type systemd_binfmt_unit_t;
 init_unit_file(systemd_binfmt_unit_t)
+
+type systemd_conf_t;
+files_config_file(systemd_conf_t)
+
+type systemd_fstab_generator_t;
+type systemd_fstab_generator_exec_t;
+init_system_domain(systemd_fstab_generator_t, systemd_fstab_generator_exec_t)
 
 type systemd_gpt_generator_t;
 type systemd_gpt_generator_exec_t;
@@ -87,7 +103,7 @@ type systemd_hw_exec_t;
 init_system_domain(systemd_hw_t, systemd_hw_exec_t)
 
 type systemd_hwdb_t;
-files_type(systemd_hwdb_t);
+files_type(systemd_hwdb_t)
 
 type systemd_journal_t;
 files_type(systemd_journal_t)
@@ -170,6 +186,7 @@ init_system_domain(systemd_passwd_agent_t, systemd_passwd_agent_exec_t)
 
 type systemd_passwd_runtime_t alias systemd_passwd_var_run_t;
 files_pid_file(systemd_passwd_runtime_t)
+init_path_unit_location_file(systemd_passwd_runtime_t)
 
 type systemd_rfkill_t;
 type systemd_rfkill_exec_t;
@@ -253,6 +270,28 @@ systemd_log_parse_environment(systemd_binfmt_t)
 files_read_etc_files(systemd_binfmt_t)
 
 fs_register_binary_executable_type(systemd_binfmt_t)
+
+#######################################
+#
+# fstab generator local policy
+#
+
+corecmd_search_bin(systemd_fstab_generator_t)
+
+files_read_etc_files(systemd_fstab_generator_t)
+files_search_pids(systemd_fstab_generator_t)
+
+fstools_exec(systemd_fstab_generator_t)
+
+init_create_pid_files(systemd_fstab_generator_t)
+init_manage_pid_dirs(systemd_fstab_generator_t)
+init_manage_pid_symlinks(systemd_fstab_generator_t)
+init_search_pids(systemd_fstab_generator_t)
+init_write_pid_files(systemd_fstab_generator_t)
+
+kernel_read_kernel_sysctls(systemd_fstab_generator_t)
+
+systemd_log_parse_environment(systemd_fstab_generator_t)
 
 #######################################
 #
@@ -416,6 +455,9 @@ kernel_read_system_state(systemd_log_parse_env_type)
 
 dev_write_kmsg(systemd_log_parse_env_type)
 
+# For /sys/firmware/efi/efivars/SystemdOptions-8cf2644b-4b0b-428f-9387-6d876050dc67
+fs_read_efivarfs_files(systemd_log_parse_env_type)
+
 term_use_console(systemd_log_parse_env_type)
 
 init_read_state(systemd_log_parse_env_type)
@@ -524,6 +566,11 @@ userdom_delete_all_user_runtime_files(systemd_logind_t)
 userdom_delete_all_user_runtime_named_pipes(systemd_logind_t)
 userdom_delete_all_user_runtime_named_sockets(systemd_logind_t)
 userdom_delete_all_user_runtime_symlinks(systemd_logind_t)
+userdom_delete_user_tmp_dirs(systemd_logind_t)
+userdom_delete_user_tmp_files(systemd_logind_t)
+userdom_delete_user_tmp_symlinks(systemd_logind_t)
+userdom_delete_user_tmp_named_pipes(systemd_logind_t)
+userdom_delete_user_tmp_named_sockets(systemd_logind_t)
 # user_tmp_t is for the dbus-1 directory
 userdom_list_user_tmp(systemd_logind_t)
 userdom_manage_user_runtime_dirs(systemd_logind_t)
@@ -545,6 +592,15 @@ ifdef(`distro_redhat',`
 	userdom_user_run_filetrans_user_runtime(systemd_logind_t, dir)
 	userdom_user_runtime_root_filetrans_user_runtime(systemd_logind_t, dir)
 ')
+
+tunable_policy(`systemd_logind_get_bootloader',`
+	fs_getattr_dos_fs(systemd_logind_t)
+	fs_list_dos(systemd_logind_t)
+	fs_read_dos_files(systemd_logind_t)
+')
+# systemd-logind uses util-linux's blkid in order to find the ESP (EFI System Partition).
+# This reads the first sectors of fixed disk devices.
+storage_raw_read_fixed_disk_cond(systemd_logind_t, systemd_logind_get_bootloader)
 
 optional_policy(`
 	dbus_connect_system_bus(systemd_logind_t)
@@ -682,6 +738,8 @@ dev_read_sysfs(systemd_networkd_t)
 dev_write_kmsg(systemd_networkd_t)
 
 files_read_etc_files(systemd_networkd_t)
+files_watch_runtime_dirs(systemd_networkd_t)
+files_watch_root_dirs(systemd_networkd_t)
 
 auth_use_nsswitch(systemd_networkd_t)
 
@@ -699,6 +757,8 @@ systemd_log_parse_environment(systemd_networkd_t)
 optional_policy(`
 	dbus_system_bus_client(systemd_networkd_t)
 	dbus_connect_system_bus(systemd_networkd_t)
+	dbus_watch_system_bus_runtime_dirs(systemd_networkd_t)
+	dbus_watch_system_bus_runtime_named_sockets(systemd_networkd_t)
 
 	systemd_dbus_chat_hostnamed(systemd_networkd_t)
 ')
@@ -964,6 +1024,8 @@ allow systemd_resolved_t self:process { getcap setcap setfscreate signal };
 
 allow systemd_resolved_t self:tcp_socket { accept listen };
 
+allow systemd_resolved_t systemd_networkd_runtime_t:dir watch;
+
 manage_dirs_pattern(systemd_resolved_t, systemd_resolved_runtime_t, systemd_resolved_runtime_t)
 manage_files_pattern(systemd_resolved_t, systemd_resolved_runtime_t, systemd_resolved_runtime_t)
 init_pid_filetrans(systemd_resolved_t, systemd_resolved_runtime_t, dir)
@@ -983,6 +1045,9 @@ corenet_udp_bind_llmnr_port(systemd_resolved_t)
 
 auth_use_nsswitch(systemd_resolved_t)
 
+files_watch_root_dirs(systemd_resolved_t)
+files_watch_runtime_dirs(systemd_resolved_t)
+
 init_dgram_send(systemd_resolved_t)
 
 seutil_read_file_contexts(systemd_resolved_t)
@@ -993,6 +1058,8 @@ systemd_read_networkd_runtime(systemd_resolved_t)
 optional_policy(`
 	dbus_connect_system_bus(systemd_resolved_t)
 	dbus_system_bus_client(systemd_resolved_t)
+	dbus_watch_system_bus_runtime_dirs(systemd_resolved_t)
+	dbus_watch_system_bus_runtime_named_sockets(systemd_resolved_t)
 ')
 
 #########################################
@@ -1046,6 +1113,7 @@ dev_manage_all_dev_nodes(systemd_tmpfiles_t)
 dev_read_urand(systemd_tmpfiles_t)
 dev_relabel_all_sysfs(systemd_tmpfiles_t)
 dev_read_urand(systemd_tmpfiles_t)
+dev_setattr_all_sysfs(systemd_tmpfiles_t)
 dev_manage_all_dev_nodes(systemd_tmpfiles_t)
 
 files_create_lock_dirs(systemd_tmpfiles_t)

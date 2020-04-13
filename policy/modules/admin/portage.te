@@ -1,4 +1,4 @@
-policy_module(portage, 1.17.2)
+policy_module(portage, 1.17.3)
 
 ########################################
 #
@@ -293,7 +293,6 @@ corenet_all_recvfrom_unlabeled(portage_fetch_t)
 corenet_all_recvfrom_netlabel(portage_fetch_t)
 corenet_tcp_sendrecv_generic_if(portage_fetch_t)
 corenet_tcp_sendrecv_generic_node(portage_fetch_t)
-corenet_tcp_sendrecv_all_ports(portage_fetch_t)
 corenet_tcp_connect_http_cache_port(portage_fetch_t)
 corenet_tcp_connect_git_port(portage_fetch_t)
 corenet_tcp_connect_rsync_port(portage_fetch_t)
@@ -526,7 +525,6 @@ gen_tunable(portage_enable_test, false)
 		corenet_tcp_connect_all_unreserved_ports(portage_sandbox_t)
 		corenet_udp_bind_all_unreserved_ports(portage_sandbox_t)
 		corenet_udp_bind_generic_node(portage_sandbox_t)
-		corenet_udp_sendrecv_all_ports(portage_sandbox_t)
 	')
 
 	##########################################

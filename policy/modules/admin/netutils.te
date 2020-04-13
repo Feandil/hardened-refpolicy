@@ -1,4 +1,4 @@
-policy_module(netutils, 1.18.0)
+policy_module(netutils, 1.18.2)
 
 ########################################
 #
@@ -60,8 +60,6 @@ corenet_udp_sendrecv_generic_if(netutils_t)
 corenet_tcp_sendrecv_generic_node(netutils_t)
 corenet_raw_sendrecv_generic_node(netutils_t)
 corenet_udp_sendrecv_generic_node(netutils_t)
-corenet_tcp_sendrecv_all_ports(netutils_t)
-corenet_udp_sendrecv_all_ports(netutils_t)
 corenet_tcp_connect_all_ports(netutils_t)
 corenet_sendrecv_all_client_packets(netutils_t)
 corenet_udp_bind_generic_node(netutils_t)
@@ -120,7 +118,6 @@ corenet_raw_sendrecv_generic_if(ping_t)
 corenet_raw_sendrecv_generic_node(ping_t)
 corenet_tcp_sendrecv_generic_node(ping_t)
 corenet_raw_bind_generic_node(ping_t)
-corenet_tcp_sendrecv_all_ports(ping_t)
 
 dev_read_urand(ping_t)
 
@@ -165,10 +162,13 @@ optional_policy(`
 #
 
 allow traceroute_t self:capability { net_admin net_raw setgid setuid };
+allow traceroute_t self:fifo_file rw_inherited_fifo_file_perms;
 allow traceroute_t self:process signal;
 allow traceroute_t self:rawip_socket create_socket_perms;
 allow traceroute_t self:packet_socket create_socket_perms;
 allow traceroute_t self:udp_socket create_socket_perms;
+
+can_exec(traceroute_t, traceroute_exec_t)
 
 kernel_read_system_state(traceroute_t)
 kernel_read_network_state(traceroute_t)
@@ -183,8 +183,6 @@ corenet_raw_sendrecv_generic_if(traceroute_t)
 corenet_tcp_sendrecv_generic_node(traceroute_t)
 corenet_udp_sendrecv_generic_node(traceroute_t)
 corenet_raw_sendrecv_generic_node(traceroute_t)
-corenet_tcp_sendrecv_all_ports(traceroute_t)
-corenet_udp_sendrecv_all_ports(traceroute_t)
 corenet_udp_bind_generic_node(traceroute_t)
 corenet_tcp_bind_generic_node(traceroute_t)
 # traceroute needs this but not tracepath

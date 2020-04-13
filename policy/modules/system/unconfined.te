@@ -1,4 +1,4 @@
-policy_module(unconfined, 3.13.2)
+policy_module(unconfined, 3.13.3)
 
 ########################################
 #
@@ -223,7 +223,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	wine_domtrans(unconfined_t)
+	wine_run(unconfined_t, unconfined_r)
 ')
 
 optional_policy(`

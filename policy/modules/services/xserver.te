@@ -1,4 +1,4 @@
-policy_module(xserver, 3.18.2)
+policy_module(xserver, 3.18.4)
 
 gen_require(`
 	class x_drawable all_x_drawable_perms;
@@ -117,6 +117,7 @@ userdom_user_application_domain(iceauth_t, iceauth_exec_t)
 
 type iceauth_home_t;
 userdom_user_home_content(iceauth_home_t)
+userdom_user_runtime_content(iceauth_home_t)
 
 type xauth_t;
 type xauth_exec_t;
@@ -211,6 +212,7 @@ optional_policy(`
 
 allow iceauth_t iceauth_home_t:file manage_file_perms;
 userdom_user_home_dir_filetrans(iceauth_t, iceauth_home_t, file)
+userdom_user_runtime_filetrans(iceauth_t, iceauth_home_t, file)
 
 allow xdm_t iceauth_home_t:file read_file_perms;
 
@@ -384,8 +386,6 @@ corenet_tcp_sendrecv_generic_if(xdm_t)
 corenet_udp_sendrecv_generic_if(xdm_t)
 corenet_tcp_sendrecv_generic_node(xdm_t)
 corenet_udp_sendrecv_generic_node(xdm_t)
-corenet_tcp_sendrecv_all_ports(xdm_t)
-corenet_udp_sendrecv_all_ports(xdm_t)
 corenet_tcp_bind_generic_node(xdm_t)
 corenet_udp_bind_generic_node(xdm_t)
 corenet_tcp_connect_all_ports(xdm_t)
@@ -703,8 +703,6 @@ corenet_tcp_sendrecv_generic_if(xserver_t)
 corenet_udp_sendrecv_generic_if(xserver_t)
 corenet_tcp_sendrecv_generic_node(xserver_t)
 corenet_udp_sendrecv_generic_node(xserver_t)
-corenet_tcp_sendrecv_all_ports(xserver_t)
-corenet_udp_sendrecv_all_ports(xserver_t)
 corenet_tcp_bind_generic_node(xserver_t)
 corenet_tcp_bind_xserver_port(xserver_t)
 corenet_tcp_connect_all_ports(xserver_t)

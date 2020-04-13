@@ -1,4 +1,4 @@
-policy_module(snort, 1.15.1)
+policy_module(snort, 1.15.3)
 
 ########################################
 #
@@ -37,7 +37,6 @@ allow snort_t self:netlink_socket create_socket_perms;
 allow snort_t self:tcp_socket { accept listen };
 allow snort_t self:packet_socket create_socket_perms;
 allow snort_t self:socket create_socket_perms;
-allow snort_t self:netlink_firewall_socket create_socket_perms;
 
 allow snort_t snort_etc_t:dir list_dir_perms;
 allow snort_t snort_etc_t:file read_file_perms;
@@ -72,12 +71,9 @@ corenet_raw_sendrecv_generic_if(snort_t)
 corenet_tcp_sendrecv_generic_node(snort_t)
 corenet_udp_sendrecv_generic_node(snort_t)
 corenet_raw_sendrecv_generic_node(snort_t)
-corenet_tcp_sendrecv_all_ports(snort_t)
-corenet_udp_sendrecv_all_ports(snort_t)
 
 corenet_sendrecv_prelude_client_packets(snort_t)
 corenet_tcp_connect_prelude_port(snort_t)
-corenet_tcp_sendrecv_prelude_port(snort_t)
 
 dev_read_sysfs(snort_t)
 dev_read_rand(snort_t)

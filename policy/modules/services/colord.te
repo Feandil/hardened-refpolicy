@@ -1,4 +1,4 @@
-policy_module(colord, 1.4.0)
+policy_module(colord, 1.4.1)
 
 ########################################
 #
@@ -42,6 +42,7 @@ fs_tmpfs_filetrans(colord_t, colord_tmpfs_t, { dir file })
 manage_dirs_pattern(colord_t, colord_var_lib_t, colord_var_lib_t)
 manage_files_pattern(colord_t, colord_var_lib_t, colord_var_lib_t)
 files_var_lib_filetrans(colord_t, colord_var_lib_t, dir)
+allow colord_t colord_var_lib_t:dir watch;
 
 kernel_read_crypto_sysctls(colord_t)
 kernel_read_device_sysctls(colord_t)
@@ -59,11 +60,9 @@ corenet_udp_bind_generic_node(colord_t)
 
 corenet_sendrecv_ipp_server_packets(colord_t)
 corenet_udp_bind_ipp_port(colord_t)
-corenet_udp_sendrecv_ipp_port(colord_t)
 
 corenet_sendrecv_ipp_client_packets(colord_t)
 corenet_tcp_connect_ipp_port(colord_t)
-corenet_tcp_sendrecv_ipp_port(colord_t)
 
 corecmd_exec_bin(colord_t)
 corecmd_exec_shell(colord_t)
@@ -84,6 +83,7 @@ domain_use_interactive_fds(colord_t)
 files_list_mnt(colord_t)
 files_read_usr_files(colord_t)
 files_map_usr_files(colord_t)
+files_watch_usr_dirs(colord_t)
 
 fs_getattr_noxattr_fs(colord_t)
 fs_getattr_tmpfs(colord_t)

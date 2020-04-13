@@ -336,7 +336,7 @@ interface(`userdom_ro_home_role',`
 #
 interface(`userdom_manage_home_role',`
 	gen_require(`
-		type user_home_t, user_home_dir_t;
+		type user_home_t, user_home_dir_t, user_cert_t;
 	')
 
 	##############################
@@ -363,6 +363,8 @@ interface(`userdom_manage_home_role',`
 
 	# cjp: this should probably be removed:
 	allow $2 user_home_dir_t:dir { manage_dir_perms relabel_dir_perms };
+
+	allow $2 { user_home_t user_home_dir_t }:dir watch;
 
 	userdom_manage_user_certs($2)
 	userdom_user_home_dir_filetrans($2, user_cert_t, dir, ".pki")
@@ -517,8 +519,6 @@ template(`userdom_basic_networking_template',`
 	corenet_udp_sendrecv_generic_if($1_t)
 	corenet_tcp_sendrecv_generic_node($1_t)
 	corenet_udp_sendrecv_generic_node($1_t)
-	corenet_tcp_sendrecv_all_ports($1_t)
-	corenet_udp_sendrecv_all_ports($1_t)
 	corenet_tcp_connect_all_ports($1_t)
 	corenet_sendrecv_all_client_packets($1_t)
 
@@ -615,6 +615,7 @@ template(`userdom_common_user_template',`
 	dev_read_sound($1_t)
 	dev_read_sound_mixer($1_t)
 	dev_write_sound_mixer($1_t)
+	dev_rw_wireless($1_t)
 
 	files_exec_etc_files($1_t)
 	files_search_locks($1_t)
@@ -627,6 +628,8 @@ template(`userdom_common_user_template',`
 	files_read_var_lib_files($1_t)
 	# Stat lost+found.
 	files_getattr_lost_found_dirs($1_t)
+	files_watch_etc_dirs($1_t)
+	files_watch_usr_dirs($1_t)
 
 	fs_rw_cgroup_files($1_t)
 
@@ -1179,6 +1182,7 @@ template(`userdom_unpriv_user_template', `
 	files_exec_usr_files($1_t)
 
 	miscfiles_manage_public_files($1_t)
+	miscfiles_watch_public_dirs($1_t)
 
 	tunable_policy(`user_dmesg',`
 		kernel_read_ring_buffer($1_t)
@@ -2344,7 +2348,7 @@ interface(`userdom_manage_user_home_content_files',`
 #
 interface(`userdom_dontaudit_manage_user_home_content_dirs',`
 	gen_require(`
-		type user_home_dir_t, user_home_t;
+		type user_home_t;
 	')
 
 	dontaudit $1 user_home_t:dir manage_dir_perms;
@@ -2682,7 +2686,7 @@ interface(`userdom_write_user_tmp_sockets',`
 #
 interface(`userdom_list_user_tmp',`
 	gen_require(`
-		type user_tmp_t;
+		type user_tmp_t, user_runtime_t;
 	')
 
 	allow $1 user_tmp_t:dir list_dir_perms;
@@ -2708,6 +2712,24 @@ interface(`userdom_dontaudit_list_user_tmp',`
 	')
 
 	dontaudit $1 user_tmp_t:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##	Delete users temporary directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`userdom_delete_user_tmp_dirs',`
+	gen_require(`
+		type user_tmp_t;
+	')
+
+	delete_dirs_pattern($1, user_tmp_t, user_tmp_t)
 ')
 
 ########################################
@@ -2829,6 +2851,24 @@ interface(`userdom_rw_user_tmp_files',`
 
 ########################################
 ## <summary>
+##	Delete users temporary files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`userdom_delete_user_tmp_files',`
+	gen_require(`
+		type user_tmp_t;
+	')
+
+	delete_files_pattern($1, user_tmp_t, user_tmp_t)
+')
+
+########################################
+## <summary>
 ##	Do not audit attempts to manage users
 ##	temporary files.
 ## </summary>
@@ -2869,6 +2909,24 @@ interface(`userdom_read_user_tmp_symlinks',`
 
 ########################################
 ## <summary>
+##	Delete users temporary symbolic links.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`userdom_delete_user_tmp_symlinks',`
+	gen_require(`
+		type user_tmp_t;
+	')
+
+	delete_lnk_files_pattern($1, user_tmp_t, user_tmp_t)
+')
+
+########################################
+## <summary>
 ##	Create, read, write, and delete user
 ##	temporary directories.
 ## </summary>
@@ -2890,6 +2948,24 @@ interface(`userdom_manage_user_tmp_dirs',`
 
 ########################################
 ## <summary>
+##	Delete users temporary named pipes.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`userdom_delete_user_tmp_named_pipes',`
+	gen_require(`
+		type user_tmp_t;
+	')
+
+	delete_fifo_files_pattern($1, user_tmp_t, user_tmp_t)
+')
+
+########################################
+## <summary>
 ##	Create, read, write, and delete user
 ##	temporary files.
 ## </summary>
@@ -2907,6 +2983,24 @@ interface(`userdom_manage_user_tmp_files',`
 	manage_files_pattern($1, user_tmp_t, user_tmp_t)
 	files_search_tmp($1)
 	userdom_search_user_runtime($1)
+')
+
+########################################
+## <summary>
+##	Delete users temporary named sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`userdom_delete_user_tmp_named_sockets',`
+	gen_require(`
+		type user_tmp_t;
+	')
+
+	delete_sock_files_pattern($1, user_tmp_t, user_tmp_t)
 ')
 
 ########################################
@@ -3519,7 +3613,7 @@ interface(`userdom_pid_filetrans_user_runtime_root',`
 #
 interface(`userdom_user_runtime_filetrans',`
 	gen_require(`
-		type user_runtime_root_t, user_runtime_t;
+		type user_runtime_t;
 	')
 
 	filetrans_pattern($1, user_runtime_t, $2, $3, $4)

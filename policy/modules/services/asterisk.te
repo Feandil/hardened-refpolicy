@@ -1,4 +1,4 @@
-policy_module(asterisk, 1.18.1)
+policy_module(asterisk, 1.18.2)
 
 ########################################
 #
@@ -94,8 +94,6 @@ corenet_tcp_sendrecv_generic_if(asterisk_t)
 corenet_udp_sendrecv_generic_if(asterisk_t)
 corenet_tcp_sendrecv_generic_node(asterisk_t)
 corenet_udp_sendrecv_generic_node(asterisk_t)
-corenet_tcp_sendrecv_all_ports(asterisk_t)
-corenet_udp_sendrecv_all_ports(asterisk_t)
 corenet_tcp_bind_generic_node(asterisk_t)
 corenet_udp_bind_generic_node(asterisk_t)
 

@@ -1,4 +1,4 @@
-policy_module(collectd, 1.4.1)
+policy_module(collectd, 1.4.2)
 
 ########################################
 #
@@ -145,7 +145,6 @@ dev_dontaudit_getattr_all_chr_files(collectd_t)
 tunable_policy(`collectd_tcp_network_connect',`
 	corenet_sendrecv_all_client_packets(collectd_t)
 	corenet_tcp_connect_all_ports(collectd_t)
-	corenet_tcp_sendrecv_all_ports(collectd_t)
 ')
 
 tunable_policy(`collectd_entropy',`

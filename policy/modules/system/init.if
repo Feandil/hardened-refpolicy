@@ -1,5 +1,46 @@
 ## <summary>System initialization programs (init and init scripts).</summary>
 
+######################################
+## <summary>
+##	Make the specified type usable as a mountpoint.
+## </summary>
+## <desc>
+##	Make the specified type usable as a mountpoint.
+##	This is normally used for systemd BindPaths options.
+## </desc>
+## <param name="file_type">
+##   <summary>
+##     Type to be used as a mountpoint.
+##   </summary>
+## </param>
+#
+interface(`init_mountpoint',`
+	gen_require(`
+		attribute init_mountpoint_type;
+	')
+
+	typeattribute $1 init_mountpoint_type;
+')
+
+########################################
+## <summary>
+##	Create a file type monitored by a systemd path unit.
+## </summary>
+## <param name="script_file">
+##	<summary>
+##	Type to be used for a path unit monitored location.
+##	</summary>
+## </param>
+#
+interface(`init_path_unit_location_file',`
+	gen_require(`
+		attribute init_path_unit_loc_type;
+	')
+
+	typeattribute $1 init_path_unit_loc_type;
+	files_type($1)
+')
+
 ########################################
 ## <summary>
 ##	Create a file type used for init scripts.
@@ -1337,6 +1378,79 @@ interface(`init_list_pids',`
 
 	allow $1 init_runtime_t:dir list_dir_perms;
 	files_search_pids($1)
+')
+
+######################################
+## <summary>
+##  Create symbolic links in the /run/systemd directory.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_manage_pid_symlinks', `
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	allow $1 init_runtime_t:lnk_file create_lnk_file_perms;
+')
+
+######################################
+## <summary>
+##  Create files in the /run/systemd directory.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_create_pid_files', `
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	allow $1 init_runtime_t:file create_file_perms;
+')
+
+######################################
+## <summary>
+##  Write files in the /run/systemd directory.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_write_pid_files', `
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	allow $1 init_runtime_t:file write_file_perms;
+')
+
+######################################
+## <summary>
+##  Create, read, write, and delete
+##  directories in the /run/systemd directory.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_manage_pid_dirs', `
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	manage_dirs_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 ########################################
@@ -3328,11 +3442,6 @@ interface(`init_reload_all_units',`
 ## </param>
 #
 interface(`init_admin',`
-	gen_require(`
-		type initrc_exec_t;
-		class service status;
-	')
-
 	dev_manage_null_service($1)
 	init_disable($1)
 	init_enable($1)

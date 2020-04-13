@@ -1,4 +1,4 @@
-policy_module(init, 2.7.4)
+policy_module(init, 2.7.10)
 
 gen_require(`
 	class passwd rootok;
@@ -23,6 +23,15 @@ gen_tunable(init_upstart, false)
 ## </desc>
 gen_tunable(init_daemons_use_tty, false)
 
+## <desc>
+## <p>
+## Enable systemd to mount on all non-security files.
+## </p>
+## </desc>
+gen_tunable(init_mounton_non_security, false)
+
+attribute init_mountpoint_type;
+attribute init_path_unit_loc_type;
 attribute init_script_domain_type;
 attribute init_script_file_type;
 attribute init_run_all_scripts_domain;
@@ -232,6 +241,10 @@ ifdef(`init_systemd',`
 	allow init_t self:capability2 audit_read;
 	allow init_t self:bpf { map_create map_read map_write prog_load prog_run };
 
+	allow init_t init_mountpoint_type:dir_file_class_set { getattr mounton };
+
+	allow init_t init_path_unit_loc_type:{ dir file } { getattr watch };
+
 	# for /run/systemd/inaccessible/{chr,blk}
 	allow init_t init_runtime_t:blk_file { create getattr };
 	allow init_t init_runtime_t:chr_file { create getattr };
@@ -260,6 +273,8 @@ ifdef(`init_systemd',`
 	allow systemprocess init_t:unix_stream_socket { append write read getattr ioctl };
 
 	allow daemon init_t:unix_stream_socket { append write read getattr ioctl };
+
+	allow init_t init_runtime_t:{ dir file } watch;
 	manage_files_pattern(init_t, init_runtime_t, init_runtime_t)
 	manage_lnk_files_pattern(init_t, init_runtime_t, init_runtime_t)
 	manage_sock_files_pattern(init_t, init_runtime_t, init_runtime_t)
@@ -320,11 +335,16 @@ ifdef(`init_systemd',`
 	domain_subj_id_change_exemption(init_t)
 	domain_role_change_exemption(init_t)
 
+	files_getattr_all_dirs(init_t)
+	files_getattr_all_files(init_t)
+	files_getattr_all_pipes(init_t)
+	files_getattr_all_sockets(init_t)
+	files_read_all_symlinks(init_t)
 	files_read_all_pids(init_t)
 	files_list_usr(init_t)
 	files_list_var(init_t)
 	files_list_var_lib(init_t)
-	files_mounton_root(init_t)
+	files_watch_root_dirs(init_t)
 	files_search_pids(init_t)
 	files_relabel_all_pids(init_t)
 	files_relabel_all_pid_sock_files(init_t)
@@ -336,6 +356,7 @@ ifdef(`init_systemd',`
 	files_create_all_pid_sockets(init_t)
 	files_create_all_spool_sockets(init_t)
 	files_create_lock_dirs(init_t)
+	files_watch_runtime_dirs(init_t)
 	systemd_rw_networkd_netlink_route_sockets(init_t)
 	files_delete_all_pids(init_t)
 	files_delete_all_spool_sockets(init_t)
@@ -345,17 +366,14 @@ ifdef(`init_systemd',`
 	files_manage_all_pid_dirs(init_t)
 	files_manage_generic_tmp_dirs(init_t)
 	files_manage_urandom_seed(init_t)
-	files_mounton_all_mountpoints(init_t)
 	files_read_boot_files(initrc_t)
 	files_relabel_all_lock_dirs(init_t)
 	files_relabel_all_pid_dirs(init_t)
 	files_relabel_all_pid_files(init_t)
 	files_search_all(init_t)
 	files_unmount_all_file_type_fs(init_t)
-	# for privatetmp functions
-	files_mounton_tmp(init_t)
-	# for ProtectSystem
-	files_mounton_etc_dirs(init_t)
+	# If /etc/localtime is missing, a watch on /etc is added.
+	files_watch_etc_dirs(init_t)
 
 	fs_relabel_cgroup_dirs(init_t)
 	fs_list_auto_mountpoints(init_t)
@@ -367,6 +385,7 @@ ifdef(`init_systemd',`
 	fs_relabel_pstore_dirs(init_t)
 	fs_dontaudit_getattr_xattr_fs(init_t)
 	fs_create_cgroup_links(init_t)
+	fs_watch_cgroup_files(init_t)
 	fs_getattr_all_fs(init_t)
 	fs_manage_cgroup_dirs(init_t)
 	fs_manage_cgroup_files(init_t)
@@ -386,6 +405,10 @@ ifdef(`init_systemd',`
 	fs_read_nsfs_files(init_t)
 
 	init_read_script_state(init_t)
+
+	miscfiles_watch_localization(init_t)
+
+	mount_watch_runtime_dirs(init_t)
 
 	# systemd_socket_activated policy
 	mls_socket_write_all_levels(init_t)
@@ -436,6 +459,10 @@ ifdef(`init_systemd',`
 	udev_read_pid_files(init_t)
 
 	udev_relabelto_db_sockets(init_t)
+
+	tunable_policy(`init_mounton_non_security',`
+		files_mounton_non_security(init_t)
+	')
 
 	optional_policy(`
 		clock_read_adjtime(init_t)
@@ -625,8 +652,6 @@ corenet_tcp_sendrecv_all_if(initrc_t)
 corenet_udp_sendrecv_all_if(initrc_t)
 corenet_tcp_sendrecv_all_nodes(initrc_t)
 corenet_udp_sendrecv_all_nodes(initrc_t)
-corenet_tcp_sendrecv_all_ports(initrc_t)
-corenet_udp_sendrecv_all_ports(initrc_t)
 corenet_tcp_connect_all_ports(initrc_t)
 corenet_sendrecv_all_client_packets(initrc_t)
 
@@ -1010,11 +1035,14 @@ ifdef(`init_systemd',`
 
 	# Create /etc/audit.rules.prev after firstboot remediation
 	logging_manage_audit_config(initrc_t)
+	# journalctl:
+	logging_watch_runtime_dirs(initrc_t)
 
 	# lvm2-activation-generator checks file labels
 	seutil_read_file_contexts(initrc_t)
 
 	systemd_start_power_units(initrc_t)
+	systemd_watch_networkd_runtime_dirs(initrc_t)
 
 	optional_policy(`
 		# create /var/lock/lvm/

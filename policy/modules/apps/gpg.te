@@ -1,4 +1,4 @@
-policy_module(gpg, 2.15.2)
+policy_module(gpg, 2.15.3)
 
 ########################################
 #
@@ -118,7 +118,6 @@ corenet_tcp_sendrecv_generic_node(gpg_t)
 
 corenet_sendrecv_all_client_packets(gpg_t)
 corenet_tcp_connect_all_ports(gpg_t)
-corenet_tcp_sendrecv_all_ports(gpg_t)
 
 dev_read_generic_usb_dev(gpg_t)
 dev_read_rand(gpg_t)
@@ -201,7 +200,6 @@ corenet_all_recvfrom_unlabeled(gpg_helper_t)
 corenet_all_recvfrom_netlabel(gpg_helper_t)
 corenet_tcp_sendrecv_generic_if(gpg_helper_t)
 corenet_tcp_sendrecv_generic_node(gpg_helper_t)
-corenet_tcp_sendrecv_all_ports(gpg_helper_t)
 
 corenet_sendrecv_all_client_packets(gpg_helper_t)
 corenet_tcp_connect_all_ports(gpg_helper_t)
@@ -231,9 +229,11 @@ manage_dirs_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
 manage_sock_files_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
 manage_files_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
 manage_lnk_files_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
+allow gpg_agent_t gpg_secret_t:dir watch;
 
 manage_dirs_pattern(gpg_agent_t, gpg_runtime_t, gpg_runtime_t)
 userdom_user_runtime_filetrans(gpg_agent_t, gpg_runtime_t, dir, "gnupg")
+allow gpg_agent_t gpg_runtime_t:dir watch;
 
 manage_dirs_pattern(gpg_agent_t, gpg_agent_tmp_t, gpg_agent_tmp_t)
 manage_files_pattern(gpg_agent_t, gpg_agent_tmp_t, gpg_agent_tmp_t)

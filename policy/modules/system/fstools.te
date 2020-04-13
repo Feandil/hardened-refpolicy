@@ -1,4 +1,4 @@
-policy_module(fstools, 1.23.0)
+policy_module(fstools, 1.23.1)
 
 ########################################
 #
@@ -58,7 +58,7 @@ manage_files_pattern(fsadm_t, fsadm_log_t, fsadm_log_t)
 logging_log_filetrans(fsadm_t, fsadm_log_t, file)
 
 # Enable swapping to files
-allow fsadm_t swapfile_t:file { rw_file_perms swapon };
+allow fsadm_t swapfile_t:file rw_file_perms;
 
 kernel_read_system_state(fsadm_t)
 kernel_read_kernel_sysctls(fsadm_t)
@@ -154,6 +154,8 @@ logging_send_syslog_msg(fsadm_t)
 
 miscfiles_read_localization(fsadm_t)
 
+# for zfs/zpool
+mount_exec(fsadm_t)
 # for /run/mount/utab
 mount_getattr_runtime_files(fsadm_t)
 # losetup: bind mount_loopback_t files to loop devices
