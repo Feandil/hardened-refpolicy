@@ -1,4 +1,4 @@
-policy_module(evolution, 2.9.2)
+policy_module(evolution, 2.12.0)
 
 ########################################
 #
@@ -91,7 +91,7 @@ xdg_data_content(evolution_xdg_data_t)
 
 allow evolution_t self:capability { setgid setuid sys_nice };
 allow evolution_t self:process { execmem getsched setsched signal signull };
-allow evolution_t self:fifo_file rw_file_perms;
+allow evolution_t self:fifo_file rw_fifo_file_perms;
 
 allow evolution_t evolution_home_t:dir manage_dir_perms;
 allow evolution_t evolution_home_t:file manage_file_perms;
@@ -143,7 +143,6 @@ kernel_read_net_sysctls(evolution_t)
 corecmd_exec_bin(evolution_t)
 corecmd_exec_shell(evolution_t)
 
-corenet_all_recvfrom_unlabeled(evolution_t)
 corenet_all_recvfrom_netlabel(evolution_t)
 corenet_tcp_sendrecv_generic_if(evolution_t)
 corenet_udp_sendrecv_generic_if(evolution_t)
@@ -417,7 +416,7 @@ optional_policy(`
 
 allow evolution_server_t self:process { getsched signal };
 
-allow evolution_server_t self:fifo_file { read write };
+allow evolution_server_t self:fifo_file rw_inherited_fifo_file_perms;
 allow evolution_server_t self:unix_stream_socket { accept connectto listen };
 
 allow evolution_server_t evolution_home_t:dir manage_dir_perms;
@@ -434,7 +433,6 @@ kernel_read_system_state(evolution_server_t)
 
 corecmd_exec_shell(evolution_server_t)
 
-corenet_all_recvfrom_unlabeled(evolution_server_t)
 corenet_all_recvfrom_netlabel(evolution_server_t)
 corenet_tcp_sendrecv_generic_if(evolution_server_t)
 corenet_tcp_sendrecv_generic_node(evolution_server_t)
@@ -493,7 +491,6 @@ allow evolution_webcal_t evolution_webcal_tmpfs_t:sock_file manage_sock_file_per
 allow evolution_webcal_t evolution_webcal_tmpfs_t:fifo_file manage_fifo_file_perms;
 fs_tmpfs_filetrans(evolution_webcal_t, evolution_webcal_tmpfs_t, { dir file lnk_file sock_file fifo_file })
 
-corenet_all_recvfrom_unlabeled(evolution_webcal_t)
 corenet_all_recvfrom_netlabel(evolution_webcal_t)
 corenet_tcp_sendrecv_generic_if(evolution_webcal_t)
 corenet_tcp_sendrecv_generic_node(evolution_webcal_t)

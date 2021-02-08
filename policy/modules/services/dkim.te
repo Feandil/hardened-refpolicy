@@ -1,4 +1,4 @@
-policy_module(dkim, 1.7.0)
+policy_module(dkim, 1.9.0)
 
 ########################################
 #
@@ -16,7 +16,7 @@ files_security_file(dkim_milter_private_key_t)
 type dkim_milter_unit_t;
 init_unit_file(dkim_milter_unit_t)
 
-init_daemon_pid_file(dkim_milter_data_t, dir, "opendkim")
+init_daemon_runtime_file(dkim_milter_data_t, dir, "opendkim")
 
 ########################################
 #
@@ -35,14 +35,17 @@ kernel_read_vm_overcommit_sysctl(dkim_milter_t)
 
 corenet_udp_bind_generic_node(dkim_milter_t)
 corenet_udp_bind_all_unreserved_ports(dkim_milter_t)
+corenet_udp_bind_generic_port(dkim_milter_t)
 
 dev_read_urand(dkim_milter_t)
 # for cpu/online
 dev_read_sysfs(dkim_milter_t)
 
-files_pid_filetrans(dkim_milter_t, dkim_milter_data_t, { dir file })
+files_runtime_filetrans(dkim_milter_t, dkim_milter_data_t, { dir file })
 files_read_usr_files(dkim_milter_t)
 files_search_spool(dkim_milter_t)
+
+miscfiles_read_generic_certs(dkim_milter_t)
 
 optional_policy(`
 	mta_read_config(dkim_milter_t)

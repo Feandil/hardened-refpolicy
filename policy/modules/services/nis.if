@@ -37,7 +37,6 @@ interface(`nis_use_ypbind_uncond',`
 	allow $1 var_yp_t:file read_file_perms;
 	allow $1 var_yp_t:lnk_file read_lnk_file_perms;
 
-	corenet_all_recvfrom_unlabeled($1)
 	corenet_all_recvfrom_netlabel($1)
 	corenet_tcp_sendrecv_generic_if($1)
 	corenet_udp_sendrecv_generic_if($1)
@@ -70,7 +69,7 @@ interface(`nis_use_ypbind_uncond',`
 ##	<p>
 ##	Allow the specified domain to use the ypbind service
 ##	to access Network Information Service (NIS) services.
-##	Information that can be retreived from NIS includes
+##	Information that can be retrieved from NIS includes
 ##	usernames, passwords, home directories, and groups.
 ##	If the network is configured to have a single sign-on
 ##	using NIS, it is likely that any program that does
@@ -213,7 +212,7 @@ interface(`nis_list_var_yp',`
 
 ########################################
 ## <summary>
-##	Read ypbind pid files.
+##	Read ypbind pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -222,17 +221,32 @@ interface(`nis_list_var_yp',`
 ## </param>
 #
 interface(`nis_read_ypbind_pid',`
+	refpolicywarn(`$0($*) has been deprecated, please use nis_read_ypbind_runtime_files() instead.')
+	nis_read_ypbind_runtime_files($1)
+')
+
+########################################
+## <summary>
+##	Read ypbind runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`nis_read_ypbind_runtime_files',`
 	gen_require(`
 		type ypbind_runtime_t;
 	')
 
-	files_search_pids($1)
+	files_search_runtime($1)
 	allow $1 ypbind_runtime_t:file read_file_perms;
 ')
 
 ########################################
 ## <summary>
-##	Delete ypbind pid files.
+##	Delete ypbind pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -241,11 +255,7 @@ interface(`nis_read_ypbind_pid',`
 ## </param>
 #
 interface(`nis_delete_ypbind_pid',`
-	gen_require(`
-		type ypbind_runtime_t;
-	')
-
-	allow $1 ypbind_runtime_t:file delete_file_perms;
+	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ########################################
@@ -359,7 +369,7 @@ interface(`nis_admin',`
 	files_list_tmp($1)
 	admin_pattern($1, { ypserv_tmp_t ypbind_tmp_t })
 
-	files_list_pids($1)
+	files_list_runtime($1)
 	admin_pattern($1, { ypserv_runtime_t ypbind_runtime_t yppasswdd_runtime_t })
 
 	files_list_etc($1)

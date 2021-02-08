@@ -1,4 +1,4 @@
-policy_module(authlogin, 2.15.3)
+policy_module(authlogin, 2.18.0)
 
 ########################################
 #
@@ -48,16 +48,16 @@ type pam_exec_t;
 domain_entry_file(pam_t, pam_exec_t)
 
 type pam_motd_runtime_t;
-files_pid_file(pam_motd_runtime_t)
+files_runtime_file(pam_motd_runtime_t)
 
 type pam_runtime_t alias pam_var_run_t;
-files_pid_file(pam_runtime_t)
+files_runtime_file(pam_runtime_t)
 
 type pam_tmp_t;
 files_tmp_file(pam_tmp_t)
 
 type pam_var_console_t;
-files_pid_file(pam_var_console_t)
+files_runtime_file(pam_var_console_t)
 
 type shadow_t;
 files_auth_file(shadow_t)
@@ -104,8 +104,9 @@ allow chkpwd_t shadow_t:file read_file_perms;
 files_list_etc(chkpwd_t)
 
 kernel_read_crypto_sysctls(chkpwd_t)
-# is_selinux_enabled
-kernel_read_system_state(chkpwd_t)
+kernel_dontaudit_search_kernel_sysctl(chkpwd_t)
+kernel_dontaudit_read_kernel_sysctl(chkpwd_t)
+kernel_dontaudit_getattr_proc(chkpwd_t)
 
 domain_dontaudit_use_interactive_fds(chkpwd_t)
 
@@ -120,7 +121,6 @@ files_dontaudit_search_var(chkpwd_t)
 fs_dontaudit_getattr_xattr_fs(chkpwd_t)
 
 selinux_get_enforce_mode(chkpwd_t)
-selinux_getattr_fs(chkpwd_t)
 
 term_dontaudit_use_console(chkpwd_t)
 term_dontaudit_use_unallocated_ttys(chkpwd_t)
@@ -134,7 +134,7 @@ logging_send_syslog_msg(chkpwd_t)
 
 miscfiles_read_localization(chkpwd_t)
 
-seutil_read_config(chkpwd_t)
+seutil_libselinux_linked(chkpwd_t)
 seutil_dontaudit_use_newrole_fds(chkpwd_t)
 
 userdom_use_user_terminals(chkpwd_t)
@@ -167,7 +167,7 @@ allow pam_t self:process { transition signal_perms getsched setsched getsession 
 dontaudit pam_t self:capability sys_tty_config;
 
 allow pam_t self:fd use;
-allow pam_t self:fifo_file rw_file_perms;
+allow pam_t self:fifo_file rw_fifo_file_perms;
 allow pam_t self:unix_dgram_socket create_socket_perms;
 allow pam_t self:unix_stream_socket rw_stream_socket_perms;
 allow pam_t self:unix_dgram_socket sendto;
@@ -179,7 +179,7 @@ allow pam_t self:msg { send receive };
 
 delete_files_pattern(pam_t, pam_runtime_t, pam_runtime_t)
 read_files_pattern(pam_t, pam_runtime_t, pam_runtime_t)
-files_list_pids(pam_t)
+files_list_runtime(pam_t)
 
 allow pam_t pam_tmp_t:dir manage_dir_perms;
 allow pam_t pam_tmp_t:file manage_file_perms;
@@ -263,7 +263,7 @@ dev_setattr_xserver_misc_dev(pam_console_t)
 dev_read_urand(pam_console_t)
 
 files_read_etc_files(pam_console_t)
-files_search_pids(pam_console_t)
+files_search_runtime(pam_console_t)
 files_list_mnt(pam_console_t)
 # read /etc/mtab
 files_read_etc_runtime_files(pam_console_t)
@@ -318,20 +318,11 @@ optional_policy(`
 ')
 
 optional_policy(`
-	hotplug_use_fds(pam_console_t)
-	hotplug_dontaudit_search_config(pam_console_t)
-')
-
-optional_policy(`
 	seutil_sigchld_newrole(pam_console_t)
 ')
 
 optional_policy(`
-	udev_read_db(pam_console_t)
-')
-
-optional_policy(`
-	xserver_read_xdm_pid(pam_console_t)
+	xserver_read_xdm_runtime_files(pam_console_t)
 	xserver_dontaudit_write_log(pam_console_t)
 ')
 
@@ -429,6 +420,10 @@ files_read_etc_files(nsswitch_domain)
 
 sysnet_dns_name_resolve(nsswitch_domain)
 
+ifdef(`init_systemd', `
+	systemd_stream_connect_userdb(nsswitch_domain)
+')
+
 tunable_policy(`authlogin_nsswitch_use_ldap',`
 	miscfiles_read_generic_certs(nsswitch_domain)
 	sysnet_use_ldap(nsswitch_domain)
@@ -477,5 +472,5 @@ optional_policy(`
 ')
 
 ifdef(`distro_gentoo',`
-	init_daemon_pid_file(pam_runtime_t, dir, "sepermit")
+	init_daemon_runtime_file(pam_runtime_t, dir, "sepermit")
 ')

@@ -1,4 +1,4 @@
-policy_module(loadkeys, 1.12.1)
+policy_module(loadkeys, 1.15.0)
 
 ########################################
 #
@@ -32,7 +32,7 @@ files_read_etc_files(loadkeys_t)
 files_read_etc_runtime_files(loadkeys_t)
 # keymap files are in /usr/share/keymaps or /usr/share/kbd/keymaps
 files_read_usr_files(loadkeys_t)
-files_search_pids(loadkeys_t)
+files_search_runtime(loadkeys_t)
 files_search_src(loadkeys_t)
 files_search_tmp(loadkeys_t)
 
@@ -45,7 +45,7 @@ locallogin_use_fds(loadkeys_t)
 
 miscfiles_read_localization(loadkeys_t)
 
-userdom_use_user_ttys(loadkeys_t)
+userdom_use_user_terminals(loadkeys_t)
 userdom_list_user_home_content(loadkeys_t)
 
 optional_policy(`
@@ -53,9 +53,5 @@ optional_policy(`
 ')
 
 optional_policy(`
-	keyboardd_read_pipes(loadkeys_t)
-')
-
-optional_policy(`
-	nscd_dontaudit_search_pid(loadkeys_t)
+	nscd_dontaudit_search_runtime(loadkeys_t)
 ')

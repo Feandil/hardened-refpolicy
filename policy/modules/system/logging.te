@@ -1,4 +1,4 @@
-policy_module(logging, 1.30.7)
+policy_module(logging, 1.33.0)
 
 ########################################
 #
@@ -31,7 +31,7 @@ type auditd_initrc_exec_t;
 init_script_file(auditd_initrc_exec_t)
 
 type auditd_runtime_t alias auditd_var_run_t;
-files_pid_file(auditd_runtime_t)
+files_runtime_file(auditd_runtime_t)
 
 type auditd_unit_t;
 init_unit_file(auditd_unit_t)
@@ -45,7 +45,7 @@ type audisp_remote_exec_t;
 logging_dispatcher_domain(audisp_remote_t, audisp_remote_exec_t)
 
 type audisp_runtime_t alias audisp_var_run_t;
-files_pid_file(audisp_runtime_t)
+files_runtime_file(audisp_runtime_t)
 
 type devlog_t;
 files_type(devlog_t)
@@ -56,7 +56,7 @@ type klogd_exec_t;
 init_daemon_domain(klogd_t, klogd_exec_t)
 
 type klogd_runtime_t alias klogd_var_run_t;
-files_pid_file(klogd_runtime_t)
+files_runtime_file(klogd_runtime_t)
 
 type klogd_tmp_t;
 files_tmp_file(klogd_tmp_t)
@@ -74,7 +74,7 @@ type syslogd_initrc_exec_t;
 init_script_file(syslogd_initrc_exec_t)
 
 type syslogd_runtime_t alias syslogd_var_run_t;
-files_pid_file(syslogd_runtime_t)
+files_runtime_file(syslogd_runtime_t)
 
 type syslogd_tmp_t;
 files_tmp_file(syslogd_tmp_t)
@@ -164,7 +164,7 @@ allow auditd_t var_log_t:dir search_dir_perms;
 
 manage_files_pattern(auditd_t, auditd_runtime_t, auditd_runtime_t)
 manage_sock_files_pattern(auditd_t, auditd_runtime_t, auditd_runtime_t)
-files_pid_filetrans(auditd_t, auditd_runtime_t, { file sock_file })
+files_runtime_filetrans(auditd_t, auditd_runtime_t, { file sock_file })
 
 kernel_read_kernel_sysctls(auditd_t)
 # Needs to be able to run dispatcher.  see /etc/audit/auditd.conf
@@ -179,7 +179,6 @@ fs_rw_anon_inodefs_files(auditd_t)
 
 selinux_search_fs(auditctl_t)
 
-corenet_all_recvfrom_unlabeled(auditd_t)
 corenet_all_recvfrom_netlabel(auditd_t)
 corenet_tcp_sendrecv_generic_if(auditd_t)
 corenet_tcp_sendrecv_generic_node(auditd_t)
@@ -237,10 +236,6 @@ optional_policy(`
 	systemd_status_power_units(auditd_t)
 ')
 
-optional_policy(`
-	udev_read_db(auditd_t)
-')
-
 ########################################
 #
 # audit dispatcher local policy
@@ -255,7 +250,7 @@ allow audisp_t self:unix_dgram_socket create_socket_perms;
 allow audisp_t auditd_t:unix_stream_socket rw_socket_perms;
 
 manage_sock_files_pattern(audisp_t, audisp_runtime_t, audisp_runtime_t)
-files_pid_filetrans(audisp_t, audisp_runtime_t, sock_file)
+files_runtime_filetrans(audisp_t, audisp_runtime_t, sock_file)
 
 kernel_read_system_state(audisp_t)
 
@@ -296,7 +291,6 @@ files_spool_filetrans(audisp_remote_t, audit_spool_t, { dir file })
 
 corecmd_exec_bin(audisp_remote_t)
 
-corenet_all_recvfrom_unlabeled(audisp_remote_t)
 corenet_all_recvfrom_netlabel(audisp_remote_t)
 corenet_tcp_sendrecv_generic_if(audisp_remote_t)
 corenet_tcp_sendrecv_generic_node(audisp_remote_t)
@@ -328,7 +322,7 @@ manage_files_pattern(klogd_t, klogd_tmp_t, klogd_tmp_t)
 files_tmp_filetrans(klogd_t, klogd_tmp_t,{ file dir })
 
 manage_files_pattern(klogd_t, klogd_runtime_t, klogd_runtime_t)
-files_pid_filetrans(klogd_t, klogd_runtime_t, file)
+files_runtime_filetrans(klogd_t, klogd_runtime_t, file)
 
 kernel_read_system_state(klogd_t)
 kernel_read_messages(klogd_t)
@@ -339,7 +333,7 @@ kernel_change_ring_buffer_level(klogd_t)
 
 files_read_kernel_symbol_table(klogd_t)
 
-dev_read_raw_memory(klogd_t)
+dev_read_raw_memory_cond(klogd_t, allow_raw_memory_access)
 dev_read_sysfs(klogd_t)
 
 fs_getattr_all_fs(klogd_t)
@@ -363,10 +357,6 @@ ifdef(`distro_ubuntu',`
 	optional_policy(`
 		unconfined_domain(klogd_t)
 	')
-')
-
-optional_policy(`
-	udev_read_db(klogd_t)
 ')
 
 optional_policy(`
@@ -403,8 +393,8 @@ allow syslogd_t syslog_conf_t:dir list_dir_perms;
 
 # Create and bind to /dev/log or /var/run/log.
 allow syslogd_t devlog_t:sock_file manage_sock_file_perms;
-files_pid_filetrans(syslogd_t, devlog_t, sock_file)
-init_pid_filetrans(syslogd_t, devlog_t, sock_file, "dev-log")
+files_runtime_filetrans(syslogd_t, devlog_t, sock_file)
+init_runtime_filetrans(syslogd_t, devlog_t, sock_file, "dev-log")
 
 # create/append log files.
 manage_files_pattern(syslogd_t, var_log_t, var_log_t)
@@ -416,7 +406,7 @@ files_search_spool(syslogd_t)
 allow syslogd_t var_log_t:dir { create setattr };
 
 # for systemd but can not be conditional
-files_pid_filetrans(syslogd_t, syslogd_tmp_t, dir, "log")
+files_runtime_filetrans(syslogd_t, syslogd_tmp_t, dir, "log")
 
 # manage temporary files
 manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
@@ -431,10 +421,10 @@ files_search_var_lib(syslogd_t)
 
 # manage runtime files
 allow syslogd_t syslogd_runtime_t:dir create_dir_perms;
-allow syslogd_t syslogd_runtime_t:sock_file { create setattr };
+allow syslogd_t syslogd_runtime_t:sock_file { create setattr unlink };
 allow syslogd_t syslogd_runtime_t:file map;
 manage_files_pattern(syslogd_t, syslogd_runtime_t, syslogd_runtime_t)
-files_pid_filetrans(syslogd_t, syslogd_runtime_t, file)
+files_runtime_filetrans(syslogd_t, syslogd_runtime_t, file)
 
 kernel_read_crypto_sysctls(syslogd_t)
 kernel_read_system_state(syslogd_t)
@@ -452,7 +442,6 @@ kernel_read_ring_buffer(syslogd_t)
 # /initrd is not umounted before minilog starts
 kernel_dontaudit_search_unlabeled(syslogd_t)
 
-corenet_all_recvfrom_unlabeled(syslogd_t)
 corenet_all_recvfrom_netlabel(syslogd_t)
 corenet_udp_sendrecv_generic_if(syslogd_t)
 corenet_udp_sendrecv_generic_node(syslogd_t)
@@ -527,7 +516,10 @@ ifdef(`init_systemd',`
 	allow syslogd_t self:netlink_audit_socket connected_socket_perms;
 	allow syslogd_t self:capability2 audit_read;
 	allow syslogd_t self:capability { chown setgid setuid sys_ptrace };
-	allow syslogd_t self:netlink_audit_socket { getattr getopt read setopt write };
+	allow syslogd_t self:netlink_audit_socket { getattr getopt read setopt write nlmsg_write };
+
+	# remove /run/log/journal when switching to permanent storage
+	allow syslogd_t var_log_t:dir rmdir;
 
 	kernel_getattr_dgram_sockets(syslogd_t)
 	kernel_read_ring_buffer(syslogd_t)
@@ -543,7 +535,7 @@ ifdef(`init_systemd',`
 	domain_read_all_domains_state(syslogd_t)
 
 	init_create_runtime_dirs(syslogd_t)
-	init_daemon_pid_file(syslogd_runtime_t, dir, "syslogd")
+	init_daemon_runtime_file(syslogd_runtime_t, dir, "syslogd")
 	init_getattr(syslogd_t)
 	init_rename_runtime_files(syslogd_t)
 	init_delete_runtime_files(syslogd_t)
@@ -554,7 +546,7 @@ ifdef(`init_systemd',`
 
 	systemd_manage_journal_files(syslogd_t)
 
-	udev_read_pid_files(syslogd_t)
+	udev_read_runtime_files(syslogd_t)
 ')
 
 ifdef(`distro_gentoo',`
@@ -605,12 +597,6 @@ optional_policy(`
 
 optional_policy(`
 	seutil_sigchld_newrole(syslogd_t)
-')
-
-optional_policy(`
-	udev_read_db(syslogd_t)
-	# for systemd-journal to read seat data from /run/udev/data
-	udev_read_pid_files(syslogd_t)
 ')
 
 optional_policy(`

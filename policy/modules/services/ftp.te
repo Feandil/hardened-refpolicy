@@ -1,4 +1,4 @@
-policy_module(ftp, 1.22.2)
+policy_module(ftp, 1.25.0)
 
 ########################################
 #
@@ -131,7 +131,7 @@ type ftpd_lock_t;
 files_lock_file(ftpd_lock_t)
 
 type ftpd_runtime_t alias ftpd_var_run_t;
-files_pid_file(ftpd_runtime_t)
+files_runtime_file(ftpd_runtime_t)
 
 type ftpd_tmp_t;
 files_tmp_file(ftpd_tmp_t)
@@ -197,7 +197,7 @@ fs_tmpfs_filetrans(ftpd_t, ftpd_tmpfs_t, { dir file lnk_file sock_file fifo_file
 manage_dirs_pattern(ftpd_t, ftpd_runtime_t, ftpd_runtime_t)
 manage_files_pattern(ftpd_t, ftpd_runtime_t, ftpd_runtime_t)
 manage_sock_files_pattern(ftpd_t, ftpd_runtime_t, ftpd_runtime_t)
-files_pid_filetrans(ftpd_t, ftpd_runtime_t, { file dir })
+files_runtime_filetrans(ftpd_t, ftpd_runtime_t, { file dir })
 
 allow ftpd_t ftpdctl_tmp_t:sock_file delete_sock_file_perms;
 
@@ -216,7 +216,6 @@ dev_read_urand(ftpd_t)
 
 corecmd_exec_bin(ftpd_t)
 
-corenet_all_recvfrom_unlabeled(ftpd_t)
 corenet_all_recvfrom_netlabel(ftpd_t)
 corenet_tcp_sendrecv_generic_if(ftpd_t)
 corenet_udp_sendrecv_generic_if(ftpd_t)
@@ -406,10 +405,6 @@ optional_policy(`
 	seutil_sigchld_newrole(ftpd_t)
 ')
 
-optional_policy(`
-	udev_read_db(ftpd_t)
-')
-
 ########################################
 #
 # Ctl local policy
@@ -421,7 +416,7 @@ allow ftpdctl_t ftpdctl_tmp_t:sock_file manage_sock_file_perms;
 files_tmp_filetrans(ftpdctl_t, ftpdctl_tmp_t, sock_file)
 
 files_read_etc_files(ftpdctl_t)
-files_search_pids(ftpdctl_t)
+files_search_runtime(ftpdctl_t)
 
 userdom_use_user_terminals(ftpdctl_t)
 

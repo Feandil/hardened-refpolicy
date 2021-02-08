@@ -1,4 +1,4 @@
-policy_module(devices, 1.25.8)
+policy_module(devices, 1.28.0)
 
 ########################################
 #
@@ -107,6 +107,12 @@ type framebuf_device_t;
 dev_node(framebuf_device_t)
 
 #
+# Type for Dell (others?) freefall detection device /dev/freefall
+#
+type freefall_device_t;
+dev_node(freefall_device_t)
+
+#
 # Type for GPIO chip /dev/gpiochip*
 #
 type gpiochip_device_t;
@@ -191,6 +197,10 @@ type mtrr_device_t;
 dev_node(mtrr_device_t)
 genfscon proc /mtrr gen_context(system_u:object_r:mtrr_device_t,s0)
 
+optional_policy(`
+	init_mountpoint(mtrr_device_t)
+')
+
 #
 # null_device_t is the type of /dev/null.
 #
@@ -250,6 +260,12 @@ type sound_device_t;
 dev_node(sound_device_t)
 
 #
+# Type for sysdig device
+#
+type sysdig_device_t;
+dev_node(sysdig_device_t)
+
+#
 # sysfs_t is the type for the /sys pseudofs
 #
 type sysfs_t, sysfs_types;
@@ -271,6 +287,13 @@ dev_node(tee_priv_device_t)
 #
 type tpm_device_t;
 dev_node(tpm_device_t)
+
+#
+# uhid_device_t is the type of /dev/uhid -
+# User-space I/O driver support for HID subsystem
+#
+type uhid_device_t;
+dev_node(uhid_device_t)
 
 #
 # urandom_device_t is the type of /dev/urandom
@@ -362,6 +385,6 @@ files_associate_tmp(device_node)
 #
 
 allow devices_unconfined_type self:capability sys_rawio;
-allow devices_unconfined_type device_node:blk_file { manage_blk_file_perms relabelfrom relabelto map execute quotaon mounton audit_access execmod watch };
-allow devices_unconfined_type device_node:chr_file { manage_chr_file_perms relabelfrom relabelto map execute quotaon mounton execmod audit_access watch };
-allow devices_unconfined_type mtrr_device_t:file { manage_file_perms relabelfrom relabelto map execute quotaon mounton execute_no_trans entrypoint execmod audit_access watch };
+allow devices_unconfined_type device_node:blk_file { manage_blk_file_perms relabel_blk_file_perms map execute quotaon mounton audit_access execmod watch };
+allow devices_unconfined_type device_node:chr_file { manage_chr_file_perms relabel_chr_file_perms map execute quotaon mounton execmod audit_access watch };
+allow devices_unconfined_type mtrr_device_t:file { manage_file_perms relabel_file_perms exec_file_perms quotaon mounton entrypoint execmod audit_access watch };

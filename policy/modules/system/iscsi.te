@@ -1,4 +1,4 @@
-policy_module(iscsi, 1.13.2)
+policy_module(iscsi, 1.15.0)
 
 ########################################
 #
@@ -20,7 +20,7 @@ type iscsi_log_t;
 logging_log_file(iscsi_log_t)
 
 type iscsi_runtime_t alias iscsi_var_run_t;
-files_pid_file(iscsi_runtime_t)
+files_runtime_file(iscsi_runtime_t)
 
 type iscsi_tmp_t;
 files_tmp_file(iscsi_tmp_t)
@@ -62,7 +62,7 @@ read_files_pattern(iscsid_t, iscsi_var_lib_t, iscsi_var_lib_t)
 read_lnk_files_pattern(iscsid_t, iscsi_var_lib_t, iscsi_var_lib_t)
 
 manage_files_pattern(iscsid_t, iscsi_runtime_t, iscsi_runtime_t)
-files_pid_filetrans(iscsid_t, iscsi_runtime_t, file)
+files_runtime_filetrans(iscsid_t, iscsi_runtime_t, file)
 
 can_exec(iscsid_t, iscsid_exec_t)
 
@@ -70,7 +70,6 @@ kernel_read_network_state(iscsid_t)
 kernel_read_system_state(iscsid_t)
 kernel_setsched(iscsid_t)
 
-corenet_all_recvfrom_unlabeled(iscsid_t)
 corenet_all_recvfrom_netlabel(iscsid_t)
 corenet_tcp_sendrecv_generic_if(iscsid_t)
 corenet_tcp_sendrecv_generic_node(iscsid_t)
@@ -84,10 +83,8 @@ corenet_tcp_connect_iscsi_port(iscsid_t)
 corenet_sendrecv_isns_client_packets(iscsid_t)
 corenet_tcp_connect_isns_port(iscsid_t)
 
-dev_read_raw_memory(iscsid_t)
 dev_rw_sysfs(iscsid_t)
 dev_rw_userio_dev(iscsid_t)
-dev_write_raw_memory(iscsid_t)
 
 domain_use_interactive_fds(iscsid_t)
 domain_dontaudit_read_all_domains_state(iscsid_t)

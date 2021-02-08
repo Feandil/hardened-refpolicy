@@ -1,4 +1,4 @@
-policy_module(snmp, 1.17.2)
+policy_module(snmp, 1.20.0)
 
 ########################################
 #
@@ -16,7 +16,7 @@ type snmpd_log_t;
 logging_log_file(snmpd_log_t)
 
 type snmpd_runtime_t alias snmpd_var_run_t;
-files_pid_file(snmpd_runtime_t)
+files_runtime_file(snmpd_runtime_t)
 
 type snmpd_var_lib_t;
 files_type(snmpd_var_lib_t)
@@ -46,7 +46,7 @@ files_var_lib_filetrans(snmpd_t, snmpd_var_lib_t, { dir file })
 
 manage_dirs_pattern(snmpd_t, snmpd_runtime_t, snmpd_runtime_t)
 manage_files_pattern(snmpd_t, snmpd_runtime_t, snmpd_runtime_t)
-files_pid_filetrans(snmpd_t, snmpd_runtime_t, { file dir })
+files_runtime_filetrans(snmpd_t, snmpd_runtime_t, { file dir })
 
 kernel_read_device_sysctls(snmpd_t)
 kernel_read_kernel_sysctls(snmpd_t)
@@ -58,7 +58,6 @@ kernel_read_system_state(snmpd_t)
 corecmd_exec_bin(snmpd_t)
 corecmd_exec_shell(snmpd_t)
 
-corenet_all_recvfrom_unlabeled(snmpd_t)
 corenet_all_recvfrom_netlabel(snmpd_t)
 corenet_tcp_sendrecv_generic_if(snmpd_t)
 corenet_udp_sendrecv_generic_if(snmpd_t)
@@ -73,9 +72,7 @@ corenet_tcp_bind_snmp_port(snmpd_t)
 corenet_tcp_connect_snmp_port(snmpd_t)
 corenet_udp_bind_snmp_port(snmpd_t)
 
-corenet_sendrecv_snmp_client_packets(snmpd_t)
 corenet_tcp_connect_agentx_port(snmpd_t)
-corenet_sendrecv_snmp_server_packets(snmpd_t)
 corenet_tcp_bind_agentx_port(snmpd_t)
 corenet_udp_bind_agentx_port(snmpd_t)
 
@@ -111,6 +108,7 @@ init_dontaudit_write_utmp(snmpd_t)
 
 logging_send_syslog_msg(snmpd_t)
 
+miscfiles_read_hwdata(snmpd_t)
 miscfiles_read_localization(snmpd_t)
 
 seutil_dontaudit_search_config(snmpd_t)
@@ -162,10 +160,6 @@ optional_policy(`
 
 optional_policy(`
 	squid_read_config(snmpd_t)
-')
-
-optional_policy(`
-	udev_read_db(snmpd_t)
 ')
 
 optional_policy(`

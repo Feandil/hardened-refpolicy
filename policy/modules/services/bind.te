@@ -1,4 +1,4 @@
-policy_module(bind, 1.20.2)
+policy_module(bind, 1.23.0)
 
 ########################################
 #
@@ -51,8 +51,8 @@ type named_log_t;
 logging_log_file(named_log_t)
 
 type named_runtime_t alias named_var_run_t;
-files_pid_file(named_runtime_t)
-init_daemon_pid_file(named_runtime_t, dir, "named")
+files_runtime_file(named_runtime_t)
+init_daemon_runtime_file(named_runtime_t, dir, "named")
 
 type named_tmp_t;
 files_tmp_file(named_tmp_t)
@@ -104,7 +104,7 @@ files_tmp_filetrans(named_t, named_tmp_t, { file dir })
 manage_dirs_pattern(named_t, named_runtime_t, named_runtime_t)
 manage_files_pattern(named_t, named_runtime_t, named_runtime_t)
 manage_sock_files_pattern(named_t, named_runtime_t, named_runtime_t)
-files_pid_filetrans(named_t, named_runtime_t, { dir file sock_file })
+files_runtime_filetrans(named_t, named_runtime_t, { dir file sock_file })
 
 can_exec(named_t, named_exec_t)
 
@@ -121,7 +121,6 @@ kernel_read_network_state(named_t)
 
 corecmd_search_bin(named_t)
 
-corenet_all_recvfrom_unlabeled(named_t)
 corenet_all_recvfrom_netlabel(named_t)
 corenet_tcp_sendrecv_generic_if(named_t)
 corenet_udp_sendrecv_generic_if(named_t)
@@ -150,6 +149,7 @@ domain_use_interactive_fds(named_t)
 
 files_read_etc_runtime_files(named_t)
 files_read_usr_files(named_t)
+files_map_usr_files(named_t)
 
 fs_getattr_all_fs(named_t)
 fs_search_auto_mountpoints(named_t)
@@ -207,10 +207,6 @@ optional_policy(`
 	seutil_sigchld_newrole(named_t)
 ')
 
-optional_policy(`
-	udev_read_db(named_t)
-')
-
 ########################################
 #
 # NDC local policy
@@ -235,7 +231,6 @@ allow ndc_t named_zone_t:dir search_dir_perms;
 kernel_read_kernel_sysctls(ndc_t)
 kernel_read_system_state(ndc_t)
 
-corenet_all_recvfrom_unlabeled(ndc_t)
 corenet_all_recvfrom_netlabel(ndc_t)
 corenet_tcp_sendrecv_generic_if(ndc_t)
 corenet_tcp_sendrecv_generic_node(ndc_t)
@@ -246,7 +241,7 @@ corenet_sendrecv_rndc_client_packets(ndc_t)
 
 domain_use_interactive_fds(ndc_t)
 
-files_search_pids(ndc_t)
+files_search_runtime(ndc_t)
 
 fs_getattr_xattr_fs(ndc_t)
 

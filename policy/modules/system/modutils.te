@@ -1,4 +1,4 @@
-policy_module(modutils, 1.21.3)
+policy_module(modutils, 1.24.0)
 
 ########################################
 #
@@ -9,10 +9,9 @@ attribute_role kmod_roles;
 
 type kmod_t;
 type kmod_exec_t;
-application_domain(kmod_t, kmod_exec_t)
+init_system_domain(kmod_t, kmod_exec_t)
 kernel_domtrans_to(kmod_t, kmod_exec_t)
 mls_file_write_all_levels(kmod_t)
-roleattribute system_r kmod_roles;
 role kmod_roles types kmod_t;
 
 # module loading config
@@ -46,13 +45,10 @@ allow kmod_t self:rawip_socket create_socket_perms;
 # Read module config and dependency information
 list_dirs_pattern(kmod_t, modules_conf_t, modules_conf_t)
 read_files_pattern(kmod_t, modules_conf_t, modules_conf_t)
+allow kmod_t modules_dep_t:file map;
 list_dirs_pattern(kmod_t, modules_dep_t, modules_dep_t)
 manage_files_pattern(kmod_t, modules_dep_t, modules_dep_t)
-allow kmod_t modules_dep_t:file map;
-filetrans_add_pattern(kmod_t, modules_object_t, modules_dep_t, file)
-create_files_pattern(kmod_t, modules_object_t, modules_dep_t)
-delete_files_pattern(kmod_t, modules_object_t, modules_dep_t)
-allow kmod_t modules_object_t:file map;
+files_kernel_modules_filetrans(kmod_t, modules_dep_t, file)
 allow kmod_t kmod_tmpfiles_conf_t:file manage_file_perms;
 
 can_exec(kmod_t, kmod_exec_t)
@@ -66,7 +62,6 @@ kernel_write_proc_files(kmod_t)
 kernel_mount_debugfs(kmod_t)
 kernel_mount_kvmfs(kmod_t)
 kernel_read_debugfs(kmod_t)
-kernel_search_key(kmod_t)
 # Rules for /proc/sys/kernel/tainted
 kernel_read_kernel_sysctls(kmod_t)
 kernel_rw_kernel_sysctl(kmod_t)
@@ -90,7 +85,7 @@ dev_rw_acpi_bios(kmod_t)
 domain_signal_all_domains(kmod_t)
 domain_use_interactive_fds(kmod_t)
 
-files_read_kernel_modules(kmod_t)
+files_manage_kernel_modules(kmod_t)
 files_read_kernel_symbol_table(kmod_t)
 files_read_etc_runtime_files(kmod_t)
 files_read_etc_files(kmod_t)
@@ -98,7 +93,7 @@ files_read_usr_files(kmod_t)
 files_exec_etc_files(kmod_t)
 files_search_tmp(kmod_t)
 # for nscd:
-files_dontaudit_search_pids(kmod_t)
+files_dontaudit_search_runtime(kmod_t)
 # to manage modules.dep
 files_manage_kernel_modules(kmod_t)
 
@@ -151,15 +146,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	hal_write_log(kmod_t)
-')
-
-optional_policy(`
-	hotplug_search_config(kmod_t)
-')
-
-optional_policy(`
-	iptables_dontaudit_read_pids(kmod_t)
+	iptables_dontaudit_read_runtime_files(kmod_t)
 ')
 
 optional_policy(`
@@ -176,9 +163,6 @@ optional_policy(`
 
 optional_policy(`
 	fs_manage_ramfs_files(kmod_t)
-
-	rhgb_use_fds(kmod_t)
-	rhgb_dontaudit_use_ptys(kmod_t)
 
 	xserver_dontaudit_write_log(kmod_t)
 	xserver_stream_connect(kmod_t)
@@ -217,5 +201,5 @@ ifdef(`distro_gentoo',`
 
 	# for /run/tmpfiles.d/kmod.conf
 	tmpfiles_create_runtime_files(kmod_t)
-	filetrans_add_pattern(kmod_t, tmpfiles_runtime_t, kmod_tmpfiles_conf_t, file)
+	filetrans_add_pattern(kmod_t, tmpfiles_runtime_t, kmod_tmpfiles_conf_t, file) #selint-disable:W-001
 ')

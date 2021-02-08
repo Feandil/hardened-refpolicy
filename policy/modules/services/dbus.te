@@ -1,4 +1,4 @@
-policy_module(dbus, 1.27.4)
+policy_module(dbus, 1.30.0)
 
 gen_require(`
 	class dbus all_dbus_perms;
@@ -8,6 +8,15 @@ gen_require(`
 #
 # Declarations
 #
+
+## <desc>
+## <p>
+## Allow dbus-daemon system bus to access /dev/net/tun
+## which is needed to pass tun/tap device file descriptors
+## over D-Bus.  This is needed by openvpn3-linux.
+## </p>
+## </desc>
+gen_tunable(dbus_pass_tuntap_fd, false)
 
 attribute dbusd_unconfined;
 attribute session_bus_type;
@@ -28,7 +37,7 @@ type session_dbusd_home_t;
 userdom_user_home_content(session_dbusd_home_t)
 
 type session_dbusd_runtime_t;
-files_pid_file(session_dbusd_runtime_t)
+files_runtime_file(session_dbusd_runtime_t)
 userdom_user_runtime_content(session_dbusd_runtime_t)
 
 type session_dbusd_tmp_t;
@@ -39,8 +48,9 @@ init_system_domain(system_dbusd_t, dbusd_exec_t)
 init_named_socket_activation(system_dbusd_t, system_dbusd_runtime_t)
 
 type system_dbusd_runtime_t alias system_dbusd_var_run_t;
-files_pid_file(system_dbusd_runtime_t)
-init_daemon_pid_file(system_dbusd_runtime_t, dir, "dbus")
+files_runtime_file(system_dbusd_runtime_t)
+init_daemon_runtime_file(system_dbusd_runtime_t, dir, "dbus")
+init_mountpoint(system_dbusd_runtime_t)
 
 type system_dbusd_tmp_t;
 files_tmp_file(system_dbusd_tmp_t)
@@ -82,7 +92,7 @@ read_files_pattern(system_dbusd_t, system_dbusd_var_lib_t, system_dbusd_var_lib_
 manage_dirs_pattern(system_dbusd_t, system_dbusd_runtime_t, system_dbusd_runtime_t)
 manage_files_pattern(system_dbusd_t, system_dbusd_runtime_t, system_dbusd_runtime_t)
 manage_sock_files_pattern(system_dbusd_t, system_dbusd_runtime_t, system_dbusd_runtime_t)
-files_pid_filetrans(system_dbusd_t, system_dbusd_runtime_t, { dir file })
+files_runtime_filetrans(system_dbusd_t, system_dbusd_runtime_t, { dir file })
 
 can_exec(system_dbusd_t, dbusd_exec_t)
 
@@ -147,6 +157,9 @@ miscfiles_read_generic_certs(system_dbusd_t)
 seutil_read_config(system_dbusd_t)
 seutil_read_default_contexts(system_dbusd_t)
 
+# for machinectl shell
+term_use_ptmx(system_dbusd_t)
+
 userdom_dontaudit_use_unpriv_user_fds(system_dbusd_t)
 userdom_dontaudit_search_user_home_dirs(system_dbusd_t)
 # read a file in ~/.local/share
@@ -164,26 +177,29 @@ ifdef(`init_systemd', `
 	dev_rw_input_dev(system_dbusd_t)
 
 	# for /run/systemd/dynamic-uid/
-	init_list_pids(system_dbusd_t)
+	init_list_runtime(system_dbusd_t)
 	init_read_runtime_symlinks(system_dbusd_t)
 
 	# Recent versions of dbus are started as Type=notify
 	init_write_runtime_socket(system_dbusd_t)
 ')
 
+tunable_policy(`dbus_pass_tuntap_fd',`
+        corenet_rw_tun_tap_dev(system_dbusd_t)
+')
+
 optional_policy(`
 	# for /run/systemd/users/*
-	systemd_read_logind_pids(system_dbusd_t)
+	systemd_read_logind_runtime_files(system_dbusd_t)
 	systemd_write_inherited_logind_inhibit_pipes(system_dbusd_t)
 	systemd_write_inherited_logind_sessions_pipes(system_dbusd_t)
+
+	# for passing around terminal file handles for machinectl shell
+	systemd_use_inherited_machined_ptys(system_dbusd_t)
 ')
 
 optional_policy(`
 	bluetooth_stream_connect(system_dbusd_t)
-')
-
-optional_policy(`
-	consolekit_use_inhibit_lock(system_dbusd_t)
 ')
 
 optional_policy(`
@@ -195,7 +211,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	udev_read_db(system_dbusd_t)
+	tpm2_rw_abrmd_pipes(system_dbusd_t)
 ')
 
 optional_policy(`
@@ -215,7 +231,7 @@ optional_policy(`
 dontaudit session_bus_type self:capability sys_resource;
 allow session_bus_type self:process { getattr sigkill signal };
 dontaudit session_bus_type self:process { ptrace setrlimit };
-allow session_bus_type self:file { getattr read write };
+allow session_bus_type self:file rw_inherited_file_perms;
 allow session_bus_type self:fifo_file rw_fifo_file_perms;
 allow session_bus_type self:dbus { send_msg acquire_svc };
 allow session_bus_type self:unix_stream_socket { accept listen };
@@ -249,7 +265,6 @@ corecmd_read_bin_files(session_bus_type)
 corecmd_read_bin_pipes(session_bus_type)
 corecmd_read_bin_sockets(session_bus_type)
 
-corenet_all_recvfrom_unlabeled(session_bus_type)
 corenet_all_recvfrom_netlabel(session_bus_type)
 corenet_tcp_sendrecv_generic_if(session_bus_type)
 corenet_tcp_sendrecv_generic_node(session_bus_type)
@@ -291,12 +306,6 @@ seutil_read_config(session_bus_type)
 seutil_read_default_contexts(session_bus_type)
 
 term_use_all_terms(session_bus_type)
-
-ifdef(`distro_gentoo',`
-	optional_policy(`
-		hal_dbus_chat(session_bus_type)
-	')
-')
 
 optional_policy(`
 	xserver_rw_xsession_log(session_bus_type)

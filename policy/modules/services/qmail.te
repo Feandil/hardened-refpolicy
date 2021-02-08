@@ -1,4 +1,4 @@
-policy_module(qmail, 1.8.1)
+policy_module(qmail, 1.10.0)
 
 ########################################
 #
@@ -157,7 +157,7 @@ allow qmail_lspawn_t qmail_local_exec_t:file read_file_perms;
 read_files_pattern(qmail_lspawn_t, qmail_spool_t, qmail_spool_t)
 
 files_read_etc_files(qmail_lspawn_t)
-files_search_pids(qmail_lspawn_t)
+files_search_runtime(qmail_lspawn_t)
 files_search_tmp(qmail_lspawn_t)
 
 ########################################
@@ -191,7 +191,6 @@ optional_policy(`
 
 rw_files_pattern(qmail_remote_t, qmail_spool_t, qmail_spool_t)
 
-corenet_all_recvfrom_unlabeled(qmail_remote_t)
 corenet_all_recvfrom_netlabel(qmail_remote_t)
 corenet_tcp_sendrecv_generic_if(qmail_remote_t)
 corenet_tcp_sendrecv_generic_node(qmail_remote_t)

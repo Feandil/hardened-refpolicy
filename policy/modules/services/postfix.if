@@ -259,7 +259,7 @@ interface(`postfix_rw_inherited_master_pipes',`
 	')
 
 	allow $1 postfix_master_t:fd use;
-	allow $1 postfix_master_t:fifo_file { getattr write append lock ioctl read };
+	allow $1 postfix_master_t:fifo_file rw_inherited_fifo_file_perms;
 ')
 
 ########################################
@@ -700,7 +700,7 @@ interface(`postfix_admin',`
 	files_search_var_lib($1)
 	admin_pattern($1, postfix_data_t)
 
-	files_search_pids($1)
+	files_search_runtime($1)
 	admin_pattern($1, postfix_runtime_t)
 
 	files_search_tmp($1)

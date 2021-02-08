@@ -1,4 +1,4 @@
-policy_module(screen, 2.9.2)
+policy_module(screen, 2.12.0)
 
 ########################################
 #
@@ -19,7 +19,7 @@ type screen_tmp_t;
 userdom_user_tmp_file(screen_tmp_t)
 
 type screen_runtime_t;
-files_pid_file(screen_runtime_t)
+files_runtime_file(screen_runtime_t)
 ubac_constrained(screen_runtime_t)
 
 ########################################
@@ -44,7 +44,7 @@ filetrans_pattern(screen_domain, screen_tmp_t, screen_runtime_t, sock_file)
 manage_fifo_files_pattern(screen_domain, screen_runtime_t, screen_runtime_t)
 manage_dirs_pattern(screen_domain, screen_runtime_t, screen_runtime_t)
 manage_sock_files_pattern(screen_domain, screen_runtime_t, screen_runtime_t)
-files_pid_filetrans(screen_domain, screen_runtime_t, dir)
+files_runtime_filetrans(screen_domain, screen_runtime_t, dir)
 
 manage_dirs_pattern(screen_domain, screen_home_t, screen_home_t)
 read_files_pattern(screen_domain, screen_home_t, screen_home_t)
@@ -60,7 +60,6 @@ corecmd_read_bin_files(screen_domain)
 corecmd_read_bin_pipes(screen_domain)
 corecmd_read_bin_sockets(screen_domain)
 
-corenet_all_recvfrom_unlabeled(screen_domain)
 corenet_all_recvfrom_netlabel(screen_domain)
 corenet_tcp_sendrecv_generic_if(screen_domain)
 corenet_tcp_sendrecv_generic_node(screen_domain)
@@ -110,6 +109,10 @@ tunable_policy(`use_nfs_home_dirs',`
 	fs_read_nfs_files(screen_domain)
 	fs_manage_nfs_named_pipes(screen_domain)
 	fs_read_nfs_symlinks(screen_domain)
+')
+
+optional_policy(`
+	xdg_search_config_dirs(screen_domain)
 ')
 
 ifdef(`distro_gentoo',`

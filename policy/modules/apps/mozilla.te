@@ -1,4 +1,4 @@
-policy_module(mozilla, 2.15.3)
+policy_module(mozilla, 2.18.0)
 
 ########################################
 #
@@ -74,7 +74,8 @@ xdg_cache_content(mozilla_xdg_cache_t)
 #
 
 allow mozilla_t self:capability { setgid setuid sys_nice };
-allow mozilla_t self:process { sigkill signal setsched getsched setrlimit };
+allow mozilla_t self:cap_userns { sys_admin sys_chroot sys_ptrace };
+allow mozilla_t self:process { sigkill signal setcap setsched getsched setrlimit };
 allow mozilla_t self:fifo_file rw_fifo_file_perms;
 allow mozilla_t self:shm create_shm_perms;
 allow mozilla_t self:sem create_sem_perms;
@@ -128,7 +129,6 @@ corecmd_list_bin(mozilla_t)
 corecmd_exec_shell(mozilla_t)
 corecmd_exec_bin(mozilla_t)
 
-corenet_all_recvfrom_unlabeled(mozilla_t)
 corenet_all_recvfrom_netlabel(mozilla_t)
 corenet_tcp_sendrecv_generic_if(mozilla_t)
 corenet_tcp_sendrecv_generic_node(mozilla_t)
@@ -164,9 +164,11 @@ dev_write_sound(mozilla_t)
 
 domain_dontaudit_read_all_domains_state(mozilla_t)
 
+files_watch_etc_dirs(mozilla_t)
 files_read_etc_runtime_files(mozilla_t)
 files_map_usr_files(mozilla_t)
 files_read_usr_files(mozilla_t)
+files_watch_usr_dirs(mozilla_t)
 files_read_var_files(mozilla_t)
 files_read_var_lib_files(mozilla_t)
 files_read_var_symlinks(mozilla_t)
@@ -398,7 +400,6 @@ corecmd_exec_bin(mozilla_plugin_t)
 corecmd_exec_shell(mozilla_plugin_t)
 
 corenet_all_recvfrom_netlabel(mozilla_plugin_t)
-corenet_all_recvfrom_unlabeled(mozilla_plugin_t)
 corenet_tcp_sendrecv_generic_if(mozilla_plugin_t)
 corenet_tcp_sendrecv_generic_node(mozilla_plugin_t)
 
@@ -583,12 +584,8 @@ optional_policy(`
 ')
 
 optional_policy(`
-	udev_read_db(mozilla_plugin_t)
-')
-
-optional_policy(`
 	xserver_read_user_xauth(mozilla_plugin_t)
-	xserver_read_xdm_pid(mozilla_plugin_t)
+	xserver_read_xdm_runtime_files(mozilla_plugin_t)
 	xserver_stream_connect(mozilla_plugin_t)
 	xserver_use_user_fonts(mozilla_plugin_t)
 	xserver_dontaudit_read_xdm_tmp_files(mozilla_plugin_t)
@@ -755,9 +752,9 @@ gen_tunable(mozilla_plugin_connect_all_unreserved, false)
 	')
 
 	###########################
-	# 
+	#
 	# Mozilla plugin policy
-	# 
+	#
 
 	allow mozilla_plugin_t self:netlink_route_socket r_netlink_socket_perms;
 	allow mozilla_plugin_t self:udp_socket create_socket_perms;

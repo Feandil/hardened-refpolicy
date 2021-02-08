@@ -1,4 +1,4 @@
-policy_module(mailman, 1.13.2)
+policy_module(mailman, 1.16.0)
 
 ########################################
 #
@@ -24,7 +24,7 @@ type mailman_lock_t;
 files_lock_file(mailman_lock_t)
 
 type mailman_runtime_t alias mailman_var_run_t;
-files_pid_file(mailman_runtime_t)
+files_runtime_file(mailman_runtime_t)
 
 mailman_domain_template(mail)
 init_daemon_domain(mailman_mail_t, mailman_mail_exec_t)
@@ -58,7 +58,6 @@ logging_log_filetrans(mailman_domain, mailman_log_t, file)
 kernel_read_kernel_sysctls(mailman_domain)
 kernel_read_system_state(mailman_domain)
 
-corenet_all_recvfrom_unlabeled(mailman_domain)
 corenet_all_recvfrom_netlabel(mailman_domain)
 corenet_tcp_sendrecv_generic_if(mailman_domain)
 corenet_tcp_sendrecv_generic_node(mailman_domain)
@@ -113,6 +112,7 @@ corecmd_exec_bin(mailman_cgi_t)
 dev_read_urand(mailman_cgi_t)
 
 files_search_locks(mailman_cgi_t)
+files_read_usr_files(mailman_cgi_t)
 
 term_use_controlling_term(mailman_cgi_t)
 
@@ -165,7 +165,7 @@ can_exec(mailman_mail_t, mailman_mail_exec_t)
 
 manage_files_pattern(mailman_mail_t, mailman_runtime_t, mailman_runtime_t)
 manage_dirs_pattern(mailman_mail_t, mailman_runtime_t, mailman_runtime_t)
-files_pid_filetrans(mailman_mail_t, mailman_runtime_t, { file dir })
+files_runtime_filetrans(mailman_mail_t, mailman_runtime_t, { file dir })
 
 kernel_read_system_state(mailman_mail_t)
 
@@ -182,6 +182,7 @@ corecmd_exec_bin(mailman_mail_t)
 files_search_locks(mailman_mail_t)
 
 fs_rw_anon_inodefs_files(mailman_mail_t)
+fs_search_tmpfs(mailman_mail_t)
 
 # this is far from ideal, but systemd reduces the importance of initrc_t
 init_signal_script(mailman_mail_t)
@@ -241,7 +242,7 @@ corecmd_read_bin_files(mailman_queue_t)
 corenet_sendrecv_innd_client_packets(mailman_queue_t)
 corenet_tcp_connect_innd_port(mailman_queue_t)
 
-files_dontaudit_search_pids(mailman_queue_t)
+files_dontaudit_search_runtime(mailman_queue_t)
 files_search_locks(mailman_queue_t)
 
 miscfiles_read_localization(mailman_queue_t)

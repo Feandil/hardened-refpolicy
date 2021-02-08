@@ -1,4 +1,4 @@
-policy_module(rpm, 1.23.5)
+policy_module(rpm, 1.26.0)
 
 ########################################
 #
@@ -38,7 +38,7 @@ type rpm_log_t;
 logging_log_file(rpm_log_t)
 
 type rpm_runtime_t alias rpm_var_run_t;
-files_pid_file(rpm_runtime_t)
+files_runtime_file(rpm_runtime_t)
 
 type rpm_unit_t;
 init_unit_file(rpm_unit_t)
@@ -115,7 +115,7 @@ files_var_lib_filetrans(rpm_t, rpm_var_lib_t, { dir file })
 
 manage_dirs_pattern(rpm_t, rpm_runtime_t, rpm_runtime_t)
 manage_files_pattern(rpm_t, rpm_runtime_t, rpm_runtime_t)
-files_pid_filetrans(rpm_t, rpm_runtime_t, { dir file })
+files_runtime_filetrans(rpm_t, rpm_runtime_t, { dir file })
 
 can_exec(rpm_t, { rpm_tmp_t rpm_tmpfs_t })
 
@@ -128,7 +128,6 @@ kernel_rw_irq_sysctls(rpm_t)
 
 corecmd_exec_all_executables(rpm_t)
 
-corenet_all_recvfrom_unlabeled(rpm_t)
 corenet_all_recvfrom_netlabel(rpm_t)
 corenet_tcp_sendrecv_generic_if(rpm_t)
 corenet_tcp_sendrecv_generic_node(rpm_t)
@@ -139,7 +138,6 @@ corenet_tcp_connect_all_ports(rpm_t)
 dev_list_sysfs(rpm_t)
 dev_list_usbfs(rpm_t)
 dev_read_urand(rpm_t)
-dev_read_raw_memory(rpm_t)
 
 dev_manage_all_dev_nodes(rpm_t)
 dev_relabel_all_dev_nodes(rpm_t)
@@ -183,7 +181,7 @@ selinux_compute_access_vector(rpm_t)
 selinux_compute_create_context(rpm_t)
 selinux_compute_relabel_context(rpm_t)
 selinux_compute_user_contexts(rpm_t)
-selinux_map_security_files(rpm_t)
+selinux_use_status_page(rpm_t)
 
 storage_raw_write_fixed_disk(rpm_t)
 storage_raw_read_fixed_disk(rpm_t)
@@ -222,10 +220,6 @@ optional_policy(`
 optional_policy(`
 	dbus_system_domain(rpm_t, rpm_exec_t)
 	dbus_system_domain(rpm_t, debuginfo_exec_t)
-
-	optional_policy(`
-		hal_dbus_chat(rpm_t)
-	')
 
 	optional_policy(`
 		networkmanager_dbus_chat(rpm_t)
@@ -284,7 +278,6 @@ kernel_read_network_state(rpm_script_t)
 kernel_list_all_proc(rpm_script_t)
 kernel_read_software_raid_state(rpm_script_t)
 
-corenet_all_recvfrom_unlabeled(rpm_script_t)
 corenet_all_recvfrom_netlabel(rpm_script_t)
 corenet_tcp_sendrecv_generic_if(rpm_script_t)
 corenet_tcp_sendrecv_generic_node(rpm_script_t)

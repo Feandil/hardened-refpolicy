@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.15.3)
+policy_module(sysadm, 2.18.0)
 
 ########################################
 #
@@ -11,6 +11,14 @@ policy_module(sysadm, 2.15.3)
 ## </p>
 ## </desc>
 gen_tunable(allow_ptrace, false)
+
+## <desc>
+## <p>
+## Allow sysadm to read/write to fifo files inherited from
+## a domain allowed to change role.
+## </p>
+## </desc>
+gen_tunable(sysadm_allow_rw_inherited_fifo, false)
 
 #role sysadm_r;
 
@@ -42,8 +50,6 @@ ubac_fd_exempt(sysadm_t)
 
 init_exec(sysadm_t)
 init_admin(sysadm_t)
-
-selinux_read_policy(sysadm_t)
 
 # Add/remove user home directories
 userdom_manage_user_home_dirs(sysadm_t)
@@ -143,6 +149,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	aptcacher_run_acngtool(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
 	arpwatch_admin(sysadm_t, sysadm_r)
 ')
 
@@ -219,6 +229,10 @@ optional_policy(`
 
 optional_policy(`
 	ccs_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	certbot_run(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -374,10 +388,6 @@ optional_policy(`
 
 optional_policy(`
 	dnsmasq_admin(sysadm_t, sysadm_r)
-')
-
-optional_policy(`
-	dnssectrigger_admin(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -561,11 +571,6 @@ optional_policy(`
 
 optional_policy(`
 	ksmtuned_admin(sysadm_t, sysadm_r)
-')
-
-optional_policy(`
-	kudzu_admin(sysadm_t, sysadm_r)
-	kudzu_run(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -783,10 +788,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	pcmcia_run_cardctl(sysadm_t, sysadm_r)
-')
-
-optional_policy(`
 	pcscd_admin(sysadm_t, sysadm_r)
 ')
 
@@ -938,10 +939,6 @@ optional_policy(`
 
 optional_policy(`
 	rngd_admin(sysadm_t, sysadm_r)
-')
-
-optional_policy(`
-	roundup_admin(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -1150,7 +1147,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	udevadm_run(sysadm_t, sysadm_r)
+	udev_run_udevadm(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`
@@ -1266,10 +1263,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	yam_run(sysadm_t, sysadm_r)
-')
-
-optional_policy(`
 	zabbix_admin(sysadm_t, sysadm_r)
 ')
 
@@ -1329,10 +1322,6 @@ ifndef(`distro_redhat',`
 
 	optional_policy(`
 		games_role(sysadm_r, sysadm_t)
-	')
-
-	optional_policy(`
-		gift_role(sysadm_r, sysadm_t)
 	')
 
 	optional_policy(`

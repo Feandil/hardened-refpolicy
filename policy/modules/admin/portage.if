@@ -139,7 +139,6 @@ interface(`portage_compile_domain',`
 	# really shouldnt need this but some packages test
 	# network access, such as during configure
 	# also distcc--need to reinvestigate confining distcc client
-	corenet_all_recvfrom_unlabeled($1)
 	corenet_all_recvfrom_netlabel($1)
 	corenet_tcp_sendrecv_generic_if($1)
 	corenet_udp_sendrecv_generic_if($1)
@@ -203,14 +202,6 @@ interface(`portage_compile_domain',`
 		fs_manage_nfs_files($1)
 		fs_manage_nfs_symlinks($1)
 	')
-
-	ifdef(`TODO',`
-	# some gui ebuilds want to interact with X server, like xawtv
-	optional_policy(`
-		allow $1 xdm_xserver_tmp_t:dir { add_entry_dir_perms del_entry_dir_perms };
-		allow $1 xdm_xserver_tmp_t:sock_file { create_file_perms delete_file_perms write_file_perms };
-	')
-	') dnl end TODO
 
 	ifdef(`distro_gentoo',`
 		# Fix bug 496328
@@ -373,7 +364,7 @@ interface(`portage_dontaudit_rw_tmp_files',`
 
 ########################################
 ## <summary>
-##   Allow the domain to run within an eselect module script. 
+##   Allow the domain to run within an eselect module script.
 ## </summary>
 ## <param name="domain">
 ##     <summary>
@@ -382,7 +373,7 @@ interface(`portage_dontaudit_rw_tmp_files',`
 ## </param>
 #   Specific to Gentoo,
 #   eselect modules allow users to switch between different flavors or versions
-#   of underlying components. In return, eselect makes a wrapper binary which 
+#   of underlying components. In return, eselect makes a wrapper binary which
 #   makes the proper selections. If this binary is different from bin_t, it might
 #   not hold the necessary privileges for the wrapper to function. However, just
 #   marking the target binaries doesn't always work, since for python scripts the

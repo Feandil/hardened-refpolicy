@@ -284,7 +284,8 @@ interface(`miscfiles_manage_generic_tls_privkey_files',`
 
 ########################################
 ## <summary>
-##	Watch fonts.
+##	Manage generic SSL/TLS private
+##	keys.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -293,12 +294,12 @@ interface(`miscfiles_manage_generic_tls_privkey_files',`
 ## </param>
 ## <rolecap/>
 #
-interface(`miscfiles_watch_fonts',`
+interface(`miscfiles_manage_generic_tls_privkey_symlinks',`
 	gen_require(`
-		type fonts_t;
+		type tls_privkey_t;
 	')
 
-	allow $1 fonts_t:dir watch;
+	manage_lnk_files_pattern($1, tls_privkey_t, tls_privkey_t)
 ')
 
 ########################################
@@ -414,6 +415,25 @@ interface(`miscfiles_manage_fonts',`
 	manage_dirs_pattern($1, fonts_t, fonts_t)
 	manage_files_pattern($1, fonts_t, fonts_t)
 	manage_lnk_files_pattern($1, fonts_t, fonts_t)
+')
+
+########################################
+## <summary>
+##	Watch fonts directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`miscfiles_watch_fonts_dirs',`
+	gen_require(`
+		type fonts_t;
+	')
+
+	allow $1 fonts_t:dir watch;
 ')
 
 ########################################
@@ -1016,4 +1036,3 @@ interface(`miscfiles_manage_localization',`
 	manage_files_pattern($1, locale_t, locale_t)
 	manage_lnk_files_pattern($1, locale_t, locale_t)
 ')
-

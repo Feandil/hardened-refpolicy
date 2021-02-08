@@ -48,8 +48,9 @@ interface(`xserver_restricted_role',`
 	files_search_tmp($2)
 
 	# Communicate via System V shared memory.
+	allow $2 xserver_t:fd use;
 	allow $2 xserver_t:shm r_shm_perms;
-	allow $2 xserver_tmpfs_t:file read_file_perms;
+	allow $2 xserver_tmpfs_t:file { map read_file_perms };
 
 	# allow ps to show iceauth
 	ps_process_pattern($2, iceauth_t)
@@ -70,17 +71,13 @@ interface(`xserver_restricted_role',`
 
 	# for when /tmp/.X11-unix is created by the system
 	allow $2 xdm_t:fd use;
-	allow $2 xdm_t:fifo_file { getattr read write ioctl };
+	allow $2 xdm_t:fifo_file rw_inherited_fifo_file_perms;
 	allow $2 xdm_tmp_t:dir search;
 	allow $2 xdm_tmp_t:sock_file { read write };
 	dontaudit $2 xdm_t:tcp_socket { read write };
 
-	# Client read xserver shm
-	allow $2 xserver_t:fd use;
-	allow $2 xserver_tmpfs_t:file read_file_perms;
-
 	# Read /tmp/.X0-lock
-	allow $2 xserver_tmp_t:file { getattr read };
+	allow $2 xserver_tmp_t:file read_inherited_file_perms;
 
 	dev_rw_xserver_misc($2)
 	dev_map_xserver_misc($2)
@@ -95,16 +92,16 @@ interface(`xserver_restricted_role',`
 	dev_rw_usbfs($2)
 
 	miscfiles_read_fonts($2)
-	miscfiles_watch_fonts($2)
+	miscfiles_watch_fonts_dirs($2)
 
-	xserver_common_x_domain_template(user, $2)
+	xserver_common_x_domain_template(user, $2)  #selint-disable:S-004
 	xserver_domtrans($2)
 	xserver_unconfined($2)
 	xserver_xsession_entry_type($2)
 	xserver_dontaudit_write_log($2)
 	xserver_stream_connect_xdm($2)
 	# certain apps want to read xdm.pid file
-	xserver_read_xdm_pid($2)
+	xserver_read_xdm_runtime_files($2)
 	# gnome-session creates socket under /tmp/.ICE-unix/
 	xserver_create_xdm_tmp_sockets($2)
 	# Needed for escd, remove if we get escd policy
@@ -118,6 +115,9 @@ interface(`xserver_restricted_role',`
 	tunable_policy(`allow_write_xshm',`
 		allow $2 xserver_t:shm rw_shm_perms;
 		allow $2 xserver_tmpfs_t:file rw_file_perms;
+	')
+	tunable_policy(`xserver_allow_dri',`
+		dev_rw_dri($2)
 	')
 ')
 
@@ -154,10 +154,10 @@ interface(`xserver_role',`
 	allow $2 xserver_tmp_t:file rw_file_perms;
 
 	allow $2 iceauth_home_t:file manage_file_perms;
-	allow $2 iceauth_home_t:file { relabelfrom relabelto };
+	allow $2 iceauth_home_t:file relabel_file_perms;
 
 	allow $2 xauth_home_t:file manage_file_perms;
-	allow $2 xauth_home_t:file { relabelfrom relabelto };
+	allow $2 xauth_home_t:file relabel_file_perms;
 
 	manage_dirs_pattern($2, user_fonts_t, user_fonts_t)
 	manage_files_pattern($2, user_fonts_t, user_fonts_t)
@@ -185,42 +185,6 @@ interface(`xserver_role',`
 	xserver_read_xkb_libs($2)
 
 	optional_policy(`
-		xdg_manage_all_cache($2)
-		xdg_relabel_all_cache($2)
-		xdg_watch_all_cache_dirs($2)
-		xdg_manage_all_config($2)
-		xdg_relabel_all_config($2)
-		xdg_watch_all_config_dirs($2)
-		xdg_manage_all_data($2)
-		xdg_relabel_all_data($2)
-		xdg_watch_all_data_dirs($2)
-
-		xdg_generic_user_home_dir_filetrans_cache($2, dir, ".cache")
-		xdg_generic_user_home_dir_filetrans_config($2, dir, ".config")
-		xdg_generic_user_home_dir_filetrans_data($2, dir, ".local")
-
-		xdg_generic_user_home_dir_filetrans_documents($2, dir, "Documents")
-		xdg_generic_user_home_dir_filetrans_downloads($2, dir, "Downloads")
-		xdg_generic_user_home_dir_filetrans_music($2, dir, "Music")
-		xdg_generic_user_home_dir_filetrans_pictures($2, dir, "Pictures")
-		xdg_generic_user_home_dir_filetrans_videos($2, dir, "Videos")
-
-		xdg_manage_documents($2)
-		xdg_relabel_documents($2)
-		xdg_watch_documents_dirs($2)
-		xdg_manage_downloads($2)
-		xdg_relabel_downloads($2)
-		xdg_watch_downloads_dirs($2)
-		xdg_manage_music($2)
-		xdg_relabel_music($2)
-		xdg_watch_music_dirs($2)
-		xdg_manage_pictures($2)
-		xdg_relabel_pictures($2)
-		xdg_watch_pictures_dirs($2)
-		xdg_manage_videos($2)
-		xdg_relabel_videos($2)
-		xdg_watch_videos_dirs($2)
-
 		xdg_cache_filetrans($2, mesa_shader_cache_t, dir, "mesa_shader_cache")
 	')
 ')
@@ -257,7 +221,7 @@ interface(`xserver_ro_session',`
 	allow $1 xserver_t:process signal;
 
 	# Read /tmp/.X0-lock
-	allow $1 xserver_tmp_t:file { getattr read };
+	allow $1 xserver_tmp_t:file read_inherited_file_perms;
 
 	# Client read xserver shm
 	allow $1 xserver_t:fd use;
@@ -460,7 +424,7 @@ template(`xserver_user_x_domain_template',`
 
 	# for when /tmp/.X11-unix is created by the system
 	allow $2 xdm_t:fd use;
-	allow $2 xdm_t:fifo_file { getattr read write ioctl };
+	allow $2 xdm_t:fifo_file rw_inherited_fifo_file_perms;
 	allow $2 xdm_tmp_t:dir search_dir_perms;
 	allow $2 xdm_tmp_t:sock_file { read write };
 	dontaudit $2 xdm_t:tcp_socket { read write };
@@ -743,7 +707,7 @@ interface(`xserver_relabel_console_pipes',`
 		type xconsole_device_t;
 	')
 
-	allow $1 xconsole_device_t:fifo_file { getattr relabelfrom relabelto };
+	allow $1 xconsole_device_t:fifo_file relabel_fifo_file_perms;
 ')
 
 ########################################
@@ -816,7 +780,7 @@ interface(`xserver_rw_xdm_pipes',`
 		type xdm_t;
 	')
 
-	allow $1 xdm_t:fifo_file { getattr read write };
+	allow $1 xdm_t:fifo_file rw_inherited_fifo_file_perms;
 ')
 
 ########################################
@@ -898,21 +862,6 @@ interface(`xserver_setsched_xdm',`
 	')
 
 	allow $1 xdm_t:process setsched;
-')
-
-########################################
-## <summary>
-##	Create, read, write, and delete
-##	xdm_spool files.
-## </summary>
-## <param name="domain" unused="true">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`xserver_manage_xdm_spool_files',`
-	refpolicywarn(`$0() has been deprecated.')
 ')
 
 ########################################
@@ -1015,7 +964,7 @@ interface(`xserver_delete_xdm_tmp_sockets',`
 
 ########################################
 ## <summary>
-##	Read XDM pid files.
+##	Read XDM pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -1024,11 +973,26 @@ interface(`xserver_delete_xdm_tmp_sockets',`
 ## </param>
 #
 interface(`xserver_read_xdm_pid',`
+	refpolicywarn(`$0($*) has been deprecated, please use xserver_read_xdm_runtime_files() instead.')
+	xserver_read_xdm_runtime_files($1)
+')
+
+########################################
+## <summary>
+##	Read XDM runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_read_xdm_runtime_files',`
 	gen_require(`
 		type xdm_var_run_t;
 	')
 
-	files_search_pids($1)
+	files_search_runtime($1)
 	allow $1 xdm_var_run_t:file read_file_perms;
 ')
 
@@ -1295,7 +1259,7 @@ interface(`xserver_read_xdm_tmp_files',`
 		type xdm_tmp_t;
 	')
 
- 	files_search_tmp($1)
+	files_search_tmp($1)
 	read_files_pattern($1, xdm_tmp_t, xdm_tmp_t)
 ')
 
@@ -1407,7 +1371,7 @@ interface(`xserver_domtrans',`
 		type xserver_t, xserver_exec_t;
 	')
 
- 	allow $1 xserver_t:process siginh;
+	allow $1 xserver_t:process siginh;
 	domtrans_pattern($1, xserver_exec_t, xserver_t)
 ')
 
@@ -1679,6 +1643,27 @@ interface(`xserver_rw_mesa_shader_cache',`
 
 	rw_dirs_pattern($1, mesa_shader_cache_t, mesa_shader_cache_t)
 	rw_files_pattern($1, mesa_shader_cache_t, mesa_shader_cache_t)
+	allow $1 mesa_shader_cache_t:file map;
+	xdg_search_cache_dirs($1)
+')
+
+########################################
+## <summary>
+##	Manage the mesa shader cache.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_manage_mesa_shader_cache',`
+	gen_require(`
+		type mesa_shader_cache_t;
+	')
+
+	manage_dirs_pattern($1, mesa_shader_cache_t, mesa_shader_cache_t)
+	manage_files_pattern($1, mesa_shader_cache_t, mesa_shader_cache_t)
 	allow $1 mesa_shader_cache_t:file map;
 
 	xdg_search_cache_dirs($1)

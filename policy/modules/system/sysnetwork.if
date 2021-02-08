@@ -346,10 +346,12 @@ interface(`sysnet_read_config',`
 	')
 
 	files_search_etc($1)
+	files_search_runtime($1)
+	allow $1 net_conf_t:dir list_dir_perms;
 	allow $1 net_conf_t:file read_file_perms;
 
 	ifdef(`distro_debian',`
-		files_search_pids($1)
+		files_search_runtime($1)
 		allow $1 net_conf_t:dir list_dir_perms;
 		read_files_pattern($1, net_conf_t, net_conf_t)
 	')
@@ -362,6 +364,56 @@ interface(`sysnet_read_config',`
 	ifdef(`init_systemd',`
 		systemd_read_resolved_runtime($1)
 	')
+')
+
+#######################################
+## <summary>
+##     Map network config files.
+## </summary>
+## <desc>
+##     <p>
+##     Allow the specified domain to mmap the
+##     general network configuration files.
+##     </p>
+## </desc>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`sysnet_mmap_config_files',`
+	gen_require(`
+		type net_conf_t;
+	')
+
+	files_search_etc($1)
+	allow $1 net_conf_t:file map;
+')
+
+#######################################
+## <summary>
+##	map network config files.
+## </summary>
+## <desc>
+##	<p>
+##	Allow the specified domain to mmap the
+##	general network configuration files.
+##	</p>
+## </desc>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`sysnet_mmap_read_config',`
+	gen_require(`
+		type net_conf_t;
+	')
+
+	files_search_etc($1)
+	allow $1 net_conf_t:file mmap_read_file_perms;
 ')
 
 #######################################
@@ -436,7 +488,7 @@ interface(`sysnet_relabel_config',`
 	')
 
 	files_search_etc($1)
-	allow $1 net_conf_t:file { relabelfrom relabelto };
+	allow $1 net_conf_t:file relabel_file_perms;
 ')
 
 #######################################
@@ -482,7 +534,7 @@ interface(`sysnet_manage_config',`
 	allow $1 net_conf_t:file manage_file_perms;
 
 	ifdef(`distro_debian',`
-		files_search_pids($1)
+		files_search_runtime($1)
 		manage_files_pattern($1, net_conf_t, net_conf_t)
 	')
 
@@ -493,7 +545,7 @@ interface(`sysnet_manage_config',`
 
 #######################################
 ## <summary>
-##	Read the dhcp client pid file.
+##	Read the dhcp client pid file.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -502,17 +554,13 @@ interface(`sysnet_manage_config',`
 ## </param>
 #
 interface(`sysnet_read_dhcpc_pid',`
-	gen_require(`
-		type dhcpc_runtime_t;
-	')
-
-	files_list_pids($1)
-	allow $1 dhcpc_runtime_t:file read_file_perms;
+	refpolicywarn(`$0($*) has been deprecated, please use sysnet_read_dhcpc_runtime_files() instead.')
+	sysnet_read_dhcpc_runtime_files($1)
 ')
 
 #######################################
 ## <summary>
-##	Delete the dhcp client pid file.
+##	Delete the dhcp client pid file.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -521,6 +569,40 @@ interface(`sysnet_read_dhcpc_pid',`
 ## </param>
 #
 interface(`sysnet_delete_dhcpc_pid',`
+	refpolicywarn(`$0($*) has been deprecated, please use sysnet_delete_dhcpc_runtime_files() instead.')
+	sysnet_delete_dhcpc_runtime_files($1)
+')
+
+#######################################
+## <summary>
+##	Read dhcp client runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`sysnet_read_dhcpc_runtime_files',`
+	gen_require(`
+		type dhcpc_runtime_t;
+	')
+
+	files_list_runtime($1)
+	allow $1 dhcpc_runtime_t:file read_file_perms;
+')
+
+#######################################
+## <summary>
+##	Delete the dhcp client runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`sysnet_delete_dhcpc_runtime_files',`
 	gen_require(`
 		type dhcpc_runtime_t;
 	')
@@ -732,7 +814,6 @@ interface(`sysnet_dns_name_resolve',`
 	allow $1 self:udp_socket create_socket_perms;
 	allow $1 self:netlink_route_socket r_netlink_socket_perms;
 
-	corenet_all_recvfrom_unlabeled($1)
 	corenet_all_recvfrom_netlabel($1)
 	corenet_tcp_sendrecv_generic_if($1)
 	corenet_udp_sendrecv_generic_if($1)
@@ -749,7 +830,7 @@ interface(`sysnet_dns_name_resolve',`
 
 	optional_policy(`
 	# for /etc/resolv.conf symlink
-		networkmanager_read_pid_files($1)
+		networkmanager_read_runtime_files($1)
 	')
 
 	optional_policy(`
@@ -781,7 +862,6 @@ interface(`sysnet_use_ldap',`
 
 	allow $1 self:tcp_socket create_socket_perms;
 
-	corenet_all_recvfrom_unlabeled($1)
 	corenet_all_recvfrom_netlabel($1)
 	corenet_tcp_sendrecv_generic_if($1)
 	corenet_tcp_sendrecv_generic_node($1)
@@ -810,7 +890,6 @@ interface(`sysnet_use_portmap',`
 	allow $1 self:tcp_socket create_socket_perms;
 	allow $1 self:udp_socket create_socket_perms;
 
-	corenet_all_recvfrom_unlabeled($1)
 	corenet_all_recvfrom_netlabel($1)
 	corenet_tcp_sendrecv_generic_if($1)
 	corenet_udp_sendrecv_generic_if($1)

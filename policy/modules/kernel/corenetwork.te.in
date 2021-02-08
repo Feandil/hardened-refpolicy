@@ -1,4 +1,4 @@
-policy_module(corenetwork, 1.26.2)
+policy_module(corenetwork, 1.29.0)
 
 ########################################
 #
@@ -41,6 +41,11 @@ dev_node(tun_tap_device_t)
 # client_packet_t is the default type of IPv4 and IPv6 client packets.
 #
 type client_packet_t, packet_type, client_packet_type;
+
+#
+# ICMP and ICMPv6
+#
+network_packet_simple(icmp)
 
 #
 # The netlabel_peer_t is used by the kernel's NetLabel subsystem for network
@@ -90,6 +95,7 @@ network_port(amqp, udp,5671-5672,s0, tcp,5671-5672,s0)
 network_port(aol, udp,5190-5193,s0, tcp,5190-5193,s0)
 network_port(apcupsd, tcp,3551,s0, udp,3551,s0)
 network_port(apertus_ldp, tcp,539,s0, udp,539,s0)
+network_port(aptcacher, tcp,3142,s0)
 network_port(armtechdaemon, tcp,9292,s0, udp,9292,s0)
 network_port(asterisk, tcp,1720,s0, udp,2427,s0, udp,2727,s0, udp,4569,s0)
 network_port(audit, tcp,60,s0)
@@ -135,7 +141,6 @@ network_port(ftp_data, tcp,20,s0)
 network_port(gatekeeper, udp,1718,s0, udp,1719,s0, tcp,1721,s0, tcp,7000,s0)
 network_port(gdomap, tcp,538,s0, udp,538,s0)
 network_port(gds_db, tcp,3050,s0, udp,3050,s0)
-network_port(giftd, tcp,1213,s0)
 network_port(git, tcp,9418,s0, udp,9418,s0)
 network_port(glance_registry, tcp,9191,s0, udp,9191,s0)
 network_port(gopher, tcp,70,s0, udp,70,s0)
@@ -290,7 +295,7 @@ network_port(vnc, tcp,5900,s0)
 network_port(wccp, udp,2048,s0)
 network_port(websm, tcp,9090,s0, udp,9090,s0)
 network_port(whois, tcp,43,s0, udp,43,s0, tcp,4321,s0, udp,4321,s0)
-network_port(winshadow, tcp,3161,s0, udp,3261,s0)
+network_port(winshadow, tcp,3261,s0, udp,3261,s0)
 network_port(wsdapi, tcp,5357,s0, udp,5357,s0)
 network_port(wsicopy, tcp,3378,s0, udp,3378,s0)
 network_port(xdmcp, udp,177,s0, tcp,177,s0)

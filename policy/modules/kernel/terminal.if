@@ -163,6 +163,7 @@ interface(`term_create_devpts_dirs',`
 		type devpts_t;
 	')
 
+	dev_add_entry_generic_dirs($1)
 	allow $1 devpts_t:dir create_dir_perms;
 ')
 
@@ -187,7 +188,7 @@ interface(`term_create_pty',`
 	')
 
 	dev_list_all_dev_nodes($1)
-	allow $1 ptmx_t:chr_file rw_file_perms;
+	allow $1 ptmx_t:chr_file rw_chr_file_perms;
 
 	allow $1 devpts_t:dir list_dir_perms;
 	allow $1 devpts_t:filesystem getattr;
@@ -322,7 +323,7 @@ interface(`term_use_console',`
 
 ########################################
 ## <summary>
-##	Do not audit attemtps to read from
+##	Do not audit attempts to read from
 ##	or write to the console.
 ## </summary>
 ## <param name="domain">
@@ -395,7 +396,7 @@ interface(`term_create_console_dev',`
 	')
 
 	dev_add_entry_generic_dirs($1)
-	allow $1 console_device_t:chr_file create;
+	allow $1 console_device_t:chr_file create_chr_file_perms;
 	allow $1 self:capability mknod;
 ')
 
@@ -658,7 +659,6 @@ interface(`term_ioctl_generic_ptys',`
 ##	</summary>
 ## </param>
 #
-# dwalsh: added for rhgb
 interface(`term_setattr_generic_ptys',`
 	gen_require(`
 		type devpts_t;
@@ -678,7 +678,6 @@ interface(`term_setattr_generic_ptys',`
 ##	</summary>
 ## </param>
 #
-# dwalsh: added for rhgb
 interface(`term_dontaudit_setattr_generic_ptys',`
 	gen_require(`
 		type devpts_t;
@@ -706,7 +705,7 @@ interface(`term_use_generic_ptys',`
 
 	dev_list_all_dev_nodes($1)
 	allow $1 devpts_t:dir list_dir_perms;
-	allow $1 devpts_t:chr_file { rw_term_perms lock append };
+	allow $1 devpts_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -727,6 +726,27 @@ interface(`term_dontaudit_use_generic_ptys',`
 	')
 
 	dontaudit $1 devpts_t:chr_file { getattr read write ioctl };
+')
+
+#######################################
+## <summary>
+##  Create the tty device.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`term_create_controlling_term',`
+	gen_require(`
+		type devtty_t;
+	')
+
+	dev_list_all_dev_nodes($1)
+	dev_add_entry_generic_dirs($1)
+	allow $1 devtty_t:chr_file create_chr_file_perms;
+	allow $1 self:capability mknod;
 ')
 
 #######################################
@@ -765,7 +785,27 @@ interface(`term_use_controlling_term',`
 	')
 
 	dev_list_all_dev_nodes($1)
-	allow $1 devtty_t:chr_file { rw_term_perms lock append };
+	allow $1 devtty_t:chr_file rw_chr_file_perms;
+')
+
+#######################################
+## <summary>
+##  Create the pty multiplexor (/dev/ptmx).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`term_create_ptmx',`
+	gen_require(`
+		type ptmx_t;
+	')
+
+	dev_add_entry_generic_dirs($1)
+	allow $1 ptmx_t:chr_file create_chr_file_perms;
+	allow $1 self:capability mknod;
 ')
 
 #######################################
@@ -821,7 +861,7 @@ interface(`term_use_ptmx',`
 	')
 
 	dev_list_all_dev_nodes($1)
-	allow $1 ptmx_t:chr_file rw_file_perms;
+	allow $1 ptmx_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -965,7 +1005,7 @@ interface(`term_use_all_ptys',`
 
 	dev_list_all_dev_nodes($1)
 	allow $1 devpts_t:dir list_dir_perms;
-	allow $1 ptynode:chr_file { rw_term_perms lock append };
+	allow $1 ptynode:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -983,7 +1023,7 @@ interface(`term_dontaudit_use_all_ptys',`
 		attribute ptynode;
 	')
 
-	dontaudit $1 ptynode:chr_file { rw_term_perms lock append };
+	dontaudit $1 ptynode:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -1044,7 +1084,7 @@ interface(`term_setattr_unlink_unallocated_ttys',`
 	')
 
 	dev_list_all_dev_nodes($1)
-	allow $1 tty_device_t:chr_file { getattr setattr unlink };
+	allow $1 tty_device_t:chr_file { delete_chr_file_perms setattr };
 ')
 
 ########################################

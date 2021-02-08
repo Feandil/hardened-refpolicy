@@ -1,7 +1,7 @@
 policy_module(logsentry, 0.2)
 
 #######################################
-# 
+#
 # Declarations
 #
 
@@ -11,10 +11,10 @@ application_domain(logsentry_t, logsentry_exec_t)
 role system_r types logsentry_t;
 
 type logsentry_etc_t;
-files_type(logsentry_etc_t);
+files_type(logsentry_etc_t)
 
 type logsentry_tmp_t;
-files_tmp_file(logsentry_tmp_t);
+files_tmp_file(logsentry_tmp_t)
 
 type logsentry_filter_t;
 files_type(logsentry_filter_t)
@@ -24,7 +24,7 @@ files_type(logsentry_filter_t)
 # Local Policy
 #
 
-allow logsentry_t self:fifo_file { read write getattr ioctl };
+allow logsentry_t self:fifo_file rw_inherited_fifo_file_perms;
 allow logsentry_t self:capability { setuid setgid };
 allow logsentry_t logsentry_exec_t:file execute_no_trans;
 

@@ -33,11 +33,11 @@ logging_log_file(dirsrv_snmp_var_log_t)
 
 # pid files
 type dirsrv_runtime_t alias dirsrv_var_run_t;
-files_pid_file(dirsrv_runtime_t)
+files_runtime_file(dirsrv_runtime_t)
 
 # snmp pid file
 type dirsrv_snmp_runtime_t alias dirsrv_snmp_var_run_t;
-files_pid_file(dirsrv_snmp_runtime_t)
+files_runtime_file(dirsrv_snmp_runtime_t)
 
 # lock files
 type dirsrv_var_lock_t;
@@ -57,7 +57,7 @@ files_tmpfs_file(dirsrv_tmpfs_t)
 
 # shared files
 type dirsrv_share_t;
-files_type(dirsrv_share_t);
+files_type(dirsrv_share_t)
 
 ########################################
 #
@@ -72,7 +72,7 @@ miscfiles_read_localization(dirsrv_t)
 dev_read_urand(dirsrv_t)
 libs_use_ld_so(dirsrv_t)
 libs_use_shared_libs(dirsrv_t)
-allow dirsrv_t self:fifo_file { read write };
+allow dirsrv_t self:fifo_file rw_inherited_fifo_file_perms;
 
 # process stuff
 allow dirsrv_t self:process { getsched setsched setfscreate signal_perms};
@@ -96,7 +96,7 @@ logging_log_filetrans(dirsrv_t,dirsrv_var_log_t,{ sock_file file dir })
 
 # pid files
 manage_files_pattern(dirsrv_t, dirsrv_runtime_t, dirsrv_runtime_t)
-files_pid_filetrans(dirsrv_t, dirsrv_runtime_t, { file sock_file })
+files_runtime_filetrans(dirsrv_t, dirsrv_runtime_t, { file sock_file })
 
 # ldapi socket
 manage_sock_files_pattern(dirsrv_t, dirsrv_runtime_t, dirsrv_runtime_t)
@@ -160,7 +160,7 @@ dev_read_urand(dirsrv_snmp_t)
 files_read_usr_files(dirsrv_snmp_t)
 fs_getattr_tmpfs(dirsrv_snmp_t)
 fs_search_tmpfs(dirsrv_snmp_t)
-allow dirsrv_snmp_t self:fifo_file { read write };
+allow dirsrv_snmp_t self:fifo_file rw_inherited_fifo_file_perms;
 sysnet_read_config(dirsrv_snmp_t)
 sysnet_dns_name_resolve(dirsrv_snmp_t)
 
@@ -184,11 +184,11 @@ read_files_pattern(dirsrv_snmp_t, dirsrv_config_t, dirsrv_config_t)
 
 # pid file
 manage_files_pattern(dirsrv_snmp_t, dirsrv_snmp_runtime_t, dirsrv_snmp_runtime_t)
-files_pid_filetrans(dirsrv_snmp_t, dirsrv_snmp_runtime_t, { file sock_file })
+files_runtime_filetrans(dirsrv_snmp_t, dirsrv_snmp_runtime_t, { file sock_file })
 search_dirs_pattern(dirsrv_snmp_t, dirsrv_runtime_t, dirsrv_runtime_t)
 
 # log file
-manage_files_pattern(dirsrv_snmp_t, dirsrv_var_log_t, dirsrv_snmp_var_log_t);
+manage_files_pattern(dirsrv_snmp_t, dirsrv_var_log_t, dirsrv_snmp_var_log_t)
 filetrans_pattern(dirsrv_snmp_t, dirsrv_var_log_t, dirsrv_snmp_var_log_t, file)
 
 # Init script handling

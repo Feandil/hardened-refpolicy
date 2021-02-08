@@ -1,4 +1,4 @@
-policy_module(bootloader, 1.19.1)
+policy_module(bootloader, 1.22.0)
 
 ########################################
 #
@@ -86,10 +86,12 @@ dev_read_sysfs(bootloader_t)
 dev_rw_nvram(bootloader_t)
 
 fs_getattr_xattr_fs(bootloader_t)
+fs_getattr_dos_fs(bootloader_t)
 fs_getattr_tmpfs(bootloader_t)
 fs_read_tmpfs_symlinks(bootloader_t)
 #Needed for EFI
 fs_manage_dos_files(bootloader_t)
+fs_mmap_read_dos_files(bootloader_t)
 
 mls_file_read_all_levels(bootloader_t)
 mls_file_write_all_levels(bootloader_t)
@@ -114,11 +116,14 @@ files_read_var_files(bootloader_t)
 files_read_kernel_modules(bootloader_t)
 files_search_mnt(bootloader_t)
 # for nscd
-files_dontaudit_search_pids(bootloader_t)
+files_dontaudit_search_runtime(bootloader_t)
 # for blkid.tab
 files_manage_etc_runtime_files(bootloader_t)
 files_etc_filetrans_etc_runtime(bootloader_t, file)
 files_dontaudit_search_home(bootloader_t)
+
+fs_list_efivars(bootloader_t)
+fs_manage_efivarfs_files(bootloader_t)
 
 fs_list_hugetlbfs(bootloader_t)
 fs_mount_fusefs(bootloader_t)
@@ -153,7 +158,7 @@ seutil_read_file_contexts(bootloader_t)
 seutil_read_loadpolicy(bootloader_t)
 seutil_dontaudit_search_config(bootloader_t)
 
-udev_read_pid_files(bootloader_t)
+udev_read_runtime_files(bootloader_t)
 
 userdom_use_user_terminals(bootloader_t)
 userdom_dontaudit_search_user_home_dirs(bootloader_t)
@@ -175,6 +180,8 @@ ifdef(`distro_debian',`
 
 	libs_relabelto_lib_files(bootloader_t)
 
+	apt_use_fds(bootloader_t)
+	apt_use_ptys(bootloader_t)
 	# for apt-cache
 	apt_read_db(bootloader_t)
 	apt_manage_cache(bootloader_t)
@@ -213,15 +220,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	hal_dontaudit_append_lib_files(bootloader_t)
-	hal_write_log(bootloader_t)
-')
-
-optional_policy(`
-	kudzu_domtrans(bootloader_t)
-')
-
-optional_policy(`
 	dev_rw_lvm_control(bootloader_t)
 
 	lvm_domtrans(bootloader_t)
@@ -239,7 +237,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	raid_read_mdadm_pid(bootloader_t)
+	raid_read_mdadm_runtime_files(bootloader_t)
 ')
 
 optional_policy(`

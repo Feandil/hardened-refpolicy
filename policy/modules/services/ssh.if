@@ -58,7 +58,7 @@ template(`ssh_basic_client_template',`
 	allow $1_ssh_t self:capability { dac_override dac_read_search setgid setuid };
 	allow $1_ssh_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 	allow $1_ssh_t self:fd use;
-	allow $1_ssh_t self:fifo_file rw_fifo_file_perms;
+	allow $1_ssh_t self:fifo_file rw_inherited_fifo_file_perms;
 	allow $1_ssh_t self:unix_dgram_socket { create_socket_perms sendto };
 	allow $1_ssh_t self:unix_stream_socket { create_stream_socket_perms connectto };
 	allow $1_ssh_t self:shm create_shm_perms;
@@ -108,7 +108,6 @@ template(`ssh_basic_client_template',`
 	kernel_read_kernel_sysctls($1_ssh_t)
 	kernel_read_system_state($1_ssh_t)
 
-	corenet_all_recvfrom_unlabeled($1_ssh_t)
 	corenet_all_recvfrom_netlabel($1_ssh_t)
 	corenet_tcp_sendrecv_generic_if($1_ssh_t)
 	corenet_tcp_sendrecv_generic_node($1_ssh_t)
@@ -177,7 +176,7 @@ template(`ssh_server_template', `
 	term_login_pty($1_devpts_t)
 
 	type $1_runtime_t alias $1_var_run_t;
-	files_pid_file($1_runtime_t)
+	files_runtime_file($1_runtime_t)
 
 	type $1_tmpfs_t;
 	files_tmpfs_file($1_tmpfs_t)
@@ -201,7 +200,7 @@ template(`ssh_server_template', `
 
 	allow $1_t $1_runtime_t:dir search_dir_perms;
 	allow $1_t $1_runtime_t:file manage_file_perms;
-	files_pid_filetrans($1_t, $1_runtime_t, file)
+	files_runtime_filetrans($1_t, $1_runtime_t, file)
 
 	can_exec($1_t, sshd_exec_t)
 
@@ -211,7 +210,6 @@ template(`ssh_server_template', `
 	kernel_read_kernel_sysctls($1_t)
 	kernel_read_network_state($1_t)
 
-	corenet_all_recvfrom_unlabeled($1_t)
 	corenet_all_recvfrom_netlabel($1_t)
 	corenet_tcp_sendrecv_generic_if($1_t)
 	corenet_udp_sendrecv_generic_if($1_t)
@@ -351,7 +349,7 @@ template(`ssh_role_template',`
 
 	allow $1_ssh_agent_t self:process { setrlimit signal };
 	allow $1_ssh_agent_t self:capability setgid;
-	allow $1_ssh_agent_t self:fifo_file rw_file_perms;
+	allow $1_ssh_agent_t self:fifo_file rw_fifo_file_perms;
 
 	allow $1_ssh_agent_t { $1_ssh_agent_t $3 }:process signull;
 
@@ -405,8 +403,12 @@ template(`ssh_role_template',`
 	userdom_search_user_home_content($1_ssh_agent_t)
 	userdom_user_home_domtrans($1_ssh_agent_t, $3)
 	allow $3 $1_ssh_agent_t:fd use;
-	allow $3 $1_ssh_agent_t:fifo_file rw_file_perms;
+	allow $3 $1_ssh_agent_t:fifo_file rw_inherited_fifo_file_perms;
 	allow $3 $1_ssh_agent_t:process sigchld;
+
+	ifdef(`distro_debian', `
+		userdom_user_runtime_filetrans($1_ssh_agent_t, ssh_agent_tmp_t, sock_file)
+	')
 
 	tunable_policy(`use_nfs_home_dirs',`
 		fs_manage_nfs_files($1_ssh_agent_t)
@@ -526,7 +528,7 @@ interface(`ssh_rw_pipes',`
 		type sshd_t;
 	')
 
-	allow $1 sshd_t:fifo_file { write read getattr ioctl };
+	allow $1 sshd_t:fifo_file rw_inherited_fifo_file_perms;
 ')
 
 ########################################
@@ -656,7 +658,7 @@ interface(`ssh_setattr_key_files',`
 	')
 
 	allow $1 sshd_key_t:file setattr;
-	files_search_pids($1)
+	files_search_runtime($1)
 ')
 
 ########################################
@@ -771,4 +773,22 @@ interface(`ssh_delete_tmp',`
 
 	files_search_tmp($1)
 	delete_files_pattern($1, sshd_tmp_t, sshd_tmp_t)
+')
+
+#######################################
+## <summary>
+##	dontaudit access to ssh agent tmp dirs
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain not to audit.
+##	</summary>
+## </param>
+#
+interface(`ssh_dontaudit_agent_tmp',`
+	gen_require(`
+		type ssh_agent_tmp_t;
+	')
+
+	dontaudit $1 ssh_agent_tmp_t:dir list_dir_perms;
 ')

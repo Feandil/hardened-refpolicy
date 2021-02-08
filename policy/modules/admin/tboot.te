@@ -1,4 +1,4 @@
-policy_module(tboot, 1.1.0)
+policy_module(tboot, 1.2.0)
 
 ########################################
 #
@@ -17,8 +17,6 @@ role txtstat_roles types txtstat_t;
 #
 # Local policy
 #
-
-dev_read_raw_memory(txtstat_t)
 
 domain_use_interactive_fds(txtstat_t)
 userdom_use_user_terminals(txtstat_t)

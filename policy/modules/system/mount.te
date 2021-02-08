@@ -1,4 +1,4 @@
-policy_module(mount, 1.21.4)
+policy_module(mount, 1.24.0)
 
 ########################################
 #
@@ -21,11 +21,11 @@ init_system_domain(mount_t, mount_exec_t)
 role mount_roles types mount_t;
 
 type mount_loopback_t; # customizable
-files_type(mount_loopback_t)
+fs_image_file(mount_loopback_t)
 
 type mount_runtime_t;
 typealias mount_runtime_t alias mount_var_run_t;
-files_pid_file(mount_runtime_t)
+files_runtime_file(mount_runtime_t)
 
 type mount_tmp_t;
 files_tmp_file(mount_tmp_t)
@@ -47,8 +47,6 @@ allow mount_t self:process signal;
 # zfs list uses pipes
 allow mount_t self:fifo_file rw_fifo_file_perms;
 
-mount_read_loopback_files(mount_t)
-
 allow mount_t mount_tmp_t:file manage_file_perms;
 allow mount_t mount_tmp_t:dir manage_dir_perms;
 
@@ -59,7 +57,7 @@ files_tmp_filetrans(mount_t, mount_tmp_t, { file dir })
 manage_dirs_pattern(mount_t, mount_runtime_t, mount_runtime_t)
 manage_files_pattern(mount_t, mount_runtime_t, mount_runtime_t)
 rw_files_pattern(mount_t, mount_runtime_t, mount_runtime_t)
-files_pid_filetrans(mount_t, mount_runtime_t, dir, "mount")
+files_runtime_filetrans(mount_t, mount_runtime_t, dir, "mount")
 
 kernel_read_system_state(mount_t)
 kernel_read_kernel_sysctls(mount_t)
@@ -115,6 +113,8 @@ fs_relabelfrom_all_fs(mount_t)
 fs_rw_tmpfs_chr_files(mount_t)
 fs_read_tmpfs_symlinks(mount_t)
 fs_dontaudit_write_tmpfs_dirs(mount_t)
+fs_read_all_image_files(mount_t)
+fs_dontaudit_write_all_image_files(mount_t)
 
 mls_file_read_all_levels(mount_t)
 mls_file_write_all_levels(mount_t)
@@ -169,7 +169,6 @@ tunable_policy(`allow_mount_anyfile',`
 
 optional_policy(`
 	# for nfs
-	corenet_all_recvfrom_unlabeled(mount_t)
 	corenet_all_recvfrom_netlabel(mount_t)
 	corenet_tcp_sendrecv_all_if(mount_t)
 	corenet_raw_sendrecv_all_if(mount_t)
@@ -201,7 +200,6 @@ optional_policy(`
 optional_policy(`
 	ifdef(`hide_broken_symptoms',`
 		# for a bug in the X server
-		rhgb_dontaudit_rw_stream_sockets(mount_t)
 		term_dontaudit_use_ptmx(mount_t)
 	')
 ')

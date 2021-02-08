@@ -1,4 +1,4 @@
-policy_module(glance, 1.3.2)
+policy_module(glance, 1.5.0)
 
 ########################################
 #
@@ -28,7 +28,7 @@ type glance_log_t;
 logging_log_file(glance_log_t)
 
 type glance_runtime_t alias glance_var_run_t;
-files_pid_file(glance_runtime_t)
+files_runtime_file(glance_runtime_t)
 
 type glance_var_lib_t;
 files_type(glance_var_lib_t)
@@ -58,7 +58,6 @@ manage_files_pattern(glance_domain, glance_runtime_t, glance_runtime_t)
 
 kernel_read_system_state(glance_domain)
 
-corenet_all_recvfrom_unlabeled(glance_domain)
 corenet_all_recvfrom_netlabel(glance_domain)
 corenet_tcp_sendrecv_generic_if(glance_domain)
 corenet_tcp_sendrecv_generic_node(glance_domain)

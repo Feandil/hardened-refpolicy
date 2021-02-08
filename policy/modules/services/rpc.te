@@ -1,4 +1,4 @@
-policy_module(rpc, 1.21.2)
+policy_module(rpc, 1.24.0)
 
 ########################################
 #
@@ -50,7 +50,7 @@ type rpcd_initrc_exec_t;
 init_script_file(rpcd_initrc_exec_t)
 
 type rpcd_runtime_t alias rpcd_var_run_t;
-files_pid_file(rpcd_runtime_t)
+files_runtime_file(rpcd_runtime_t)
 
 type rpcd_unit_t;
 init_unit_file(rpcd_unit_t)
@@ -93,7 +93,6 @@ dev_read_sysfs(rpc_domain)
 dev_read_urand(rpc_domain)
 dev_read_rand(rpc_domain)
 
-corenet_all_recvfrom_unlabeled(rpc_domain)
 corenet_all_recvfrom_netlabel(rpc_domain)
 corenet_tcp_sendrecv_generic_if(rpc_domain)
 corenet_udp_sendrecv_generic_if(rpc_domain)
@@ -134,10 +133,6 @@ optional_policy(`
 	seutil_sigchld_newrole(rpc_domain)
 ')
 
-optional_policy(`
-	udev_read_db(rpc_domain)
-')
-
 ########################################
 #
 # Local policy
@@ -150,7 +145,7 @@ allow rpcd_t self:fifo_file rw_fifo_file_perms;
 
 manage_dirs_pattern(rpcd_t, rpcd_runtime_t, rpcd_runtime_t)
 manage_files_pattern(rpcd_t, rpcd_runtime_t, rpcd_runtime_t)
-files_pid_filetrans(rpcd_t, rpcd_runtime_t, { file dir })
+files_runtime_filetrans(rpcd_t, rpcd_runtime_t, { file dir })
 
 can_exec(rpcd_t, rpcd_exec_t)
 
@@ -223,6 +218,7 @@ allow nfsd_t { nfsd_rw_t nfsd_ro_t }:dir list_dir_perms;
 
 kernel_read_network_state(nfsd_t)
 kernel_dontaudit_getattr_core_if(nfsd_t)
+kernel_search_debugfs(nfsd_t)
 kernel_setsched(nfsd_t)
 kernel_request_load_module(nfsd_t)
 # kernel_mounton_proc(nfsd_t)
@@ -353,7 +349,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	pcscd_read_pid_files(gssd_t)
+	pcscd_read_runtime_files(gssd_t)
 ')
 
 optional_policy(`

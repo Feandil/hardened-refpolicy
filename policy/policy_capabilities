@@ -1,7 +1,7 @@
 #
-# This file contains the policy capabilites
+# This file contains the policy capabilities
 # that are enabled in this policy, not a
-# declaration of DAC capabilites such as
+# declaration of DAC capabilities such as
 # dac_override.
 #
 # The affected object classes and their
@@ -98,3 +98,11 @@ policycap cgroup_seclabel;
 # process2: nnp_transition, nosuid_transition
 #
 policycap nnp_nosuid_transition;
+
+# Enable extended genfscon labeling for symlinks.
+# Requires libsepol 3.1 (estimated) and kernel 5.7 (estimated).
+#
+# Added checks:
+# (none)
+#
+#policycap genfs_seclabel_symlinks;

@@ -1,4 +1,4 @@
-policy_module(ricci, 1.11.2)
+policy_module(ricci, 1.13.0)
 
 ########################################
 #
@@ -13,7 +13,7 @@ type ricci_initrc_exec_t;
 init_script_file(ricci_initrc_exec_t)
 
 type ricci_runtime_t alias ricci_var_run_t;
-files_pid_file(ricci_runtime_t)
+files_runtime_file(ricci_runtime_t)
 
 type ricci_tmp_t;
 files_tmp_file(ricci_tmp_t)
@@ -31,7 +31,7 @@ domain_entry_file(ricci_modcluster_t, ricci_modcluster_exec_t)
 role system_r types ricci_modcluster_t;
 
 type ricci_modcluster_runtime_t alias ricci_modcluster_var_run_t;
-files_pid_file(ricci_modcluster_runtime_t)
+files_runtime_file(ricci_modcluster_runtime_t)
 
 type ricci_modcluster_var_lib_t;
 files_type(ricci_modcluster_var_lib_t)
@@ -108,14 +108,13 @@ logging_log_filetrans(ricci_t, ricci_var_log_t, { sock_file file dir })
 
 manage_files_pattern(ricci_t, ricci_runtime_t, ricci_runtime_t)
 manage_sock_files_pattern(ricci_t, ricci_runtime_t, ricci_runtime_t)
-files_pid_filetrans(ricci_t, ricci_runtime_t, { file sock_file })
+files_runtime_filetrans(ricci_t, ricci_runtime_t, { file sock_file })
 
 kernel_read_kernel_sysctls(ricci_t)
 kernel_read_system_state(ricci_t)
 
 corecmd_exec_bin(ricci_t)
 
-corenet_all_recvfrom_unlabeled(ricci_t)
 corenet_all_recvfrom_netlabel(ricci_t)
 corenet_tcp_sendrecv_generic_if(ricci_t)
 corenet_tcp_sendrecv_generic_node(ricci_t)
@@ -205,7 +204,6 @@ kernel_read_system_state(ricci_modcluster_t)
 corecmd_exec_bin(ricci_modcluster_t)
 corecmd_exec_shell(ricci_modcluster_t)
 
-corenet_all_recvfrom_unlabeled(ricci_modcluster_t)
 corenet_all_recvfrom_netlabel(ricci_modcluster_t)
 corenet_tcp_sendrecv_generic_if(ricci_modcluster_t)
 corenet_tcp_sendrecv_generic_node(ricci_modcluster_t)
@@ -298,7 +296,7 @@ logging_log_filetrans(ricci_modclusterd_t, ricci_modcluster_var_log_t, { sock_fi
 
 manage_files_pattern(ricci_modclusterd_t, ricci_modcluster_runtime_t, ricci_modcluster_runtime_t)
 manage_sock_files_pattern(ricci_modclusterd_t, ricci_modcluster_runtime_t, ricci_modcluster_runtime_t)
-files_pid_filetrans(ricci_modclusterd_t, ricci_modcluster_runtime_t, { file sock_file })
+files_runtime_filetrans(ricci_modclusterd_t, ricci_modcluster_runtime_t, { file sock_file })
 
 kernel_read_kernel_sysctls(ricci_modclusterd_t)
 kernel_read_system_state(ricci_modclusterd_t)
@@ -306,7 +304,6 @@ kernel_request_load_module(ricci_modclusterd_t)
 
 corecmd_exec_bin(ricci_modclusterd_t)
 
-corenet_all_recvfrom_unlabeled(ricci_modclusterd_t)
 corenet_all_recvfrom_netlabel(ricci_modclusterd_t)
 corenet_tcp_sendrecv_generic_if(ricci_modclusterd_t)
 corenet_tcp_sendrecv_generic_node(ricci_modclusterd_t)
@@ -377,7 +374,7 @@ logging_read_generic_logs(ricci_modlog_t)
 miscfiles_read_localization(ricci_modlog_t)
 
 optional_policy(`
-	nscd_dontaudit_search_pid(ricci_modlog_t)
+	nscd_dontaudit_search_runtime(ricci_modlog_t)
 ')
 
 optional_policy(`
@@ -441,7 +438,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	nscd_dontaudit_search_pid(ricci_modservice_t)
+	nscd_dontaudit_search_runtime(ricci_modservice_t)
 ')
 
 optional_policy(`

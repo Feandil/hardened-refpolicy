@@ -318,7 +318,7 @@ interface(`logging_stream_connect_dispatcher',`
 		type audisp_t, audisp_runtime_t;
 	')
 
-	files_search_pids($1)
+	files_search_runtime($1)
 	stream_connect_pattern($1, audisp_runtime_t, audisp_runtime_t, audisp_t)
 ')
 
@@ -429,6 +429,25 @@ interface(`logging_domtrans_syslog',`
 
 ########################################
 ## <summary>
+##	Allow specified domain to start/stop syslog units
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_startstop_syslog',`
+	gen_require(`
+		type syslogd_unit_t;
+		class service { start stop };
+	')
+
+	allow $1 syslogd_unit_t:service { start stop };
+')
+
+########################################
+## <summary>
 ##	Allow specified domain to check status of syslog unit
 ## </summary>
 ## <param name="domain">
@@ -467,6 +486,25 @@ interface(`logging_setattr_syslogd_tmp_files',`
 
 ########################################
 ## <summary>
+##  Allow the domain to create the audit socket
+##  for syslogd.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`logging_audit_socket_activation', `
+	gen_require(`
+		type syslogd_t;
+	')
+
+	allow $1 syslogd_t:netlink_audit_socket create_socket_perms;
+')
+
+########################################
+## <summary>
 ##	Relabel to and from syslog temporary file type.
 ## </summary>
 ## <param name="domain">
@@ -481,7 +519,7 @@ interface(`logging_relabel_syslogd_tmp_files',`
 		type syslogd_tmp_t;
 	')
 
-	allow $1 syslogd_tmp_t:file { relabelfrom relabelto };
+	allow $1 syslogd_tmp_t:file relabel_file_perms;
 ')
 
 ########################################
@@ -519,7 +557,7 @@ interface(`logging_relabel_syslogd_tmp_dirs',`
 		type syslogd_tmp_t;
 	')
 
-	allow $1 syslogd_tmp_t:dir { relabelfrom relabelto };
+	allow $1 syslogd_tmp_t:dir relabel_dir_perms;
 ')
 
 ########################################
@@ -651,6 +689,25 @@ interface(`logging_send_syslog_msg',`
 
 ########################################
 ## <summary>
+##  Allow domain to use a file descriptor
+##  from syslogd.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_use_syslogd_fd', `
+	gen_require(`
+		type syslogd_t;
+	')
+
+	allow $1 syslogd_t:fd use;
+')
+
+########################################
+## <summary>
 ##	Allow domain to relabelto devlog sock_files
 ## </summary>
 ## <param name="domain">
@@ -685,7 +742,7 @@ interface(`logging_create_devlog',`
 
 	allow $1 devlog_t:sock_file manage_sock_file_perms;
 	dev_filetrans($1, devlog_t, sock_file)
-	init_pid_filetrans($1, devlog_t, sock_file, "syslog")
+	init_runtime_filetrans($1, devlog_t, sock_file, "syslog")
 ')
 
 ########################################
@@ -788,7 +845,7 @@ interface(`logging_delete_devlog_socket',`
 
 ########################################
 ## <summary>
-##	Create, read, write, and delete syslog PID sockets.
+##	Create, read, write, and delete syslog PID sockets.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -797,12 +854,27 @@ interface(`logging_delete_devlog_socket',`
 ## </param>
 #
 interface(`logging_manage_pid_sockets',`
+	refpolicywarn(`$0($*) has been deprecated, please use logging_manage_runtime_sockets() instead.')
+	logging_manage_runtime_sockets($1)
+')
+
+########################################
+## <summary>
+##	Create, read, write, and delete syslog PID sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_manage_runtime_sockets',`
 	gen_require(`
 		type syslogd_runtime_t;
 	')
 
 	manage_sock_files_pattern($1, syslogd_runtime_t, syslogd_runtime_t)
-	files_search_pids($1)
+	files_search_runtime($1)
 ')
 
 ########################################
@@ -944,7 +1016,7 @@ interface(`logging_dontaudit_getattr_all_logs',`
 
 ########################################
 ## <summary>
-##	Read the atttributes of any log file
+##	Read the attributes of any log file
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -996,7 +1068,7 @@ interface(`logging_append_all_inherited_logs',`
 		attribute logfile;
 	')
 
-	allow $1 logfile:file { getattr append ioctl lock };
+	allow $1 logfile:file append_inherited_file_perms;
 ')
 
 ########################################
@@ -1119,7 +1191,7 @@ interface(`logging_relabel_generic_log_dirs',`
 	')
 
 	files_search_var($1)
-	allow $1 var_log_t:dir { relabelfrom relabelto };
+	allow $1 var_log_t:dir relabel_dir_perms;
 ')
 
 ########################################

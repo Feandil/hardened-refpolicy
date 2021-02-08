@@ -1,4 +1,4 @@
-policy_module(getty, 1.13.0)
+policy_module(getty, 1.15.0)
 
 ########################################
 #
@@ -21,7 +21,7 @@ type getty_log_t;
 logging_log_file(getty_log_t)
 
 type getty_runtime_t alias getty_var_run_t;
-files_pid_file(getty_runtime_t)
+files_runtime_file(getty_runtime_t)
 
 type getty_tmp_t;
 files_tmp_file(getty_tmp_t)
@@ -46,8 +46,10 @@ files_lock_filetrans(getty_t, getty_lock_t, file)
 allow getty_t getty_log_t:file { append_file_perms create_file_perms setattr_file_perms };
 logging_log_filetrans(getty_t, getty_log_t, file)
 
+allow getty_t getty_runtime_t:dir watch;
+allow getty_t getty_runtime_t:file watch;
 manage_files_pattern(getty_t, getty_runtime_t, getty_runtime_t)
-files_pid_filetrans(getty_t, getty_runtime_t, file)
+files_runtime_filetrans(getty_t, getty_runtime_t, file)
 
 allow getty_t getty_tmp_t:file manage_file_perms;
 allow getty_t getty_tmp_t:dir manage_dir_perms;
@@ -120,12 +122,4 @@ optional_policy(`
 
 optional_policy(`
 	ppp_domtrans(getty_t)
-')
-
-optional_policy(`
-	rhgb_dontaudit_use_ptys(getty_t)
-')
-
-optional_policy(`
-	udev_read_db(getty_t)
 ')

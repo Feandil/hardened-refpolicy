@@ -1,4 +1,4 @@
-policy_module(gnome, 2.10.1)
+policy_module(gnome, 2.12.0)
 
 ##############################
 #
@@ -125,7 +125,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	nscd_dontaudit_search_pid(gconfd_t)
+	nscd_dontaudit_search_runtime(gconfd_t)
 ')
 
 optional_policy(`

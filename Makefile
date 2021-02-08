@@ -62,6 +62,7 @@ SEMOD_PKG ?= $(tc_usrbindir)/semodule_package
 SEMOD_LNK ?= $(tc_usrbindir)/semodule_link
 SEMOD_EXP ?= $(tc_usrbindir)/semodule_expand
 LOADPOLICY ?= $(tc_usrsbindir)/load_policy
+SEPOLGEN_IFGEN ?= $(tc_usrbindir)/sepolgen-ifgen
 SETFILES ?= $(tc_sbindir)/setfiles
 XMLLINT ?= $(BINDIR)/xmllint
 SECHECK ?= $(BINDIR)/sechecker
@@ -96,6 +97,7 @@ genxml := $(PYTHON) $(support)/segenxml.py
 gendoc := $(PYTHON) $(support)/sedoctool.py
 genperm := $(PYTHON) $(support)/genclassperms.py
 policyvers := $(PYTHON) $(support)/policyvers.py
+binary_policy_path := $(PYTHON) $(support)/selinux_binary_policy_path.py
 fcsort := $(PYTHON) $(support)/fc_sort.py
 setbools := $(AWK) -f $(support)/set_bools_tuns.awk
 get_type_attr_decl := $(SED) -r -f $(support)/get_type_attr_decl.sed
@@ -123,12 +125,14 @@ tunxml := $(docs)/global_tunables.xml
 gentooxml := $(docs)/gentoo_tunables.xml
 boolxml := $(docs)/global_booleans.xml
 htmldir := $(docs)/html
+doctmpdir := $(docs)/tmp
 else
 polxml := $(LOCAL_ROOT)/doc/policy.xml
 tunxml := $(LOCAL_ROOT)/doc/global_tunables.xml
 gentooxml := $(LOCAL_ROOT)/doc/gentoo_tunables.xml
 boolxml := $(LOCAL_ROOT)/doc/global_booleans.xml
 htmldir := $(LOCAL_ROOT)/doc/html
+doctmpdir := $(LOCAL_ROOT)/doc/tmp
 endif
 
 # config file paths
@@ -161,7 +165,6 @@ contextpath := $(installdir)/contexts
 homedirpath := $(contextpath)/files/homedir_template
 fcpath := $(contextpath)/files/file_contexts
 fcsubspath := $(contextpath)/files/file_contexts.subs_dist
-ncpath := $(contextpath)/netfilter_contexts
 sharedir := $(prefix)/share/selinux
 modpkgdir := $(sharedir)/$(strip $(NAME))
 headerdir := $(modpkgdir)/include
@@ -169,7 +172,7 @@ docsdir := $(prefix)/share/doc/$(PKGNAME)
 
 # enable MLS if requested.
 ifeq "$(TYPE)" "mls"
-	M4PARAM += -D enable_mls
+	M4PARAM += -D enable_mls=true
 	CHECKPOLICY += -M
 	CHECKMODULE += -M
 	gennetfilter += -m
@@ -177,7 +180,7 @@ endif
 
 # enable MLS if MCS requested.
 ifeq "$(TYPE)" "mcs"
-	M4PARAM += -D enable_mcs
+	M4PARAM += -D enable_mcs=true
 	CHECKPOLICY += -M
 	CHECKMODULE += -M
 	gennetfilter += -c
@@ -185,15 +188,15 @@ endif
 
 # enable distribution-specific policy
 ifneq ($(DISTRO),)
-	M4PARAM += -D distro_$(DISTRO)
+	M4PARAM += -D distro_$(DISTRO)=true
 endif
 
 ifeq "$(DISTRO)" "ubuntu"
-	M4PARAM += -D distro_debian
+	M4PARAM += -D distro_debian=true
 endif
 
 ifeq "$(SYSTEMD)" "y"
-	M4PARAM += -D init_systemd
+	M4PARAM += -D init_systemd=true
 endif
 
 ifneq ($(OUTPUT_POLICY),)
@@ -201,7 +204,7 @@ ifneq ($(OUTPUT_POLICY),)
 endif
 
 ifneq "$(CUSTOM_BUILDOPT)" ""
-	M4PARAM += $(foreach opt,$(CUSTOM_BUILDOPT),-D $(opt))
+	M4PARAM += $(foreach opt,$(CUSTOM_BUILDOPT),-D $(opt)=true)
 endif
 
 # if not set, use the type as the name.
@@ -211,15 +214,15 @@ NAME ?= $(TYPE)
 UNK_PERMS ?= deny
 
 ifeq ($(DIRECT_INITRC),y)
-	M4PARAM += -D direct_sysadm_daemon
+	M4PARAM += -D direct_sysadm_daemon=true
 endif
 
 ifeq "$(WERROR)" "y"
-	M4PARAM += -D m4_werror
+	M4PARAM += -D m4_werror=true
 endif
 
 ifeq "$(UBAC)" "y"
-	M4PARAM += -D enable_ubac
+	M4PARAM += -D enable_ubac=true
 endif
 
 # default MLS/MCS sensitivity and category settings.
@@ -229,9 +232,11 @@ MCS_CATS ?= 1024
 
 ifeq ($(QUIET),y)
 	verbose = @
+else
+	VERBOSE_FLAG = --verbose
 endif
 
-M4PARAM += -D mls_num_sens=$(MLS_SENS) -D mls_num_cats=$(MLS_CATS) -D mcs_num_cats=$(MCS_CATS) -D hide_broken_symptoms
+M4PARAM += -D mls_num_sens=$(MLS_SENS) -D mls_num_cats=$(MLS_CATS) -D mcs_num_cats=$(MCS_CATS) -D hide_broken_symptoms=true
 
 # we need exuberant ctags; unfortunately it is named
 # differently on different distros
@@ -258,6 +263,8 @@ user_default_contexts := $(wildcard config/appconfig-$(TYPE)/*_default_contexts)
 user_default_contexts_names := $(addprefix $(contextpath)/users/,$(subst _default_contexts,,$(notdir $(user_default_contexts))))
 appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types lxc_contexts openrc_contexts virtual_domain_context virtual_image_context) $(contextpath)/files/media $(fcsubspath) $(user_default_contexts_names)
 net_contexts := $(builddir)net_contexts
+net_contexts_nft := $(builddir)net_contexts.nft
+docfiles += $(net_contexts) $(net_contexts_nft)
 
 all_layers := $(shell find $(moddir)/* -maxdepth 0 -type d)
 ifdef LOCAL_ROOT
@@ -272,8 +279,8 @@ generated_fc := $(basename $(foreach dir,$(all_layers),$(wildcard $(dir)/*.fc.in
 # when a generated file is already generated
 detected_mods := $(sort $(foreach dir,$(all_layers),$(wildcard $(dir)/*.te)) $(generated_te))
 
-modxml := $(addprefix $(tmpdir)/, $(detected_mods:.te=.xml))
-layerxml := $(sort $(addprefix $(tmpdir)/, $(notdir $(addsuffix .xml,$(all_layers)))))
+modxml := $(addprefix $(doctmpdir)/, $(detected_mods:.te=.xml))
+layerxml := $(sort $(addprefix $(doctmpdir)/, $(notdir $(addsuffix .xml,$(all_layers)))))
 layer_names := $(sort $(notdir $(all_layers)))
 all_metaxml = $(call detect-metaxml, $(layer_names))
 
@@ -391,6 +398,10 @@ $(net_contexts): $(moddir)/kernel/corenetwork.te.in
 	@echo "Creating netfilter network labeling rules"
 	$(verbose) $(gennetfilter) $^ > $@
 
+$(net_contexts_nft): $(moddir)/kernel/corenetwork.te.in
+	@echo "Creating netfilter NFT network labeling rules"
+	$(verbose) $(gennetfilter) --nft $^ > $@
+
 ########################################
 #
 # Create config files
@@ -408,22 +419,22 @@ conf.intermediate: $(polxml)
 #
 # Documentation generation
 #
-iftemplates: $(tmpdir)/iftemplates
-$(tmpdir)/iftemplates:
-	@echo "Generating interface templates into $(tmpdir)/iftemplates"
-	@test -d $(tmpdir)/iftemplates || mkdir -p $(tmpdir)/iftemplates
-	$(verbose) $(gentemplates) -g -s $(moddir) -t $(tmpdir)/iftemplates
+iftemplates: $(doctmpdir)/iftemplates
+$(doctmpdir)/iftemplates:
+	@echo "Generating interface templates into $(doctmpdir)/iftemplates"
+	@test -d $(doctmpdir)/iftemplates || mkdir -p $(doctmpdir)/iftemplates
+	$(verbose) $(gentemplates) -g -s $(moddir) -t $(doctmpdir)/iftemplates
 ifdef LOCAL_ROOT
-	$(verbose) $(gentemplates) -g -s $(local_moddir) -t $(tmpdir)/iftemplates
+	$(verbose) $(gentemplates) -g -s $(local_moddir) -t $(doctmpdir)/iftemplates
 endif
-	@touch $(tmpdir)/iftemplates
+	@touch $(doctmpdir)/iftemplates
 
-$(layerxml): %.xml: $(tmpdir)/iftemplates $(all_metaxml) $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods)) $(subst .te,.if, $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods)))
-	@test -d $(tmpdir) || mkdir -p $(tmpdir)
+$(layerxml): %.xml: $(doctmpdir)/iftemplates $(all_metaxml) $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods)) $(subst .te,.if, $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods)))
+	@test -d $(doctmpdir) || mkdir -p $(doctmpdir)
 	$(verbose) cat $(filter %/$(notdir $*)/$(metaxml), $(all_metaxml)) > $@
-	$(verbose) for i in $(basename $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods))); do $(genxml) -w -T $(tmpdir)/iftemplates -m $$i >> $@; done
+	$(verbose) for i in $(basename $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods))); do $(genxml) -w -T $(doctmpdir)/iftemplates -m $$i >> $@; done
 ifdef LOCAL_ROOT
-	$(verbose) for i in $(basename $(filter $(addprefix $(local_moddir)/, $(notdir $*))%, $(detected_mods))); do $(genxml) -w -T $(tmpdir)/iftemplates -m $$i >> $@; done
+	$(verbose) for i in $(basename $(filter $(addprefix $(local_moddir)/, $(notdir $*))%, $(detected_mods))); do $(genxml) -w -T $(doctmpdir)/iftemplates -m $$i >> $@; done
 endif
 
 $(tunxml): $(globaltun)
@@ -435,15 +446,17 @@ $(boolxml): $(globalbool)
 $(polxml): $(layerxml) $(tunxml) $(boolxml) $(gentooxml)
 	@echo "Creating $(@F)"
 	@test -d $(dir $(polxml)) || mkdir -p $(dir $(polxml))
-	@test -d $(tmpdir) || mkdir -p $(tmpdir)
+	@test -d $(doctmpdir) || mkdir -p $(doctmpdir)
 	$(verbose) echo '<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>' > $@
 	$(verbose) echo '<!DOCTYPE policy SYSTEM "$(notdir $(xmldtd))">' >> $@
 	$(verbose) echo '<policy>' >> $@
-	$(verbose) for i in $(basename $(notdir $(layerxml))); do echo "<layer name=\"$$i\">" >> $@; cat $(tmpdir)/$$i.xml >> $@; echo "</layer>" >> $@; done
+	$(verbose) for i in $(basename $(notdir $(layerxml))); do echo "<layer name=\"$$i\">" >> $@; cat $(doctmpdir)/$$i.xml >> $@; echo "</layer>" >> $@; done
 	$(verbose) cat $(tunxml) $(boolxml) $(gentooxml) >> $@
 	$(verbose) echo '</policy>' >> $@
 	$(verbose) if test -x $(XMLLINT) && test -f $(xmldtd); then \
 		$(XMLLINT) --noout --path $(dir $(xmldtd)) --dtdvalid $(xmldtd) $@ ;\
+		else \
+		echo "$@ XML validation not run. Please install the xmllint tool." ;\
 	fi
 
 xml: $(polxml)
@@ -549,9 +562,17 @@ endif
 
 ########################################
 #
+# Build policy interface database
+#
+build-interface-db: install-headers
+	@mkdir -p $(DESTDIR)/var/lib/sepolgen $(tmpdir)
+	$(verbose) $(SEPOLGEN_IFGEN) $(VERBOSE_FLAG) --interfaces $(headerdir) --output $(DESTDIR)/var/lib/sepolgen/interface_info
+
+########################################
+#
 # Install policy documentation
 #
-install-docs: $(tmpdir)/html
+install-docs: $(tmpdir)/html $(docfiles)
 	@mkdir -p $(docsdir)/html
 	@echo "Installing policy documentation"
 	$(verbose) $(INSTALL) -m 644 $(docfiles) $(docsdir)
@@ -573,7 +594,7 @@ install-src:
 #
 # Generate tags file
 #
-tags: $(tags)
+ctags: $(tags)
 $(tags):
 	@($(CTAGS) --version | grep -q Exuberant) || (echo ERROR: Need exuberant-ctags to function!; exit 1)
 	@LC_ALL=C $(CTAGS) -f $(tags) --langdef=te --langmap=te:..te.if.spt \
@@ -583,7 +604,8 @@ $(tags):
 	 --regex-te='/^[ \t]*define\(`(\w+)/\1/d,define/' \
 	 --regex-te='/^[ \t]*interface\(`(\w+)/\1/i,interface/' \
 	 --regex-te='/^[ \t]*template\(`(\w+)/\1/i,template/' \
-	 --regex-te='/^[ \t]*bool[ \t]+(\w+)/\1/b,bool/' policy/modules/*/*.{if,te} policy/support/*.spt
+	 --regex-te='/^[ \t]*bool[ \t]+(\w+)/\1/b,bool/' \
+	 policy/modules/*/*.if policy/modules/*/*.te policy/support/*.spt
 
 ########################################
 #
@@ -595,7 +617,7 @@ checklabels:
 		echo "No filesystems with extended attributes found!" ;\
 		false ;\
 	fi
-	$(verbose) $(SETFILES) -v -n $(fcpath) $(filesystems)
+	$(verbose) $(SETFILES) -E -v -n $(fcpath) $(filesystems)
 
 restorelabels:
 	@echo "Restoring labels on filesystem types: $(fs_names)"
@@ -603,7 +625,7 @@ restorelabels:
 		echo "No filesystems with extended attributes found!" ;\
 		false ;\
 	fi
-	$(verbose) $(SETFILES) -v $(fcpath) $(filesystems)
+	$(verbose) $(SETFILES) -E -v $(fcpath) $(filesystems)
 
 relabel:
 	@echo "Relabeling filesystem types: $(fs_names)"
@@ -611,7 +633,7 @@ relabel:
 		echo "No filesystems with extended attributes found!" ;\
 		false ;\
 	fi
-	$(verbose) $(SETFILES) $(fcpath) $(filesystems)
+	$(verbose) $(SETFILES) -E $(fcpath) $(filesystems)
 
 resetlabels:
 	@echo "Resetting labels on filesystem types: $(fs_names)"
@@ -619,7 +641,7 @@ resetlabels:
 		echo "No filesystems with extended attributes found!" ;\
 		false ;\
 	fi
-	$(verbose) $(SETFILES) -F $(fcpath) $(filesystems)
+	$(verbose) $(SETFILES) -E -F $(fcpath) $(filesystems)
 
 ########################################
 #
@@ -627,8 +649,7 @@ resetlabels:
 #
 bare: clean
 	$(verbose) rm -f $(polxml)
-	$(verbose) rm -f $(layerxml)
-	$(verbose) rm -f $(modxml)
+	$(verbose) rm -fR $(doctmpdir)
 	$(verbose) rm -f $(tunxml)
 	$(verbose) rm -f $(boolxml)
 	$(verbose) rm -f $(mod_conf)
@@ -650,6 +671,4 @@ ifneq ($(generated_fc),)
 endif
 endif
 
-.PHONY: install-src install-appconfig install-headers generate xml conf html bare tags
-.SUFFIXES:
-.SUFFIXES: .c
+.PHONY: install-src install-appconfig install-headers build-interface-db generate xml conf html bare tags

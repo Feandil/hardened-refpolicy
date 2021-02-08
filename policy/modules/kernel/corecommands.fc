@@ -115,6 +115,10 @@ ifdef(`distro_debian',`
 /etc/mysql/debian-start		--	gen_context(system_u:object_r:bin_t,s0)
 ')
 
+ifdef(`distro_gentoo',`
+/etc/portage/bin(/.*)?			--	gen_context(system_u:object_r:bin_t,s0)
+')
+
 #
 # /opt
 #
@@ -157,6 +161,7 @@ ifdef(`distro_gentoo',`
 /usr/bin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/scponly		--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/scponlyc		--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/sh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/tcsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/yash			--	gen_context(system_u:object_r:shell_exec_t,s0)
@@ -168,6 +173,7 @@ ifdef(`distro_gentoo',`
 /usr/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/(.*/)?sbin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 
+/usr/lib/atril/atrild		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/at-spi2-core(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/avahi/avahi-daemon-check-dns\.sh	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/bluetooth/.*		--	gen_context(system_u:object_r:bin_t,s0)
@@ -179,7 +185,9 @@ ifdef(`distro_gentoo',`
 /usr/lib/fence(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/pgsql/test/regress/.*\.sh --	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/qt.*/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-/usr/lib/wicd/monitor\.py 	-- 	gen_context(system_u:object_r:bin_t, s0)
+/usr/lib/wicd/monitor\.py 	-- 	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/apt/apt-helper		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/apt/apt\.systemd\.daily	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/apt/methods.+		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ConsoleKit/.*	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ConsoleKit/run-seat\.d(/.*)?	gen_context(system_u:object_r:bin_t,s0)
@@ -231,12 +239,8 @@ ifdef(`distro_gentoo',`
 /usr/lib/ssh(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/sudo/sesh		--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/lib/systemd/systemd.*	--	gen_context(system_u:object_r:bin_t,s0)
-/usr/lib/systemd/system-environment-generators(/.*)? gen_context(system_u:object_r:bin_t,s0)
-/usr/lib/systemd/system-generators(/.*)? gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/systemd/system-shutdown(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/systemd/system-sleep(/.*)?	gen_context(system_u:object_r:bin_t,s0)
-/usr/lib/systemd/user-environment-generators(/.*)? gen_context(system_u:object_r:bin_t,s0)
-/usr/lib/systemd/user-generators(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/tumbler-1/tumblerd	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/udev/[^/]*			--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/udev/scsi_id		--	gen_context(system_u:object_r:bin_t,s0)
@@ -373,6 +377,7 @@ ifdef(`distro_debian',`
 
 ifdef(`distro_debian',`
 /usr/lib/gdm3/.*		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/openssh/agent-launch		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/udisks/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/bug/.*		--	gen_context(system_u:object_r:bin_t,s0)
 ')
@@ -390,6 +395,20 @@ ifdef(`distro_gentoo', `
 /usr/lib/rc/bin/.*			--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/rc/sbin/.*			--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/rc/sh/.*			--	gen_context(system_u:object_r:bin_t,s0)
+
+/usr/lib/portage/bin/ebuild		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/portage/bin/ebuild\.sh	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/resolvconf(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+
+/usr/share/mysql/scripts(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+/usr/share/shorewall/compiler\.pl	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/shorewall/configpath	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/shorewall/getparams		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/shorewall/wait4ifup		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/shorewall-perl(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/share/shorewall-shell(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/share/shorewall-lite(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/share/shorewall6-lite(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 ')
 
 ifdef(`distro_redhat', `

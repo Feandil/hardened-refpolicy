@@ -1,4 +1,4 @@
-policy_module(fail2ban, 1.7.2)
+policy_module(fail2ban, 1.10.0)
 
 ########################################
 #
@@ -18,7 +18,7 @@ type fail2ban_log_t;
 logging_log_file(fail2ban_log_t)
 
 type fail2ban_runtime_t alias fail2ban_var_run_t;
-files_pid_file(fail2ban_runtime_t)
+files_runtime_file(fail2ban_runtime_t)
 
 type fail2ban_var_lib_t;
 files_type(fail2ban_var_lib_t)
@@ -60,14 +60,14 @@ manage_files_pattern(fail2ban_t, fail2ban_var_lib_t, fail2ban_var_lib_t)
 manage_dirs_pattern(fail2ban_t, fail2ban_runtime_t, fail2ban_runtime_t)
 manage_sock_files_pattern(fail2ban_t, fail2ban_runtime_t, fail2ban_runtime_t)
 manage_files_pattern(fail2ban_t, fail2ban_runtime_t, fail2ban_runtime_t)
-files_pid_filetrans(fail2ban_t, fail2ban_runtime_t, file)
+files_runtime_filetrans(fail2ban_t, fail2ban_runtime_t, file)
 
 kernel_read_system_state(fail2ban_t)
+kernel_search_fs_sysctls(fail2ban_t)
 
 corecmd_exec_bin(fail2ban_t)
 corecmd_exec_shell(fail2ban_t)
 
-corenet_all_recvfrom_unlabeled(fail2ban_t)
 corenet_all_recvfrom_netlabel(fail2ban_t)
 corenet_tcp_sendrecv_generic_if(fail2ban_t)
 corenet_tcp_sendrecv_generic_node(fail2ban_t)
@@ -91,6 +91,7 @@ fs_getattr_all_fs(fail2ban_t)
 auth_use_nsswitch(fail2ban_t)
 
 logging_read_all_logs(fail2ban_t)
+logging_read_audit_log(fail2ban_t)
 logging_send_syslog_msg(fail2ban_t)
 
 miscfiles_read_localization(fail2ban_t)
@@ -122,6 +123,10 @@ optional_policy(`
 	shorewall_domtrans(fail2ban_t)
 ')
 
+optional_policy(`
+	systemd_read_journal_files(fail2ban_t)
+')
+
 ########################################
 #
 # Client Local policy
@@ -142,7 +147,7 @@ domain_use_interactive_fds(fail2ban_client_t)
 
 files_read_etc_files(fail2ban_client_t)
 files_read_usr_files(fail2ban_client_t)
-files_search_pids(fail2ban_client_t)
+files_search_runtime(fail2ban_client_t)
 
 logging_getattr_all_logs(fail2ban_client_t)
 logging_search_all_logs(fail2ban_client_t)
@@ -164,7 +169,7 @@ ifdef(`distro_gentoo',`
 	# Fix bug 534256 - Startup fails without these
 	allow fail2ban_client_t fail2ban_runtime_t:dir write;
 
-	init_daemon_pid_file(fail2ban_runtime_t, dir, "fail2ban")
+	init_daemon_runtime_file(fail2ban_runtime_t, dir, "fail2ban")
 	init_use_script_ptys(fail2ban_client_t)
 ')
 

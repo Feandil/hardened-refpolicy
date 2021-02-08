@@ -1,4 +1,4 @@
-policy_module(colord, 1.4.1)
+policy_module(colord, 1.7.0)
 
 ########################################
 #
@@ -31,6 +31,8 @@ allow colord_t self:netlink_kobject_uevent_socket create_socket_perms;
 allow colord_t self:tcp_socket { accept listen };
 allow colord_t self:shm create_shm_perms;
 
+can_exec(colord_t, colord_exec_t)
+
 manage_dirs_pattern(colord_t, colord_tmp_t, colord_tmp_t)
 manage_files_pattern(colord_t, colord_tmp_t, colord_tmp_t)
 files_tmp_filetrans(colord_t, colord_tmp_t, { file dir })
@@ -51,7 +53,6 @@ kernel_read_system_state(colord_t)
 kernel_request_load_module(colord_t)
 
 corenet_all_recvfrom_netlabel(colord_t)
-corenet_all_recvfrom_unlabeled(colord_t)
 corenet_tcp_sendrecv_generic_if(colord_t)
 corenet_udp_sendrecv_generic_if(colord_t)
 corenet_tcp_sendrecv_generic_node(colord_t)
@@ -67,8 +68,6 @@ corenet_tcp_connect_ipp_port(colord_t)
 corecmd_exec_bin(colord_t)
 corecmd_exec_shell(colord_t)
 
-dev_read_raw_memory(colord_t)
-dev_write_raw_memory(colord_t)
 dev_read_video_dev(colord_t)
 dev_write_video_dev(colord_t)
 dev_rw_printer(colord_t)
@@ -131,12 +130,19 @@ optional_policy(`
 ')
 
 optional_policy(`
+	snmp_read_snmp_var_lib_files(colord_t)
+')
+
+optional_policy(`
 	sysnet_exec_ifconfig(colord_t)
 ')
 
 optional_policy(`
-	udev_read_db(colord_t)
-	udev_read_pid_files(colord_t)
+	udev_read_runtime_files(colord_t)
+')
+
+optional_policy(`
+	unconfined_dbus_send(colord_t)
 ')
 
 optional_policy(`

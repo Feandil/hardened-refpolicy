@@ -153,7 +153,7 @@ interface(`storage_raw_read_fixed_disk_cond',`
 	')
 
 	typeattribute $1 fixed_disk_raw_read;
-	tunable_policy($2, `
+	tunable_policy(`$2', `
 		dev_list_all_dev_nodes($1)
 		allow $1 fixed_disk_device_t:blk_file read_blk_file_perms;
 		allow $1 fixed_disk_device_t:chr_file read_chr_file_perms;
@@ -442,7 +442,7 @@ interface(`storage_rw_fuse',`
 		type fuse_device_t;
 	')
 
-	allow $1 fuse_device_t:chr_file rw_file_perms;
+	allow $1 fuse_device_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -461,7 +461,7 @@ interface(`storage_dontaudit_rw_fuse',`
 		type fuse_device_t;
 	')
 
-	dontaudit $1 fuse_device_t:chr_file rw_file_perms;
+	dontaudit $1 fuse_device_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -557,7 +557,7 @@ interface(`storage_write_scsi_generic',`
 ########################################
 ## <summary>
 ##	Set attributes of the device nodes
-##	for the SCSI generic inerface.
+##	for the SCSI generic interface.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -590,7 +590,7 @@ interface(`storage_dontaudit_rw_scsi_generic',`
 		type scsi_generic_device_t;
 	')
 
-	dontaudit $1 scsi_generic_device_t:chr_file rw_file_perms;
+	dontaudit $1 scsi_generic_device_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################

@@ -1,4 +1,4 @@
-policy_module(pulseaudio, 1.12.3)
+policy_module(pulseaudio, 1.15.0)
 
 ########################################
 #
@@ -28,7 +28,7 @@ type pulseaudio_home_t;
 userdom_user_home_content(pulseaudio_home_t)
 
 type pulseaudio_runtime_t alias pulseaudio_var_run_t;
-files_pid_file(pulseaudio_runtime_t)
+files_runtime_file(pulseaudio_runtime_t)
 
 type pulseaudio_tmp_t;
 userdom_user_tmp_file(pulseaudio_tmp_t)
@@ -88,10 +88,12 @@ files_var_lib_filetrans(pulseaudio_t, pulseaudio_var_lib_t, { dir file })
 manage_dirs_pattern(pulseaudio_t, pulseaudio_runtime_t, pulseaudio_runtime_t)
 manage_files_pattern(pulseaudio_t, pulseaudio_runtime_t, pulseaudio_runtime_t)
 manage_sock_files_pattern(pulseaudio_t, pulseaudio_runtime_t, pulseaudio_runtime_t)
-files_pid_filetrans(pulseaudio_t, pulseaudio_runtime_t, { dir file })
+files_runtime_filetrans(pulseaudio_t, pulseaudio_runtime_t, { dir file })
 
 manage_dirs_pattern(pulseaudio_t, pulseaudio_xdg_config_t, pulseaudio_xdg_config_t)
 manage_files_pattern(pulseaudio_t, pulseaudio_xdg_config_t, pulseaudio_xdg_config_t)
+allow pulseaudio_t pulseaudio_xdg_config_t:file map;
+
 xdg_config_filetrans(pulseaudio_t, pulseaudio_xdg_config_t, dir, "pulse")
 
 allow pulseaudio_t pulseaudio_client:process signull;
@@ -105,7 +107,6 @@ kernel_read_kernel_sysctls(pulseaudio_t)
 
 corecmd_exec_bin(pulseaudio_t)
 
-corenet_all_recvfrom_unlabeled(pulseaudio_t)
 corenet_all_recvfrom_netlabel(pulseaudio_t)
 corenet_tcp_sendrecv_generic_if(pulseaudio_t)
 corenet_udp_sendrecv_generic_if(pulseaudio_t)
@@ -146,7 +147,7 @@ miscfiles_read_localization(pulseaudio_t)
 
 seutil_read_config(pulseaudio_t)
 
-userdom_read_user_tmpfs_files(pulseaudio_t)
+userdom_rw_user_tmpfs_files(pulseaudio_t)
 userdom_map_user_tmpfs_files(pulseaudio_t)
 userdom_delete_user_tmpfs_files(pulseaudio_t)
 userdom_search_user_home_dirs(pulseaudio_t)
@@ -187,14 +188,6 @@ optional_policy(`
 	dbus_connect_all_session_bus(pulseaudio_t)
 
 	optional_policy(`
-		consolekit_dbus_chat(pulseaudio_t)
-	')
-
-	optional_policy(`
-		hal_dbus_chat(pulseaudio_t)
-	')
-
-	optional_policy(`
 		policykit_dbus_chat(pulseaudio_t)
 	')
 
@@ -224,16 +217,22 @@ optional_policy(`
 ')
 
 optional_policy(`
-	udev_read_pid_files(pulseaudio_t)
+	# for /run/systemd/seats and /run/systemd/sessions
+	systemd_read_logind_sessions_files(pulseaudio_t)
+	# for /run/systemd/users/$PID
+	systemd_read_logind_runtime_files(pulseaudio_t)
+')
+
+optional_policy(`
+	udev_read_runtime_files(pulseaudio_t)
 	udev_read_state(pulseaudio_t)
-	udev_read_db(pulseaudio_t)
 ')
 
 optional_policy(`
 	xserver_stream_connect(pulseaudio_t)
 	xserver_manage_xdm_tmp_files(pulseaudio_t)
 	xserver_read_xdm_lib_files(pulseaudio_t)
-	xserver_read_xdm_pid(pulseaudio_t)
+	xserver_read_xdm_runtime_files(pulseaudio_t)
 	xserver_user_x_domain_template(pulseaudio, pulseaudio_t, pulseaudio_tmpfs_t)
 ')
 
@@ -259,7 +258,6 @@ xdg_config_filetrans(pulseaudio_client, pulseaudio_xdg_config_t, dir, "pulse")
 
 fs_getattr_tmpfs(pulseaudio_client)
 
-corenet_all_recvfrom_unlabeled(pulseaudio_client)
 corenet_all_recvfrom_netlabel(pulseaudio_client)
 corenet_tcp_sendrecv_generic_if(pulseaudio_client)
 corenet_tcp_sendrecv_generic_node(pulseaudio_client)

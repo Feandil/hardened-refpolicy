@@ -1,4 +1,4 @@
-policy_module(locallogin, 1.19.2)
+policy_module(locallogin, 1.22.0)
 
 ########################################
 #
@@ -59,6 +59,7 @@ kernel_read_system_state(local_login_t)
 kernel_read_kernel_sysctls(local_login_t)
 kernel_search_key(local_login_t)
 kernel_link_key(local_login_t)
+kernel_getattr_proc(local_login_t)
 
 corecmd_list_bin(local_login_t)
 # cjp: these are probably not needed:
@@ -119,7 +120,8 @@ term_setattr_unallocated_ttys(local_login_t)
 
 auth_rw_login_records(local_login_t)
 auth_rw_faillog(local_login_t)
-auth_manage_pam_pid(local_login_t)
+auth_manage_pam_runtime_dirs(local_login_t)
+auth_manage_pam_runtime_files(local_login_t)
 auth_manage_pam_console_data(local_login_t)
 auth_domtrans_pam_console(local_login_t)
 
@@ -139,9 +141,10 @@ ifdef(`init_systemd',`
 	auth_manage_faillog(local_login_t)
 
 	init_dbus_chat(local_login_t)
+	systemd_connect_machined(local_login_t)
 	systemd_dbus_chat_logind(local_login_t)
 	systemd_use_logind_fds(local_login_t)
-	systemd_manage_logind_pid_pipes(local_login_t)
+	systemd_manage_logind_runtime_pipes(local_login_t)
 ')
 
 ifdef(`distro_debian',`
@@ -175,10 +178,6 @@ optional_policy(`
 
 optional_policy(`
 	dbus_system_bus_client(local_login_t)
-
-	optional_policy(`
-		consolekit_dbus_chat(local_login_t)
-	')
 ')
 
 optional_policy(`

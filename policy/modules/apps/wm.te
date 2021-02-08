@@ -1,4 +1,4 @@
-policy_module(wm, 1.9.0)
+policy_module(wm, 1.11.0)
 
 ########################################
 #
@@ -38,6 +38,7 @@ files_tmp_filetrans(wm_domain, wm_tmp_t, { dir file lnk_file })
 
 manage_dirs_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
 manage_files_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
+mmap_read_files_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
 manage_lnk_files_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
 fs_tmpfs_filetrans(wm_domain, wm_tmpfs_t, { dir file lnk_file })
 
@@ -75,7 +76,7 @@ selinux_get_enforce_mode(wm_domain)
 
 seutil_read_config(wm_domain)
 
-udev_read_pid_files(wm_domain)
+udev_read_runtime_files(wm_domain)
 
 # the following is needed by gnome-shell
 userdom_exec_user_home_content_files(wm_domain)
@@ -101,10 +102,6 @@ optional_policy(`
 
 optional_policy(`
 	bluetooth_dbus_chat(wm_domain)
-')
-
-optional_policy(`
-	consolekit_dbus_chat(wm_domain)
 ')
 
 optional_policy(`

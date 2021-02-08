@@ -1,4 +1,4 @@
-policy_module(icecast, 1.4.2)
+policy_module(icecast, 1.6.0)
 
 ########################################
 #
@@ -25,7 +25,7 @@ type icecast_log_t;
 logging_log_file(icecast_log_t)
 
 type icecast_runtime_t alias icecast_var_run_t;
-files_pid_file(icecast_runtime_t)
+files_runtime_file(icecast_runtime_t)
 
 ########################################
 #
@@ -45,11 +45,10 @@ setattr_files_pattern(icecast_t, icecast_log_t, icecast_log_t)
 
 manage_dirs_pattern(icecast_t, icecast_runtime_t, icecast_runtime_t)
 manage_files_pattern(icecast_t, icecast_runtime_t, icecast_runtime_t)
-files_pid_filetrans(icecast_t, icecast_runtime_t, { file dir })
+files_runtime_filetrans(icecast_t, icecast_runtime_t, { file dir })
 
 kernel_read_system_state(icecast_t)
 
-corenet_all_recvfrom_unlabeled(icecast_t)
 corenet_all_recvfrom_netlabel(icecast_t)
 corenet_tcp_sendrecv_generic_if(icecast_t)
 corenet_tcp_sendrecv_generic_node(icecast_t)

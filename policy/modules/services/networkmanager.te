@@ -1,4 +1,4 @@
-policy_module(networkmanager, 1.24.2)
+policy_module(networkmanager, 1.27.0)
 
 ########################################
 #
@@ -22,7 +22,7 @@ type NetworkManager_log_t;
 logging_log_file(NetworkManager_log_t)
 
 type NetworkManager_runtime_t alias NetworkManager_var_run_t;
-files_pid_file(NetworkManager_runtime_t)
+files_runtime_file(NetworkManager_runtime_t)
 
 type NetworkManager_tmp_t;
 files_tmp_file(NetworkManager_tmp_t)
@@ -39,7 +39,7 @@ init_system_domain(wpa_cli_t, wpa_cli_exec_t)
 
 ifdef(`distro_gentoo',`
 	type wpa_cli_runtime_t alias wpa_cli_var_run_t;
-	files_pid_file(wpa_cli_runtime_t)
+	files_runtime_file(wpa_cli_runtime_t)
 ')
 
 ########################################
@@ -62,6 +62,7 @@ allow NetworkManager_t self:tcp_socket { accept listen };
 allow NetworkManager_t self:tun_socket { create_socket_perms relabelfrom relabelto };
 allow NetworkManager_t self:packet_socket create_socket_perms;
 allow NetworkManager_t self:socket create_socket_perms;
+allow NetworkManager_t self:alg_socket { accept bind create read setopt write };
 # ICMPv6 router solicitation/advertisement
 allow NetworkManager_t self:rawip_socket { create setopt getattr write read };
 
@@ -88,11 +89,12 @@ files_tmp_filetrans(NetworkManager_t, NetworkManager_tmp_t, { sock_file file })
 manage_dirs_pattern(NetworkManager_t, NetworkManager_var_lib_t, NetworkManager_var_lib_t)
 manage_files_pattern(NetworkManager_t, NetworkManager_var_lib_t, NetworkManager_var_lib_t)
 files_var_lib_filetrans(NetworkManager_t, NetworkManager_var_lib_t, dir)
+allow NetworkManager_t NetworkManager_var_lib_t:file map;
 
 manage_dirs_pattern(NetworkManager_t, NetworkManager_runtime_t, NetworkManager_runtime_t)
 manage_files_pattern(NetworkManager_t, NetworkManager_runtime_t, NetworkManager_runtime_t)
 manage_sock_files_pattern(NetworkManager_t, NetworkManager_runtime_t, NetworkManager_runtime_t)
-files_pid_filetrans(NetworkManager_t, NetworkManager_runtime_t, { dir file sock_file })
+files_runtime_filetrans(NetworkManager_t, NetworkManager_runtime_t, { dir file sock_file })
 
 can_exec(NetworkManager_t, { NetworkManager_exec_t NetworkManager_initrc_exec_t wpa_cli_exec_t NetworkManager_tmp_t })
 
@@ -105,7 +107,6 @@ kernel_request_load_module(NetworkManager_t)
 kernel_read_debugfs(NetworkManager_t)
 kernel_rw_net_sysctls(NetworkManager_t)
 
-corenet_all_recvfrom_unlabeled(NetworkManager_t)
 corenet_all_recvfrom_netlabel(NetworkManager_t)
 corenet_tcp_sendrecv_generic_if(NetworkManager_t)
 corenet_udp_sendrecv_generic_if(NetworkManager_t)
@@ -179,9 +180,9 @@ sysnet_domtrans_ifconfig(NetworkManager_t)
 sysnet_domtrans_dhcpc(NetworkManager_t)
 sysnet_signal_dhcpc(NetworkManager_t)
 sysnet_signull_dhcpc(NetworkManager_t)
-sysnet_read_dhcpc_pid(NetworkManager_t)
+sysnet_read_dhcpc_runtime_files(NetworkManager_t)
 sysnet_read_dhcp_config(NetworkManager_t)
-sysnet_delete_dhcpc_pid(NetworkManager_t)
+sysnet_delete_dhcpc_runtime_files(NetworkManager_t)
 sysnet_kill_dhcpc(NetworkManager_t)
 sysnet_read_dhcpc_state(NetworkManager_t)
 sysnet_delete_dhcpc_state(NetworkManager_t)
@@ -216,10 +217,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	consolekit_read_pid_files(NetworkManager_t)
-')
-
-optional_policy(`
 	consoletype_exec(NetworkManager_t)
 ')
 
@@ -233,11 +230,6 @@ optional_policy(`
 
 	optional_policy(`
 		avahi_dbus_chat(NetworkManager_t)
-	')
-
-	optional_policy(`
-		consolekit_dbus_chat(NetworkManager_t)
-		consolekit_use_inhibit_lock(NetworkManager_t)
 	')
 
 	optional_policy(`
@@ -258,8 +250,8 @@ optional_policy(`
 ')
 
 optional_policy(`
-	dnsmasq_read_pid_files(NetworkManager_t)
-	dnsmasq_delete_pid_files(NetworkManager_t)
+	dnsmasq_read_runtime_files(NetworkManager_t)
+	dnsmasq_delete_runtime_files(NetworkManager_t)
 	dnsmasq_domtrans(NetworkManager_t)
 	dnsmasq_initrc_domtrans(NetworkManager_t)
 	dnsmasq_kill(NetworkManager_t)
@@ -269,10 +261,6 @@ optional_policy(`
 
 optional_policy(`
 	gnome_stream_connect_all_gkeyringd(NetworkManager_t)
-')
-
-optional_policy(`
-	hal_write_log(NetworkManager_t)
 ')
 
 optional_policy(`
@@ -337,7 +325,7 @@ optional_policy(`
 optional_policy(`
 	ppp_initrc_domtrans(NetworkManager_t)
 	ppp_domtrans(NetworkManager_t)
-	ppp_manage_pid_files(NetworkManager_t)
+	ppp_manage_runtime_files(NetworkManager_t)
 	ppp_kill(NetworkManager_t)
 	ppp_signal(NetworkManager_t)
 	ppp_signull(NetworkManager_t)
@@ -355,15 +343,14 @@ optional_policy(`
 ')
 
 optional_policy(`
-	systemd_read_logind_pids(NetworkManager_t)
+	systemd_read_logind_runtime_files(NetworkManager_t)
 	systemd_read_logind_sessions_files(NetworkManager_t)
 	systemd_write_inherited_logind_inhibit_pipes(NetworkManager_t)
 ')
 
 optional_policy(`
 	udev_exec(NetworkManager_t)
-	udev_read_db(NetworkManager_t)
-	udev_read_pid_files(NetworkManager_t)
+	udev_read_runtime_files(NetworkManager_t)
 ')
 
 optional_policy(`
@@ -424,7 +411,7 @@ ifdef(`distro_gentoo',`
 	# wpa_cli_t policy
 	#
 	manage_files_pattern(wpa_cli_t, wpa_cli_runtime_t, wpa_cli_runtime_t)
-	files_pid_filetrans(wpa_cli_t, wpa_cli_runtime_t, file)
+	files_runtime_filetrans(wpa_cli_t, wpa_cli_runtime_t, file)
 
 	corecmd_exec_bin(wpa_cli_t)
 	corecmd_exec_shell(wpa_cli_t)
@@ -432,7 +419,7 @@ ifdef(`distro_gentoo',`
 	domain_use_interactive_fds(wpa_cli_t)
 
 	files_read_etc_files(wpa_cli_t)
-	files_search_pids(wpa_cli_t)
+	files_search_runtime(wpa_cli_t)
 
 	term_dontaudit_use_console(wpa_cli_t)
 

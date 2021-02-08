@@ -1,4 +1,4 @@
-policy_module(fstools, 1.23.1)
+policy_module(fstools, 1.26.0)
 
 ########################################
 #
@@ -17,7 +17,7 @@ type fsadm_tmp_t;
 files_tmp_file(fsadm_tmp_t)
 
 type fsadm_run_t;
-files_pid_file(fsadm_run_t)
+files_runtime_file(fsadm_run_t)
 
 type swapfile_t; # customizable
 files_type(swapfile_t)
@@ -50,7 +50,7 @@ files_tmp_filetrans(fsadm_t, fsadm_tmp_t, { file dir })
 
 allow fsadm_t fsadm_run_t:dir manage_dir_perms;
 allow fsadm_t fsadm_run_t:file manage_file_perms;
-files_pid_filetrans(fsadm_t, fsadm_run_t, dir)
+files_runtime_filetrans(fsadm_t, fsadm_run_t, dir)
 
 # log files
 allow fsadm_t fsadm_log_t:dir setattr;
@@ -115,6 +115,7 @@ files_manage_lost_found(fsadm_t)
 files_manage_etc_runtime_files(fsadm_t)
 files_etc_filetrans_etc_runtime(fsadm_t, file)
 
+fs_rw_all_image_files(fsadm_t)
 fs_search_auto_mountpoints(fsadm_t)
 fs_getattr_xattr_fs(fsadm_t)
 fs_rw_ramfs_pipes(fsadm_t)
@@ -158,8 +159,6 @@ miscfiles_read_localization(fsadm_t)
 mount_exec(fsadm_t)
 # for /run/mount/utab
 mount_getattr_runtime_files(fsadm_t)
-# losetup: bind mount_loopback_t files to loop devices
-mount_rw_loopback_files(fsadm_t)
 
 seutil_read_config(fsadm_t)
 
@@ -186,12 +185,8 @@ optional_policy(`
 ')
 
 optional_policy(`
-	devicekit_read_pid_files(fsadm_t)
+	devicekit_read_runtime_files(fsadm_t)
 	devicekit_append_inherited_log_files(fsadm_t)
-')
-
-optional_policy(`
-	hal_dontaudit_write_log(fsadm_t)
 ')
 
 optional_policy(`
@@ -208,16 +203,9 @@ optional_policy(`
 ')
 
 optional_policy(`
-	fs_dontaudit_write_ramfs_pipes(fsadm_t)
-	rhgb_stub(fsadm_t)
-')
-
-optional_policy(`
-	udev_read_db(fsadm_t)
-
 	# Xen causes losetup to run with a presumably accidentally inherited
 	# file handle for /run/xen-hotplug/block
-	udev_dontaudit_rw_pid_files(fsadm_t)
+	udev_dontaudit_rw_runtime_files(fsadm_t)
 ')
 
 optional_policy(`

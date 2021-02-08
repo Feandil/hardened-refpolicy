@@ -1,4 +1,4 @@
-policy_module(lvm, 1.23.2)
+policy_module(lvm, 1.26.0)
 
 ########################################
 #
@@ -13,7 +13,7 @@ type clvmd_initrc_exec_t;
 init_script_file(clvmd_initrc_exec_t)
 
 type clvmd_runtime_t alias clvmd_var_run_t;
-files_pid_file(clvmd_runtime_t)
+files_runtime_file(clvmd_runtime_t)
 
 type lvm_t;
 type lvm_exec_t;
@@ -34,13 +34,16 @@ type lvm_metadata_t;
 files_type(lvm_metadata_t)
 
 type lvm_runtime_t alias lvm_var_run_t;
-files_pid_file(lvm_runtime_t)
+files_runtime_file(lvm_runtime_t)
 
 type lvm_unit_t;
 init_unit_file(lvm_unit_t)
 
 type lvm_tmp_t;
 files_tmp_file(lvm_tmp_t)
+
+type lvm_tmpfs_t;
+files_tmpfs_file(lvm_tmpfs_t)
 
 type lvm_var_lib_t;
 files_type(lvm_var_lib_t)
@@ -61,7 +64,7 @@ allow clvmd_t self:tcp_socket create_stream_socket_perms;
 allow clvmd_t self:udp_socket create_socket_perms;
 
 manage_files_pattern(clvmd_t, clvmd_runtime_t, clvmd_runtime_t)
-files_pid_filetrans(clvmd_t, clvmd_runtime_t, file)
+files_runtime_filetrans(clvmd_t, clvmd_runtime_t, file)
 
 read_files_pattern(clvmd_t, lvm_metadata_t, lvm_metadata_t)
 
@@ -75,7 +78,6 @@ kernel_dontaudit_getattr_core_if(clvmd_t)
 corecmd_exec_shell(clvmd_t)
 corecmd_getattr_bin_files(clvmd_t)
 
-corenet_all_recvfrom_unlabeled(clvmd_t)
 corenet_all_recvfrom_netlabel(clvmd_t)
 corenet_tcp_sendrecv_generic_if(clvmd_t)
 corenet_udp_sendrecv_generic_if(clvmd_t)
@@ -154,10 +156,6 @@ optional_policy(`
 	ricci_dontaudit_use_modcluster_fds(clvmd_t)
 ')
 
-optional_policy(`
-	udev_read_db(clvmd_t)
-')
-
 ########################################
 #
 # LVM Local policy
@@ -178,6 +176,8 @@ allow lvm_t self:netlink_kobject_uevent_socket create_socket_perms;
 allow lvm_t self:sem create_sem_perms;
 # gt: the following is for sockets in the AF_ALG namespace (userspace interface to the kernel Crypto API)
 allow lvm_t self:socket create_stream_socket_perms;
+# gt: the following allows opening cryptsetup devices
+allow lvm_t self:key { search write };
 
 allow lvm_t self:unix_stream_socket { connectto create_stream_socket_perms };
 allow lvm_t clvmd_t:unix_stream_socket { connectto rw_socket_perms };
@@ -185,6 +185,10 @@ allow lvm_t clvmd_t:unix_stream_socket { connectto rw_socket_perms };
 manage_dirs_pattern(lvm_t, lvm_tmp_t, lvm_tmp_t)
 manage_files_pattern(lvm_t, lvm_tmp_t, lvm_tmp_t)
 files_tmp_filetrans(lvm_t, lvm_tmp_t, { file dir })
+
+manage_dirs_pattern(lvm_t, lvm_tmpfs_t, lvm_tmpfs_t)
+manage_files_pattern(lvm_t, lvm_tmpfs_t, lvm_tmpfs_t)
+fs_tmpfs_filetrans(lvm_t, lvm_tmpfs_t, { dir file })
 
 # /lib/lvm-<version> holds the actual LVM binaries (and symlinks)
 read_files_pattern(lvm_t, lvm_exec_t, lvm_exec_t)
@@ -206,12 +210,14 @@ files_var_lib_filetrans(lvm_t, lvm_var_lib_t, { dir file })
 manage_dirs_pattern(lvm_t, lvm_runtime_t, lvm_runtime_t)
 manage_files_pattern(lvm_t, lvm_runtime_t, lvm_runtime_t)
 manage_sock_files_pattern(lvm_t, lvm_runtime_t, lvm_runtime_t)
-files_pid_filetrans(lvm_t, lvm_runtime_t, { file sock_file })
+files_runtime_filetrans(lvm_t, lvm_runtime_t, { file sock_file })
 
 read_files_pattern(lvm_t, lvm_etc_t, lvm_etc_t)
 allow lvm_t lvm_etc_t:file map;
 
 read_lnk_files_pattern(lvm_t, lvm_etc_t, lvm_etc_t)
+# create /etc/lvm/archive
+allow lvm_t lvm_etc_t:dir create_dir_perms;
 # Map for vgchange on /etc/lvm/backup/ files
 allow lvm_t lvm_metadata_t:file map;
 # Write to /etc/lvm, /etc/lvmtab, /etc/lvmtab.d
@@ -278,6 +284,7 @@ fs_read_tmpfs_symlinks(lvm_t)
 fs_dontaudit_read_removable_files(lvm_t)
 fs_dontaudit_getattr_tmpfs_files(lvm_t)
 fs_rw_anon_inodefs_files(lvm_t)
+fs_mmap_rw_all_image_files(lvm_t)
 
 mls_file_read_all_levels(lvm_t)
 mls_file_write_to_clearance(lvm_t)
@@ -354,10 +361,6 @@ optional_policy(`
 
 optional_policy(`
 	dbus_system_bus_client(lvm_t)
-
-	optional_policy(`
-		hal_dbus_chat(lvm_t)
-	')
 ')
 
 optional_policy(`
@@ -369,8 +372,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	udev_read_db(lvm_t)
-	udev_read_pid_files(lvm_t)
+	udev_read_runtime_files(lvm_t)
 ')
 
 optional_policy(`
@@ -411,6 +413,6 @@ ifdef(`distro_gentoo',`
 	dev_filetrans(lvm_t, lvm_lock_t, dir, ".lvm")
 
 	optional_policy(`
-		udev_read_pid_files(lvm_t)
+		udev_read_runtime_files(lvm_t)
 	')
 ')

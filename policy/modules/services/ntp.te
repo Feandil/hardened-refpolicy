@@ -1,4 +1,4 @@
-policy_module(ntp, 1.20.3)
+policy_module(ntp, 1.23.0)
 
 ########################################
 #
@@ -12,6 +12,7 @@ files_config_file(ntp_conf_t)
 
 type ntp_drift_t;
 files_type(ntp_drift_t)
+init_mountpoint(ntp_drift_t)
 
 type ntpd_t;
 type ntpd_exec_t;
@@ -32,7 +33,8 @@ type ntpd_log_t;
 logging_log_file(ntpd_log_t)
 
 type ntpd_pid_t;
-files_pid_file(ntpd_pid_t)
+files_runtime_file(ntpd_pid_t)
+init_mountpoint(ntpd_pid_t)
 
 type ntpd_tmp_t;
 files_tmp_file(ntpd_tmp_t)
@@ -79,7 +81,7 @@ logging_log_filetrans(ntpd_t, ntpd_log_t, { file dir })
 
 manage_files_pattern(ntpd_t, ntpd_pid_t, ntpd_pid_t)
 manage_sock_files_pattern(ntpd_t, ntpd_pid_t, ntpd_pid_t)
-files_pid_filetrans(ntpd_t, ntpd_pid_t, { file sock_file })
+files_runtime_filetrans(ntpd_t, ntpd_pid_t, file)
 
 manage_dirs_pattern(ntpd_t, ntpd_tmp_t, ntpd_tmp_t)
 manage_files_pattern(ntpd_t, ntpd_tmp_t, ntpd_tmp_t)
@@ -96,7 +98,6 @@ kernel_read_system_state(ntpd_t)
 kernel_read_network_state(ntpd_t)
 kernel_request_load_module(ntpd_t)
 
-corenet_all_recvfrom_unlabeled(ntpd_t)
 corenet_all_recvfrom_netlabel(ntpd_t)
 corenet_udp_sendrecv_generic_if(ntpd_t)
 corenet_udp_sendrecv_generic_node(ntpd_t)
@@ -120,6 +121,8 @@ files_manage_etc_symlinks(ntpd_t)
 files_read_etc_runtime_files(ntpd_t)
 files_read_usr_files(ntpd_t)
 files_list_var_lib(ntpd_t)
+files_watch_root_dirs(ntpd_t)
+files_watch_runtime_dirs(ntpd_t)
 
 fs_getattr_all_fs(ntpd_t)
 fs_search_auto_mountpoints(ntpd_t)
@@ -138,10 +141,14 @@ userdom_dontaudit_use_unpriv_user_fds(ntpd_t)
 userdom_list_user_home_dirs(ntpd_t)
 
 ifdef(`init_systemd',`
+	allow ntpd_t self:process setfscreate;
+
 	allow ntpd_t ntpd_unit_t:file read_file_perms;
 
 	dbus_system_bus_client(ntpd_t)
 	dbus_connect_system_bus(ntpd_t)
+	dbus_watch_system_bus_runtime_dirs(ntpd_t)
+	dbus_watch_system_bus_runtime_named_sockets(ntpd_t)
 	init_dbus_chat(ntpd_t)
 	init_get_system_status(ntpd_t)
 	init_list_unit_dirs(ntpd_t)
@@ -158,6 +165,8 @@ ifdef(`init_systemd',`
 	systemd_list_networkd_runtime(ntpd_t)
 	# for /run/systemd/netif/state
 	systemd_read_networkd_runtime(ntpd_t)
+
+	systemd_watch_networkd_runtime_dirs(ntpd_t)
 
 	optional_policy(`
 		chronyd_enabledisable(ntpd_t)
@@ -188,10 +197,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	hal_dontaudit_write_log(ntpd_t)
-')
-
-optional_policy(`
 	logrotate_exec(ntpd_t)
 ')
 
@@ -199,6 +204,3 @@ optional_policy(`
 	seutil_sigchld_newrole(ntpd_t)
 ')
 
-optional_policy(`
-	udev_read_db(ntpd_t)
-')

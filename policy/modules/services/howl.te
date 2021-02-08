@@ -1,4 +1,4 @@
-policy_module(howl, 1.12.2)
+policy_module(howl, 1.15.0)
 
 ########################################
 #
@@ -14,7 +14,7 @@ type howl_initrc_exec_t;
 init_script_file(howl_initrc_exec_t)
 
 type howl_runtime_t alias howl_var_run_t;
-files_pid_file(howl_runtime_t)
+files_runtime_file(howl_runtime_t)
 
 ########################################
 #
@@ -28,7 +28,7 @@ allow howl_t self:fifo_file rw_fifo_file_perms;
 allow howl_t self:tcp_socket { accept listen };
 
 manage_files_pattern(howl_t, howl_runtime_t, howl_runtime_t)
-files_pid_filetrans(howl_t, howl_runtime_t, file)
+files_runtime_filetrans(howl_t, howl_runtime_t, file)
 
 kernel_read_network_state(howl_t)
 kernel_read_kernel_sysctls(howl_t)
@@ -36,7 +36,6 @@ kernel_request_load_module(howl_t)
 kernel_list_proc(howl_t)
 kernel_read_proc_symlinks(howl_t)
 
-corenet_all_recvfrom_unlabeled(howl_t)
 corenet_all_recvfrom_netlabel(howl_t)
 corenet_tcp_sendrecv_generic_if(howl_t)
 corenet_udp_sendrecv_generic_if(howl_t)
@@ -72,6 +71,3 @@ optional_policy(`
 	seutil_sigchld_newrole(howl_t)
 ')
 
-optional_policy(`
-	udev_read_db(howl_t)
-')

@@ -331,7 +331,7 @@ interface(`postgresql_manage_db',`
 
 	allow $1 postgresql_db_t:dir rw_dir_perms;
 	allow $1 postgresql_db_t:file rw_file_perms;
-	allow $1 postgresql_db_t:lnk_file { getattr read };
+	allow $1 postgresql_db_t:lnk_file read_lnk_file_perms;
 ')
 
 #######################################
@@ -349,7 +349,7 @@ interface(`postgresql_exec',`
 		type postgresql_exec_t;
 	')
 
-	can_exec($1, postgresql_exec_t);
+	can_exec($1, postgresql_exec_t)
 ')
 
 ########################################
@@ -447,7 +447,7 @@ interface(`postgresql_stream_connect',`
 
 	stream_connect_pattern($1, { postgresql_runtime_t postgresql_tmp_t }, { postgresql_runtime_t postgresql_tmp_t }, postgresql_t)
 
-	files_search_pids($1)
+	files_search_runtime($1)
 	files_search_tmp($1)
 ')
 

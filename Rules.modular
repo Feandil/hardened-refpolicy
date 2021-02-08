@@ -16,7 +16,7 @@ users_extra := $(tmpdir)/users_extra
 
 base_sections := $(tmpdir)/pre_te_files.conf $(tmpdir)/all_attrs_types.conf $(tmpdir)/global_bools.conf $(tmpdir)/only_te_rules.conf $(tmpdir)/all_post.conf
 
-base_pre_te_files := $(secclass) $(isids) $(avs) $(ctx_defaults) $(m4support) $(poldir)/mls $(poldir)/mcs $(policycaps)
+base_pre_te_files := $(secclass) $(isids) $(avs) $(m4support) $(ctx_defaults) $(poldir)/mls $(poldir)/mcs $(policycaps)
 base_te_files := $(base_mods)
 base_post_te_files := $(user_files) $(poldir)/constraints
 base_fc_files := $(base_mods:.te=.fc)
@@ -128,9 +128,11 @@ $(tmpdir)/pre_te_files.conf: $(base_pre_te_files)
 $(tmpdir)/generated_definitions.conf:
 	@test -d $(tmpdir) || mkdir -p $(tmpdir)
 # define all available object classes
-	$(verbose) $(genperm) $(avs) $(secclass) > $@
+	@cat $(m4divert) > $@
+	$(verbose) $(genperm) $(avs) $(secclass) >> $@
 	$(verbose) $(call create-base-per-role-tmpl,$(patsubst %.te,%,$(base_mods)),$@)
 	$(verbose) test -f $(booleans) && $(setbools) $(booleans) >> $@ || true
+	@cat $(m4undivert) >> $@
 
 $(tmpdir)/global_bools.conf: M4PARAM += -D self_contained_policy
 $(tmpdir)/global_bools.conf: $(m4support) $(tmpdir)/generated_definitions.conf $(globalbool) $(globaltun)
@@ -138,10 +140,10 @@ $(tmpdir)/global_bools.conf: $(m4support) $(tmpdir)/generated_definitions.conf $
 
 $(tmpdir)/all_interfaces.conf: $(m4support) $(all_interfaces) $(m4iferror)
 	@test -d $(tmpdir) || mkdir -p $(tmpdir)
-	@echo "divert(-1)" > $@
-	$(verbose) $(M4) $^ >> $(tmpdir)/$(@F).tmp
+	@cat $(m4divert) > $@
+	$(verbose) $(M4) $^ > $(tmpdir)/$(@F).tmp
 	$(verbose) $(SED) -e s/dollarsstar/\$$\*/g $(tmpdir)/$(@F).tmp >> $@
-	@echo "divert" >> $@
+	@cat $(m4undivert) >> $@
 
 $(tmpdir)/all_te_files.conf: M4PARAM += -D self_contained_policy
 $(tmpdir)/all_te_files.conf: $(m4support) $(tmpdir)/generated_definitions.conf $(tmpdir)/all_interfaces.conf $(base_te_files) $(m4terminate)
@@ -152,9 +154,10 @@ endif
 	$(verbose) $(M4) $(M4PARAM) -s $^ > $@
 
 $(tmpdir)/post_te_files.conf: M4PARAM += -D self_contained_policy
-$(tmpdir)/post_te_files.conf: $(m4support) $(tmpdir)/generated_definitions.conf $(base_post_te_files)
+$(tmpdir)/post_te_files.conf: $(m4support) $(tmpdir)/generated_definitions.conf $(base_post_te_files) $(tmpdir)/all_te_files.conf
 	@test -d $(tmpdir) || mkdir -p $(tmpdir)
-	$(verbose) $(M4) $(M4PARAM) $^ > $@
+	$(verbose) $(GREP) '^[[:blank:]]*user ' $(tmpdir)/all_te_files.conf > $@ || true
+	$(verbose) $(M4) $(M4PARAM) $(m4support) $(tmpdir)/generated_definitions.conf $(base_post_te_files) >> $@
 
 # extract attributes and put them first. extract post te stuff
 # like genfscon and put last.
@@ -220,7 +223,7 @@ clean:
 	$(verbose) rm -f $(base_conf)
 	$(verbose) rm -f $(base_fc)
 	$(verbose) rm -f $(builddir)*.pp
-	$(verbose) rm -f $(net_contexts)
+	$(verbose) rm -f $(net_contexts) $(net_contexts_nft)
 	$(verbose) rm -fR $(tmpdir)
 
 .PHONY: default all policy base modules install load clean validate

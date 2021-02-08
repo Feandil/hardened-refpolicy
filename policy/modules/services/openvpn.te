@@ -1,4 +1,4 @@
-policy_module(openvpn, 1.17.2)
+policy_module(openvpn, 1.20.0)
 
 ########################################
 #
@@ -38,7 +38,7 @@ type openvpn_initrc_exec_t;
 init_script_file(openvpn_initrc_exec_t)
 
 type openvpn_runtime_t alias openvpn_var_run_t;
-files_pid_file(openvpn_runtime_t)
+files_runtime_file(openvpn_runtime_t)
 
 type openvpn_status_t;
 logging_log_file(openvpn_status_t)
@@ -84,7 +84,8 @@ logging_log_filetrans(openvpn_t, openvpn_var_log_t, file)
 
 manage_dirs_pattern(openvpn_t, openvpn_runtime_t, openvpn_runtime_t)
 manage_files_pattern(openvpn_t, openvpn_runtime_t, openvpn_runtime_t)
-files_pid_filetrans(openvpn_t, openvpn_runtime_t, { file dir })
+manage_sock_files_pattern(openvpn_t, openvpn_runtime_t, openvpn_runtime_t)
+files_runtime_filetrans(openvpn_t, openvpn_runtime_t, { sock_file file dir })
 
 can_exec(openvpn_t, openvpn_etc_t)
 
@@ -97,7 +98,6 @@ kernel_request_load_module(openvpn_t)
 corecmd_exec_bin(openvpn_t)
 corecmd_exec_shell(openvpn_t)
 
-corenet_all_recvfrom_unlabeled(openvpn_t)
 corenet_all_recvfrom_netlabel(openvpn_t)
 corenet_tcp_sendrecv_generic_if(openvpn_t)
 corenet_udp_sendrecv_generic_if(openvpn_t)
@@ -131,6 +131,8 @@ fs_search_auto_mountpoints(openvpn_t)
 
 auth_use_pam(openvpn_t)
 
+init_read_state(openvpn_t)
+
 miscfiles_read_localization(openvpn_t)
 miscfiles_read_all_certs(openvpn_t)
 
@@ -163,6 +165,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	dpkg_script_rw_inherited_pipes(openvpn_t)
+')
+
+optional_policy(`
 	dbus_system_bus_client(openvpn_t)
 	dbus_connect_system_bus(openvpn_t)
 
@@ -173,4 +179,8 @@ optional_policy(`
 
 optional_policy(`
 	systemd_use_passwd_agent(openvpn_t)
+')
+
+optional_policy(`
+	unconfined_use_fds(openvpn_t)
 ')

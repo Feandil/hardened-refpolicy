@@ -1,4 +1,4 @@
-policy_module(nsd, 1.12.2)
+policy_module(nsd, 1.15.0)
 
 ########################################
 #
@@ -24,7 +24,7 @@ type nsd_db_t;
 files_type(nsd_db_t)
 
 type nsd_runtime_t alias nsd_var_run_t;
-files_pid_file(nsd_runtime_t)
+files_runtime_file(nsd_runtime_t)
 
 type nsd_zone_t;
 files_type(nsd_zone_t)
@@ -48,7 +48,7 @@ allow nsd_t nsd_db_t:file { manage_file_perms map };
 filetrans_pattern(nsd_t, nsd_zone_t, nsd_db_t, file)
 
 manage_files_pattern(nsd_t, nsd_runtime_t, nsd_runtime_t)
-files_pid_filetrans(nsd_t, nsd_runtime_t, file)
+files_runtime_filetrans(nsd_t, nsd_runtime_t, file)
 
 allow nsd_t nsd_zone_t:file map;
 manage_dirs_pattern(nsd_t, nsd_zone_t, nsd_zone_t)
@@ -63,7 +63,6 @@ kernel_read_kernel_sysctls(nsd_t)
 
 corecmd_exec_bin(nsd_t)
 
-corenet_all_recvfrom_unlabeled(nsd_t)
 corenet_all_recvfrom_netlabel(nsd_t)
 corenet_tcp_sendrecv_generic_if(nsd_t)
 corenet_udp_sendrecv_generic_if(nsd_t)
@@ -98,10 +97,6 @@ optional_policy(`
 	seutil_sigchld_newrole(nsd_t)
 ')
 
-optional_policy(`
-	udev_read_db(nsd_t)
-')
-
 ########################################
 #
 # Cron local policy
@@ -132,7 +127,6 @@ kernel_read_system_state(nsd_crond_t)
 corecmd_exec_bin(nsd_crond_t)
 corecmd_exec_shell(nsd_crond_t)
 
-corenet_all_recvfrom_unlabeled(nsd_crond_t)
 corenet_all_recvfrom_netlabel(nsd_crond_t)
 corenet_tcp_sendrecv_generic_if(nsd_crond_t)
 corenet_tcp_sendrecv_generic_node(nsd_crond_t)

@@ -1,4 +1,4 @@
-policy_module(xserver, 3.18.4)
+policy_module(xserver, 3.21.0)
 
 gen_require(`
 	class x_drawable all_x_drawable_perms;
@@ -54,6 +54,13 @@ gen_tunable(xserver_gnome_xdm, false)
 ## </p>
 ## </desc>
 gen_tunable(xserver_object_manager, false)
+
+## <desc>
+## <p>
+## Allow DRI access
+## </p>
+## </desc>
+gen_tunable(xserver_allow_dri, false)
 
 attribute x_domain;
 
@@ -155,7 +162,7 @@ type xdm_var_lib_t;
 files_type(xdm_var_lib_t)
 
 type xdm_var_run_t;
-files_pid_file(xdm_var_run_t)
+files_runtime_file(xdm_var_run_t)
 
 # type for /run/user/%{USERID}/*
 type xdm_runtime_t;
@@ -259,7 +266,7 @@ dev_read_sysfs(xauth_t)
 domain_use_interactive_fds(xauth_t)
 
 files_read_etc_files(xauth_t)
-files_search_pids(xauth_t)
+files_search_runtime(xauth_t)
 
 fs_getattr_xattr_fs(xauth_t)
 fs_search_auto_mountpoints(xauth_t)
@@ -343,7 +350,7 @@ files_var_lib_filetrans(xdm_t, xdm_var_lib_t, file)
 manage_dirs_pattern(xdm_t, xdm_var_run_t, xdm_var_run_t)
 manage_files_pattern(xdm_t, xdm_var_run_t, xdm_var_run_t)
 manage_fifo_files_pattern(xdm_t, xdm_var_run_t, xdm_var_run_t)
-files_pid_filetrans(xdm_t, xdm_var_run_t, { dir file fifo_file })
+files_runtime_filetrans(xdm_t, xdm_var_run_t, { dir file fifo_file })
 
 allow xdm_t xserver_t:process signal;
 allow xdm_t xserver_t:unix_stream_socket connectto;
@@ -380,7 +387,6 @@ kernel_view_key(xdm_t)
 corecmd_exec_shell(xdm_t)
 corecmd_exec_bin(xdm_t)
 
-corenet_all_recvfrom_unlabeled(xdm_t)
 corenet_all_recvfrom_netlabel(xdm_t)
 corenet_tcp_sendrecv_generic_if(xdm_t)
 corenet_udp_sendrecv_generic_if(xdm_t)
@@ -448,7 +454,8 @@ term_use_unallocated_ttys(xdm_t)
 term_setattr_unallocated_ttys(xdm_t)
 
 auth_domtrans_pam_console(xdm_t)
-auth_manage_pam_pid(xdm_t)
+auth_manage_pam_runtime_dirs(xdm_t)
+auth_manage_pam_runtime_files(xdm_t)
 auth_manage_pam_console_data(xdm_t)
 auth_write_login_records(xdm_t)
 
@@ -534,15 +541,11 @@ optional_policy(`
 	')
 
 	optional_policy(`
-		consolekit_dbus_chat(xdm_t)
-	')
-
-	optional_policy(`
 		devicekit_dbus_chat_power(xdm_t)
 	')
 
 	optional_policy(`
-		systemd_read_logind_pids(xdm_t)
+		systemd_read_logind_runtime_files(xdm_t)
 	')
 ')
 
@@ -588,10 +591,6 @@ optional_policy(`
 
 optional_policy(`
 	shutdown_domtrans(xdm_t)
-')
-
-optional_policy(`
-	udev_read_db(xdm_t)
 ')
 
 optional_policy(`
@@ -697,7 +696,6 @@ kernel_write_proc_files(xserver_t)
 corecmd_exec_bin(xserver_t)
 corecmd_exec_shell(xserver_t)
 
-corenet_all_recvfrom_unlabeled(xserver_t)
 corenet_all_recvfrom_netlabel(xserver_t)
 corenet_tcp_sendrecv_generic_if(xserver_t)
 corenet_udp_sendrecv_generic_if(xserver_t)
@@ -719,9 +717,6 @@ dev_manage_dri_dev(xserver_t)
 dev_filetrans_dri(xserver_t)
 dev_create_generic_dirs(xserver_t)
 dev_setattr_generic_dirs(xserver_t)
-# raw memory access is needed if not using the frame buffer
-dev_read_raw_memory(xserver_t)
-dev_wx_raw_memory(xserver_t)
 # for other device nodes such as the NVidia binary-only driver
 dev_rw_xserver_misc(xserver_t)
 dev_map_xserver_misc(xserver_t)
@@ -735,10 +730,8 @@ files_read_etc_files(xserver_t)
 files_read_etc_runtime_files(xserver_t)
 files_read_usr_files(xserver_t)
 
-# brought on by rhgb
-files_search_mnt(xserver_t)
 # for nscd
-files_dontaudit_search_pids(xserver_t)
+files_dontaudit_search_runtime(xserver_t)
 
 fs_getattr_xattr_fs(xserver_t)
 fs_search_nfs(xserver_t)
@@ -791,9 +784,9 @@ tunable_policy(`!xserver_object_manager',`
 	# should be xserver_unconfined(xserver_t),
 	# but typeattribute doesnt work in conditionals
 
-	allow xserver_t xserver_t:x_server { getattr setattr record debug grab manage };
+	allow xserver_t self:x_server { getattr setattr record debug grab manage };
 	allow xserver_t { x_domain root_xdrawable_t }:x_drawable { create destroy read write blend getattr setattr list_child add_child remove_child list_property get_property set_property manage override show hide send receive };
-	allow xserver_t xserver_t:x_screen { getattr setattr hide_cursor show_cursor saver_getattr saver_setattr saver_hide saver_show };
+	allow xserver_t self:x_screen { getattr setattr hide_cursor show_cursor saver_getattr saver_setattr saver_hide saver_show };
 	allow xserver_t x_domain:x_gc { create destroy getattr setattr use };
 	allow xserver_t { x_domain root_xcolormap_t }:x_colormap { create destroy read write getattr add_color remove_color install uninstall use };
 	allow xserver_t xproperty_type:x_property { create destroy read write append getattr setattr };
@@ -817,13 +810,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	rhgb_getpgid(xserver_t)
-	rhgb_signal(xserver_t)
-')
-
-optional_policy(`
-	udev_read_db(xserver_t)
-	udev_read_pid_files(xserver_t)
+	udev_read_runtime_files(xserver_t)
 ')
 
 optional_policy(`
@@ -851,7 +838,7 @@ allow xserver_t xdm_t:shm rw_shm_perms;
 
 # NB we do NOT allow xserver_t xdm_var_lib_t:dir, only access to an open
 # handle of a file inside the dir!!!
-allow xserver_t xdm_var_lib_t:file { getattr read };
+allow xserver_t xdm_var_lib_t:file read_inherited_file_perms;
 dontaudit xserver_t xdm_var_lib_t:dir search;
 
 read_files_pattern(xserver_t, xdm_var_run_t, xdm_var_run_t)
@@ -883,16 +870,10 @@ tunable_policy(`use_samba_home_dirs',`
 
 optional_policy(`
 	dbus_system_bus_client(xserver_t)
-	hal_dbus_chat(xserver_t)
 ')
 
 optional_policy(`
-	resmgr_stream_connect(xdm_t)
-')
-
-optional_policy(`
-	rhgb_rw_shm(xserver_t)
-	rhgb_rw_tmpfs_files(xserver_t)
+	resmgr_stream_connect(xserver_t)
 ')
 
 ########################################

@@ -8,9 +8,11 @@
 /doc/global_tunables.xml
 /doc/html/
 /doc/policy.xml
+/doc/tmp/
 /file_contexts
 /homedir_template
 /net_contexts
+/net_contexts.nft
 /policy.conf
 /policy.[0-9]*
 /policy/booleans.conf
@@ -20,3 +22,8 @@
 /tmp/
 
 .vagrant/
+
+# monolithic generated files
+/file_contexts
+/homedir_template
+/policy.conf

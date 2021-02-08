@@ -1,4 +1,4 @@
-policy_module(application, 1.2.0)
+policy_module(application, 1.3.0)
 
 # Attribute of user applications
 attribute application_domain_type;
@@ -13,6 +13,10 @@ optional_policy(`
 optional_policy(`
 	ssh_sigchld(application_domain_type)
 	ssh_rw_stream_sockets(application_domain_type)
+
+	ifndef(`distro_redhat', `
+		ssh_rw_pipes(application_domain_type)
+	')
 ')
 
 optional_policy(`

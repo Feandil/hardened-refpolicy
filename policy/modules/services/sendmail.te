@@ -1,4 +1,4 @@
-policy_module(sendmail, 1.17.2)
+policy_module(sendmail, 1.20.0)
 
 ########################################
 #
@@ -20,7 +20,7 @@ type sendmail_log_t;
 logging_log_file(sendmail_log_t)
 
 type sendmail_runtime_t alias sendmail_var_run_t;
-files_pid_file(sendmail_runtime_t)
+files_runtime_file(sendmail_runtime_t)
 
 type sendmail_tmp_t;
 files_tmp_file(sendmail_tmp_t)
@@ -60,13 +60,12 @@ manage_files_pattern(sendmail_t, sendmail_tmp_t, sendmail_tmp_t)
 files_tmp_filetrans(sendmail_t, sendmail_tmp_t, { file dir })
 
 allow sendmail_t sendmail_runtime_t:file manage_file_perms;
-files_pid_filetrans(sendmail_t, sendmail_runtime_t, file)
+files_runtime_filetrans(sendmail_t, sendmail_runtime_t, file)
 
 kernel_read_network_state(sendmail_t)
 kernel_read_kernel_sysctls(sendmail_t)
 kernel_read_system_state(sendmail_t)
 
-corenet_all_recvfrom_unlabeled(sendmail_t)
 corenet_all_recvfrom_netlabel(sendmail_t)
 corenet_tcp_sendrecv_generic_if(sendmail_t)
 corenet_tcp_sendrecv_generic_node(sendmail_t)
@@ -119,6 +118,7 @@ userdom_dontaudit_use_unpriv_user_fds(sendmail_t)
 
 mta_etc_filetrans_aliases(sendmail_t, file, "aliases")
 mta_etc_filetrans_aliases(sendmail_t, file, "aliases.db")
+mta_etc_filetrans_aliases(sendmail_t, file, "__db.aliases.db")
 mta_etc_filetrans_aliases(sendmail_t, file, "aliasesdb-stamp")
 mta_manage_aliases(sendmail_t)
 mta_manage_queue(sendmail_t)
@@ -194,10 +194,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	udev_read_db(sendmail_t)
-')
-
-optional_policy(`
 	uucp_domtrans_uux(sendmail_t)
 ')
 
@@ -209,6 +205,7 @@ optional_policy(`
 optional_policy(`
 	mta_etc_filetrans_aliases(unconfined_sendmail_t, file, "aliases")
 	mta_etc_filetrans_aliases(unconfined_sendmail_t, file, "aliases.db")
+	mta_etc_filetrans_aliases(unconfined_sendmail_t, file, "__db.aliases.db")
 	mta_etc_filetrans_aliases(unconfined_sendmail_t, file, "aliasesdb-stamp")
 	unconfined_domain(unconfined_sendmail_t)
 ')

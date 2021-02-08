@@ -45,6 +45,27 @@ interface(`fs_noxattr_type',`
 
 ########################################
 ## <summary>
+##	Transform specified type into a filesystem
+##	image file type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_image_file',`
+	gen_require(`
+		attribute filesystem_image_file_type;
+	')
+
+	files_type($1)
+
+	typeattribute $1 filesystem_image_file_type;
+')
+
+########################################
+## <summary>
 ##	Associate the specified file type to persistent
 ##	filesystems with extended attributes.  This
 ##	allows a file of this type to be created on
@@ -1206,6 +1227,120 @@ interface(`fs_read_cifs_files',`
 
 ########################################
 ## <summary>
+##	Read all inherited filesystem image files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`fs_read_all_inherited_image_files',`
+	gen_require(`
+		attribute filesystem_image_file_type;
+	')
+
+	allow $1 filesystem_image_file_type:file read_inherited_file_perms;
+')
+
+########################################
+## <summary>
+##	Read all filesystem image files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`fs_read_all_image_files',`
+	gen_require(`
+		attribute filesystem_image_file_type;
+	')
+
+	read_files_pattern($1, filesystem_image_file_type, filesystem_image_file_type)
+')
+
+########################################
+## <summary>
+##	Mmap-read all filesystem image files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`fs_mmap_read_all_image_files',`
+	gen_require(`
+		attribute filesystem_image_file_type;
+	')
+
+	mmap_read_files_pattern($1, filesystem_image_file_type, filesystem_image_file_type)
+')
+
+########################################
+## <summary>
+##	Read and write all filesystem image files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`fs_rw_all_image_files',`
+	gen_require(`
+		attribute filesystem_image_file_type;
+	')
+
+	rw_files_pattern($1, filesystem_image_file_type, filesystem_image_file_type)
+')
+
+########################################
+## <summary>
+##	Mmap-Read-write all filesystem image files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`fs_mmap_rw_all_image_files',`
+	gen_require(`
+		attribute filesystem_image_file_type;
+	')
+
+	mmap_rw_files_pattern($1, filesystem_image_file_type, filesystem_image_file_type)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to write all filesystem image files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`fs_dontaudit_write_all_image_files',`
+	gen_require(`
+		attribute filesystem_image_file_type;
+	')
+
+	dontaudit $1 filesystem_image_file_type:file write;
+')
+
+########################################
+## <summary>
 ##	Get the attributes of filesystems that
 ##	do not have extended attribute support.
 ## </summary>
@@ -1394,7 +1529,7 @@ interface(`fs_manage_noxattr_fs_symlinks',`
 
 ########################################
 ## <summary>
-##	Relabel all objets from filesystems that
+##	Relabel all objects from filesystems that
 ##	do not support extended attributes.
 ## </summary>
 ## <param name="domain">
@@ -1984,6 +2119,25 @@ interface(`fs_read_dos_files',`
 
 ########################################
 ## <summary>
+##      Read and map files on a DOS filesystem.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_mmap_read_dos_files',`
+        gen_require(`
+                type dosfs_t;
+        ')
+
+	read_files_pattern($1, dosfs_t, dosfs_t)
+	allow $1 dosfs_t:file map;
+')
+
+########################################
+## <summary>
 ##	Create, read, write, and delete files
 ##	on a DOS filesystem.
 ## </summary>
@@ -2037,6 +2191,26 @@ interface(`fs_read_efivarfs_files',`
 	')
 
 	read_files_pattern($1, efivarfs_t, efivarfs_t)
+')
+
+########################################
+## <summary>
+##	Create, read, write, and delete files
+##	on a efivarfs filesystem.
+##      - contains Linux Kernel configuration options for UEFI systems
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_manage_efivarfs_files',`
+	gen_require(`
+		type efivarfs_t;
+	')
+
+	manage_files_pattern($1, efivarfs_t, efivarfs_t)
 ')
 
 ########################################
@@ -3622,6 +3796,24 @@ interface(`fs_read_nsfs_files',`
 
 ########################################
 ## <summary>
+##	Unmount an nsfs filesystem.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_unmount_nsfs',`
+	gen_require(`
+		type nsfs_t;
+	')
+
+	allow $1 nsfs_t:filesystem unmount;
+')
+
+########################################
+## <summary>
 ##	Get the attributes of a pstore filesystem.
 ## </summary>
 ## <param name="domain">
@@ -3674,6 +3866,64 @@ interface(`fs_relabel_pstore_dirs',`
 	')
 
 	relabel_dirs_pattern($1, pstore_t, pstore_t)
+')
+
+########################################
+## <summary>
+##	List the directories
+##	of a pstore filesystem.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_list_pstore_dirs',`
+	gen_require(`
+		type pstore_t;
+	')
+
+	allow $1 pstore_t:dir list_dir_perms;
+	dev_search_sysfs($1)
+')
+
+########################################
+## <summary>
+##	Read pstore_t files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_read_pstore_files',`
+	gen_require(`
+		type pstore_t;
+	')
+
+	allow $1 pstore_t:file read_file_perms;
+')
+
+########################################
+## <summary>
+##	Delete the files
+##	of a pstore filesystem.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_delete_pstore_files',`
+	gen_require(`
+		type pstore_t;
+	')
+
+	delete_files_pattern($1, pstore_t, pstore_t)
+	dev_search_sysfs($1)
 ')
 
 ########################################
@@ -4716,7 +4966,7 @@ interface(`fs_relabelfrom_tmpfs_symlinks',`
 		type tmpfs_t;
 	')
 
-	allow $1 tmpfs_t:lnk_file { getattr relabelfrom };
+	allow $1 tmpfs_t:lnk_file relabelfrom_lnk_file_perms;
 ')
 
 ########################################
@@ -5076,6 +5326,24 @@ interface(`fs_manage_xenfs_files',`
 	')
 
 	manage_files_pattern($1, xenfs_t, xenfs_t)
+')
+
+########################################
+## <summary>
+##	Map files a XENFS filesystem.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_mmap_xenfs_files',`
+	gen_require(`
+		type xenfs_t;
+	')
+
+	allow $1 xenfs_t:file map;
 ')
 
 ########################################

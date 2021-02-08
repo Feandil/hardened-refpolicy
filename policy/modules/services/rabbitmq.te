@@ -1,4 +1,4 @@
-policy_module(rabbitmq, 1.4.2)
+policy_module(rabbitmq, 1.6.0)
 
 ########################################
 #
@@ -17,7 +17,7 @@ type rabbitmq_initrc_exec_t;
 init_script_file(rabbitmq_initrc_exec_t)
 
 type rabbitmq_runtime_t alias rabbitmq_var_run_t;
-files_pid_file(rabbitmq_runtime_t)
+files_runtime_file(rabbitmq_runtime_t)
 
 type rabbitmq_var_lib_t;
 files_type(rabbitmq_var_lib_t)
@@ -55,7 +55,6 @@ kernel_read_fs_sysctls(rabbitmq_beam_t)
 corecmd_exec_bin(rabbitmq_beam_t)
 corecmd_exec_shell(rabbitmq_beam_t)
 
-corenet_all_recvfrom_unlabeled(rabbitmq_beam_t)
 corenet_all_recvfrom_netlabel(rabbitmq_beam_t)
 corenet_tcp_sendrecv_generic_if(rabbitmq_beam_t)
 corenet_tcp_sendrecv_generic_node(rabbitmq_beam_t)
@@ -88,7 +87,7 @@ sysnet_dns_name_resolve(rabbitmq_beam_t)
 	couchdb_manage_lib_files(rabbitmq_beam_t)
 	couchdb_read_conf_files(rabbitmq_beam_t)
 	couchdb_read_log_files(rabbitmq_beam_t)
-	couchdb_read_pid_files(rabbitmq_beam_t)
+	couchdb_read_runtime_files(rabbitmq_beam_t)
  ')
 
 ########################################
@@ -104,7 +103,6 @@ allow rabbitmq_epmd_t self:unix_stream_socket { accept listen };
 
 allow rabbitmq_epmd_t rabbitmq_var_log_t:file append_file_perms;
 
-corenet_all_recvfrom_unlabeled(rabbitmq_epmd_t)
 corenet_all_recvfrom_netlabel(rabbitmq_epmd_t)
 corenet_tcp_sendrecv_generic_if(rabbitmq_epmd_t)
 corenet_tcp_sendrecv_generic_node(rabbitmq_epmd_t)
