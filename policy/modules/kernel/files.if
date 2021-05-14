@@ -1611,6 +1611,25 @@ interface(`files_relabel_config_dirs',`
 	relabel_dirs_pattern($1, configfile, configfile)
 ')
 
+#########################################
+## <summary>
+##	Do not audit attempts to relabel configuration directories
+## </summary>
+## <param name="domain">
+## 	<summary>
+##	Domain not to audit.
+##	</summary>
+## </param>
+##
+#
+interface(`files_dontaudit_relabel_config_dirs',`
+	gen_require(`
+		attribute configfile;
+	')
+
+	dontaudit $1 configfile:dir relabel_dir_perms;
+')
+
 ########################################
 ## <summary>
 ##	Read config files in /etc.
@@ -1667,6 +1686,25 @@ interface(`files_relabel_config_files',`
 	')
 
 	relabel_files_pattern($1, configfile, configfile)
+')
+
+#######################################
+## <summary>
+##	Do not audit attempts to relabel configuration files
+## </summary>
+## <param name="domain">
+## 	<summary>
+##	Domain not to audit.
+##	</summary>
+## </param>
+##
+#
+interface(`files_dontaudit_relabel_config_files',`
+	gen_require(`
+		attribute configfile;
+	')
+
+	dontaudit $1 configfile:file relabel_file_perms;
 ')
 
 ########################################
@@ -3121,6 +3159,26 @@ interface(`files_manage_etc_files',`
 
 ########################################
 ## <summary>
+##	Do not audit attempts to create, read, write,
+##	and delete generic files in /etc.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`files_dontaudit_manage_etc_files',`
+	gen_require(`
+		type etc_t;
+	')
+
+	dontaudit $1 etc_t:file manage_file_perms;
+')
+
+########################################
+## <summary>
 ##	Delete system configuration files in /etc.
 ## </summary>
 ## <param name="domain">
@@ -4309,6 +4367,25 @@ interface(`files_load_kernel_modules',`
 
 	files_read_kernel_modules($1)
 	allow $1 modules_object_t:system module_load;
+')
+
+########################################
+## <summary>
+##	Load kernel module files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_dontaudit_load_kernel_modules',`
+	gen_require(`
+		type modules_object_t;
+	')
+
+	dontaudit $1 modules_object_t:file read_file_perms;
+	dontaudit $1 modules_object_t:system module_load;
 ')
 
 ########################################

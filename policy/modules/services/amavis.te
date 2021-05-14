@@ -1,4 +1,4 @@
-policy_module(amavis, 1.21.0)
+policy_module(amavis, 1.21.1)
 
 ########################################
 #
@@ -159,11 +159,6 @@ optional_policy(`
 	cron_use_fds(amavis_t)
 	cron_use_system_job_fds(amavis_t)
 	cron_rw_pipes(amavis_t)
-')
-
-optional_policy(`
-	dcc_domtrans_client(amavis_t)
-	dcc_stream_connect_dccifd(amavis_t)
 ')
 
 optional_policy(`

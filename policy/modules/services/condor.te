@@ -1,4 +1,4 @@
-policy_module(condor, 1.7.0)
+policy_module(condor, 1.7.1)
 
 ########################################
 #
@@ -116,10 +116,6 @@ sysnet_dns_name_resolve(condor_domain)
 tunable_policy(`condor_tcp_network_connect',`
 	corenet_sendrecv_all_client_packets(condor_domain)
 	corenet_tcp_connect_all_ports(condor_domain)
-')
-
-optional_policy(`
-	rhcs_stream_connect_cluster(condor_domain)
 ')
 
 #####################################

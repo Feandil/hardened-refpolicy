@@ -1,4 +1,4 @@
-policy_module(secadm, 2.6.0)
+policy_module(secadm, 2.6.1)
 
 ########################################
 #
@@ -45,6 +45,10 @@ optional_policy(`
 
 optional_policy(`
 	auditadm_role_change(secadm_r)
+')
+
+optional_policy(`
+	dbus_role_template(secadm, secadm_r, secadm_t)
 ')
 
 optional_policy(`

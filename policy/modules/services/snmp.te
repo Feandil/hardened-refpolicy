@@ -1,4 +1,4 @@
-policy_module(snmp, 1.20.0)
+policy_module(snmp, 1.20.1)
 
 ########################################
 #
@@ -135,10 +135,6 @@ optional_policy(`
 optional_policy(`
 	mta_read_config(snmpd_t)
 	mta_search_queue(snmpd_t)
-')
-
-optional_policy(`
-	ricci_stream_connect_modclusterd(snmpd_t)
 ')
 
 optional_policy(`

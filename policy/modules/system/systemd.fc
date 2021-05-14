@@ -16,6 +16,10 @@
 /usr/bin/systemd-tty-ask-password-agent	--	gen_context(system_u:object_r:systemd_passwd_agent_exec_t,s0)
 /usr/bin/systemd-notify			--	gen_context(system_u:object_r:systemd_notify_exec_t,s0)
 
+/usr/lib/elogind/elogind		--	gen_context(system_u:object_r:systemd_logind_exec_t,s0)
+/usr/lib/elogind/elogind-cgroups-agent	--	gen_context(system_u:object_r:systemd_logind_exec_t,s0)
+/usr/lib/elogind/elogind-uaccess-command	--	gen_context(system_u:object_r:systemd_logind_exec_t,s0)
+
 # Systemd generators
 /usr/lib/systemd/system-environment-generators/.*				--	gen_context(system_u:object_r:systemd_generator_exec_t,s0)
 /usr/lib/systemd/system-generators/.*							--	gen_context(system_u:object_r:systemd_generator_exec_t,s0)
@@ -42,6 +46,11 @@
 /usr/lib/systemd/systemd-user-sessions	--	gen_context(system_u:object_r:systemd_sessions_exec_t,s0)
 
 # Systemd unit files
+HOME_DIR/\.config/systemd(/.*)?		gen_context(system_u:object_r:systemd_conf_home_t,s0)
+HOME_DIR/\.local/share/systemd(/.*)?		gen_context(system_u:object_r:systemd_data_home_t,s0)
+
+/usr/lib/systemd/user(/.*)?		gen_context(system_u:object_r:systemd_user_unit_t,s0)
+
 /usr/lib/systemd/system/[^/]*halt.*	--	gen_context(system_u:object_r:power_unit_t,s0)
 /usr/lib/systemd/system/[^/]*hibernate.* --	gen_context(system_u:object_r:power_unit_t,s0)
 /usr/lib/systemd/system/[^/]*power.*	--	gen_context(system_u:object_r:power_unit_t,s0)
@@ -55,6 +64,8 @@
 /usr/lib/systemd/system/systemd-rfkill.*	--	gen_context(system_u:object_r:systemd_rfkill_unit_t,s0)
 /usr/lib/systemd/system/systemd-socket-proxyd\.service	--	gen_context(system_u:object_r:systemd_socket_proxyd_unit_file_t,s0)
 
+/usr/share/factory(/.*)?	gen_context(system_u:object_r:systemd_factory_conf_t,s0)
+
 /var/\.updated				--	gen_context(system_u:object_r:systemd_update_run_t,s0)
 
 /var/lib/systemd/backlight(/.*)?	gen_context(system_u:object_r:systemd_backlight_var_lib_t,s0)
@@ -64,7 +75,15 @@
 /var/lib/systemd/rfkill(/.*)?	gen_context(system_u:object_r:systemd_rfkill_var_lib_t,s0)
 
 /run/\.nologin[^/]*	--	gen_context(system_u:object_r:systemd_sessions_runtime_t,s0)
+/run/elogind\.pid	--	gen_context(system_u:object_r:systemd_logind_runtime_t,s0)
 /run/nologin	--	gen_context(system_u:object_r:systemd_sessions_runtime_t,s0)
+
+/run/user/%{USERID}/systemd	-d	gen_context(system_u:object_r:systemd_user_runtime_t,s0)
+/run/user/%{USERID}/systemd/generator(/.*)?		gen_context(system_u:object_r:systemd_user_runtime_unit_t,s0)
+/run/user/%{USERID}/systemd/generator\.early(/.*)?		gen_context(system_u:object_r:systemd_user_runtime_unit_t,s0)
+/run/user/%{USERID}/systemd/generator\.late(/.*)?		gen_context(system_u:object_r:systemd_user_runtime_unit_t,s0)
+/run/user/%{USERID}/systemd/transient(/.*)?		gen_context(system_u:object_r:systemd_user_runtime_unit_t,s0)
+/run/user/%{USERID}/systemd/user(/.*)?		gen_context(system_u:object_r:systemd_user_runtime_unit_t,s0)
 
 /run/systemd/ask-password(/.*)?	gen_context(system_u:object_r:systemd_passwd_runtime_t,s0)
 /run/systemd/ask-password-block(/.*)?	gen_context(system_u:object_r:systemd_passwd_runtime_t,s0)

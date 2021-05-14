@@ -1,4 +1,4 @@
-policy_module(authlogin, 2.18.0)
+policy_module(authlogin, 2.18.1)
 
 ########################################
 #
@@ -87,7 +87,7 @@ type wtmp_t;
 logging_log_file(wtmp_t)
 
 optional_policy(`
-	systemd_tmpfilesd_managed(faillog_t, file)
+	systemd_tmpfilesd_managed(faillog_t, { dir file })
 	systemd_tmpfilesd_managed(var_auth_t, dir)
 ')
 

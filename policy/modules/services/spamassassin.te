@@ -1,4 +1,4 @@
-policy_module(spamassassin, 2.15.0)
+policy_module(spamassassin, 2.15.1)
 
 ########################################
 #
@@ -445,13 +445,6 @@ optional_policy(`
 
 optional_policy(`
 	daemontools_service_domain(spamd_t, spamd_exec_t)
-')
-
-optional_policy(`
-	dcc_domtrans_cdcc(spamd_t)
-	dcc_domtrans_client(spamd_t)
-	dcc_signal_client(spamd_t)
-	dcc_stream_connect_dccifd(spamd_t)
 ')
 
 optional_policy(`
