@@ -1,4 +1,4 @@
-policy_module(apache, 2.20.1)
+policy_module(apache, 2.21.3)
 
 ########################################
 #
@@ -755,6 +755,10 @@ tunable_policy(`httpd_use_nfs && httpd_builtin_scripting',`
 
 optional_policy(`
 	calamaris_read_www_files(httpd_t)
+')
+
+optional_policy(`
+	certbot_read_lib(httpd_t)
 ')
 
 optional_policy(`

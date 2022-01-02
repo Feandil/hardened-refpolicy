@@ -1,4 +1,4 @@
-policy_module(netutils, 1.21.0)
+policy_module(netutils, 1.21.1)
 
 ########################################
 #
@@ -22,6 +22,10 @@ files_tmp_file(netutils_tmp_t)
 type ping_t;
 type ping_exec_t;
 init_system_domain(ping_t, ping_exec_t)
+
+type ss_t;
+type ss_exec_t;
+userdom_user_application_domain(ss_t, ss_exec_t)
 
 type traceroute_t;
 type traceroute_exec_t;
@@ -109,7 +113,7 @@ allow ping_t self:tcp_socket create_socket_perms;
 allow ping_t self:rawip_socket { create ioctl read write bind getopt setopt getattr };
 allow ping_t self:packet_socket { create ioctl read write bind getopt setopt };
 allow ping_t self:netlink_route_socket create_netlink_socket_perms;
-allow ping_t self:icmp_socket create;
+allow ping_t self:icmp_socket create_socket_perms;
 
 corenet_all_recvfrom_netlabel(ping_t)
 corenet_sendrecv_icmp_packets(ping_t)
@@ -147,6 +151,25 @@ ifdef(`hide_broken_symptoms',`
 optional_policy(`
 	munin_append_log(ping_t)
 ')
+
+########################################
+#
+# ss local policy
+#
+
+allow ss_t self:capability net_admin;
+allow ss_t self:netlink_tcpdiag_socket r_netlink_socket_perms;
+
+kernel_read_net_sysctls(ss_t)
+kernel_read_network_state(ss_t)
+kernel_read_proc_symlinks(ss_t)
+kernel_read_system_state(ss_t)
+
+domain_use_interactive_fds(ss_t)
+
+files_read_etc_files(ss_t)
+
+userdom_use_inherited_user_terminals(ss_t)
 
 ########################################
 #

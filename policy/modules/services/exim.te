@@ -1,4 +1,4 @@
-policy_module(exim, 1.15.0)
+policy_module(exim, 1.15.1)
 
 ########################################
 #
@@ -180,6 +180,10 @@ tunable_policy(`exim_read_user_files',`
 tunable_policy(`exim_manage_user_files',`
 	userdom_manage_user_home_content_dirs(exim_t)
 	userdom_manage_user_tmp_files(exim_t)
+')
+
+optional_policy(`
+	certbot_read_lib(exim_t)
 ')
 
 optional_policy(`

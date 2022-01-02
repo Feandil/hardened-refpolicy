@@ -1,4 +1,4 @@
-policy_module(postfix, 1.24.2)
+policy_module(postfix, 1.25.2)
 
 ########################################
 #
@@ -292,8 +292,6 @@ domain_use_interactive_fds(postfix_master_t)
 
 files_search_tmp(postfix_master_t)
 
-mcs_file_read_all(postfix_master_t)
-
 term_dontaudit_search_ptys(postfix_master_t)
 
 hostname_exec(postfix_master_t)
@@ -311,6 +309,10 @@ mta_etc_filetrans_aliases(postfix_master_t, file, "aliasesdb-stamp")
 mta_spec_filetrans_aliases(postfix_master_t, postfix_etc_t, file)
 mta_read_sendmail_bin(postfix_master_t)
 mta_getattr_spool(postfix_master_t)
+
+optional_policy(`
+	certbot_read_lib(postfix_master_t)
+')
 
 optional_policy(`
 	cyrus_stream_connect(postfix_master_t)
@@ -564,9 +566,6 @@ allow postfix_pickup_t postfix_spool_maildrop_t:dir list_dir_perms;
 read_files_pattern(postfix_pickup_t, postfix_spool_maildrop_t, postfix_spool_maildrop_t)
 delete_files_pattern(postfix_pickup_t, postfix_spool_maildrop_t, postfix_spool_maildrop_t)
 
-mcs_file_read_all(postfix_pickup_t)
-mcs_file_write_all(postfix_pickup_t)
-
 optional_policy(`
 	dbus_system_bus_client(postfix_pickup_t)
 	init_dbus_chat(postfix_pickup_t)
@@ -634,9 +633,6 @@ allow postfix_postdrop_t postfix_local_t:unix_stream_socket { read write };
 
 # for /var/spool/postfix/public/pickup
 stream_connect_pattern(postfix_postdrop_t, postfix_public_t, postfix_public_t, postfix_master_t)
-
-mcs_file_read_all(postfix_postdrop_t)
-mcs_file_write_all(postfix_postdrop_t)
 
 term_dontaudit_use_all_ptys(postfix_postdrop_t)
 term_dontaudit_use_all_ttys(postfix_postdrop_t)
@@ -743,8 +739,6 @@ allow postfix_showq_t postfix_spool_maildrop_t:lnk_file read_lnk_file_perms;
 
 allow postfix_showq_t postfix_spool_t:file read_file_perms;
 
-mcs_file_read_all(postfix_showq_t)
-
 term_use_all_ptys(postfix_showq_t)
 term_use_all_ttys(postfix_showq_t)
 
@@ -762,6 +756,10 @@ allow postfix_smtp_t { postfix_prng_t postfix_spool_t }:file rw_file_perms;
 rw_files_pattern(postfix_smtp_t, postfix_spool_maildrop_t, postfix_spool_maildrop_t)
 
 corenet_tcp_bind_generic_node(postfix_smtp_t)
+
+optional_policy(`
+	certbot_read_lib(postfix_smtp_t)
+')
 
 optional_policy(`
 	cyrus_stream_connect(postfix_smtp_t)
@@ -799,6 +797,10 @@ fs_getattr_all_fs(postfix_smtpd_t)
 
 mta_read_aliases(postfix_smtpd_t)
 mta_map_aliases(postfix_smtpd_t)
+
+optional_policy(`
+	certbot_read_lib(postfix_smtpd_t)
+')
 
 optional_policy(`
 	dbus_send_system_bus(postfix_smtp_t)

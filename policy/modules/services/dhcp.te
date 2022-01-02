@@ -1,4 +1,4 @@
-policy_module(dhcp, 1.20.0)
+policy_module(dhcp, 1.21.0)
 
 ########################################
 #
@@ -72,6 +72,7 @@ corenet_tcp_bind_generic_node(dhcpd_t)
 corenet_udp_bind_generic_node(dhcpd_t)
 
 corenet_sendrecv_dhcpd_server_packets(dhcpd_t)
+corenet_sendrecv_icmp_packets(dhcpd_t)
 corenet_tcp_bind_dhcpd_port(dhcpd_t)
 corenet_udp_bind_dhcpd_port(dhcpd_t)
 

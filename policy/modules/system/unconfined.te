@@ -1,4 +1,4 @@
-policy_module(unconfined, 3.16.0)
+policy_module(unconfined, 3.16.2)
 
 ########################################
 #
@@ -29,9 +29,6 @@ role unconfined_r types unconfined_execmem_t;
 domtrans_pattern(unconfined_t, unconfined_execmem_exec_t, unconfined_execmem_t)
 
 files_create_boot_flag(unconfined_t)
-
-mcs_killall(unconfined_t)
-mcs_ptrace_all(unconfined_t)
 
 libs_run_ldconfig(unconfined_t, unconfined_r)
 
@@ -72,7 +69,7 @@ ifdef(`init_systemd',`
 
 optional_policy(`
 	apache_run_helper(unconfined_t, unconfined_r)
-	apache_role(unconfined_r, unconfined_t)
+	apache_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`
@@ -84,7 +81,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	cron_unconfined_role(unconfined_r, unconfined_t)
+	cron_unconfined_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`
@@ -101,7 +98,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	hadoop_role(unconfined_r, unconfined_t)
+	hadoop_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`
@@ -113,7 +110,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	java_run_unconfined(unconfined_t, unconfined_r)
+	java_run_unconfined(unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`
@@ -137,7 +134,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	mta_role(unconfined_r, unconfined_t)
+	mta_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`
@@ -165,7 +162,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	pyzor_role(unconfined_r, unconfined_t)
+	pyzor_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`
@@ -187,11 +184,11 @@ optional_policy(`
 ')
 
 optional_policy(`
-	spamassassin_role(unconfined_r, unconfined_t)
+	spamassassin_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`
-	syncthing_role(unconfined_r, unconfined_t)
+	syncthing_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`
@@ -224,7 +221,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	xserver_role(unconfined_r, unconfined_t)
+	xserver_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 	xserver_dbus_chat_xdm(unconfined_t)
 ')
 
@@ -243,7 +240,7 @@ optional_policy(`
 ifdef(`distro_gentoo',`
 
 	optional_policy(`
-		chromium_role(unconfined_r, unconfined_t)
+		chromium_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 	')
 
 	optional_policy(`

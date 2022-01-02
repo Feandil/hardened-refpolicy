@@ -1,4 +1,4 @@
-policy_module(jabber, 1.17.0)
+policy_module(jabber, 1.17.1)
 
 ########################################
 #
@@ -120,6 +120,10 @@ sysnet_read_config(jabberd_t)
 
 userdom_dontaudit_use_unpriv_user_fds(jabberd_t)
 userdom_dontaudit_search_user_home_dirs(jabberd_t)
+
+optional_policy(`
+	certbot_read_lib(jabberd_t)
+')
 
 ########################################
 #

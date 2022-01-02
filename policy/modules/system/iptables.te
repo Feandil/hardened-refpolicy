@@ -1,4 +1,4 @@
-policy_module(iptables, 1.23.0)
+policy_module(iptables, 1.24.0)
 
 ########################################
 #
@@ -85,7 +85,9 @@ auth_use_nsswitch(iptables_t)
 
 init_use_fds(iptables_t)
 init_use_script_ptys(iptables_t)
+init_read_script_pipes(iptables_t)
 # to allow rules to be saved on reboot:
+init_rw_script_pipes(iptables_t)
 init_rw_script_tmp_files(iptables_t)
 init_rw_script_stream_sockets(iptables_t)
 

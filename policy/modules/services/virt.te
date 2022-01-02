@@ -1,4 +1,4 @@
-policy_module(virt, 1.17.0)
+policy_module(virt, 1.18.1)
 
 ########################################
 #
@@ -128,6 +128,9 @@ mls_trusted_object(svirt_runtime_t)
 type virt_image_t; # customizable
 virt_image(virt_image_t)
 files_mountpoint(virt_image_t)
+
+type virt_common_runtime_t;
+files_runtime_file(virt_common_runtime_t)
 
 type virt_content_t; # customizable
 virt_image(virt_content_t)
@@ -499,6 +502,11 @@ domtrans_pattern(virtd_t, virtd_lxc_exec_t, virtd_lxc_t)
 manage_dirs_pattern(virtd_t, virt_cache_t, virt_cache_t)
 manage_files_pattern(virtd_t, virt_cache_t, virt_cache_t)
 files_var_filetrans(virtd_t, virt_cache_t, { file dir })
+
+allow virtd_t virt_common_runtime_t:file append_file_perms;
+manage_dirs_pattern(virtd_t, virt_common_runtime_t, virt_common_runtime_t)
+manage_files_pattern(virtd_t, virt_common_runtime_t, virt_common_runtime_t)
+filetrans_pattern(virtd_t, virt_runtime_t, virt_common_runtime_t, dir, "common")
 
 manage_dirs_pattern(virtd_t, virt_content_t, virt_content_t)
 manage_files_pattern(virtd_t, virt_content_t, virt_content_t)
@@ -1370,6 +1378,9 @@ manage_files_pattern(virtlogd_t, virt_runtime_t, virtlogd_run_t)
 manage_sock_files_pattern(virtlogd_t, virt_runtime_t, virtlogd_run_t)
 filetrans_pattern(virtlogd_t, virt_runtime_t, virtlogd_run_t, sock_file)
 files_runtime_filetrans(virtlogd_t, virtlogd_run_t, file)
+
+allow virtlogd_t virt_common_runtime_t:file append_file_perms;
+manage_files_pattern(virtlogd_t, virt_common_runtime_t, virt_common_runtime_t)
 
 kernel_read_system_state(virtlogd_t)
 

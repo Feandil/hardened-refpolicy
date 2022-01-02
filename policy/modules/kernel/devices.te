@@ -1,4 +1,4 @@
-policy_module(devices, 1.28.0)
+policy_module(devices, 1.29.1)
 
 ########################################
 #
@@ -23,7 +23,7 @@ fs_xattr_type(device_t)
 fs_use_trans devtmpfs gen_context(system_u:object_r:device_t,s0);
 
 optional_policy(`
-	systemd_tmpfilesd_managed(device_t, fifo_file)
+	systemd_tmpfilesd_managed(device_t)
 ')
 
 #
@@ -306,7 +306,7 @@ dev_node(urandom_device_t)
 #
 type usbfs_t;
 files_mountpoint(usbfs_t)
-fs_noxattr_type(usbfs_t)
+fs_pseudo_type(usbfs_t)
 genfscon usbfs / gen_context(system_u:object_r:usbfs_t,s0)
 genfscon usbdevfs / gen_context(system_u:object_r:usbfs_t,s0)
 

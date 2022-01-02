@@ -31,8 +31,9 @@ template(`userdom_base_user_template',`
 	')
 
 	attribute $1_file_type;
+	attribute $1_application_exec_domain;
 
-	type $1_t, userdomain;
+	type $1_t, userdomain, $1_application_exec_domain;
 	domain_type($1_t)
 	corecmd_shell_entry_type($1_t)
 	corecmd_bin_entry_type($1_t)
@@ -78,6 +79,7 @@ template(`userdom_base_user_template',`
 
 	dev_dontaudit_getattr_all_blk_files($1_t)
 	dev_dontaudit_getattr_all_chr_files($1_t)
+	dev_dontaudit_setattr_null_dev($1_t)
 
 	# for X session unlock
 	allow $1_t self:netlink_audit_socket { create_socket_perms nlmsg_relay };
@@ -239,6 +241,34 @@ template(`userdom_user_content_access_template',`
 	tunable_policy(`$1_manage_all_user_content',`
 		userdom_manage_all_user_home_content($2)
 	')
+')
+
+#######################################
+## <summary>
+##	Associate the specified domain to be
+##	a domain capable of executing other
+##	applications on behalf of the specified
+##	user.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="userdomain_prefix">
+##	<summary>
+##	The prefix of the user domain (e.g., user
+##	is the prefix for user_t).
+##	</summary>
+## </param>
+## <rolebase/>
+#
+interface(`userdom_application_exec_domain',`
+	gen_require(`
+		attribute $2_application_exec_domain;
+	')
+
+	typeattribute $1 $2_application_exec_domain;
 ')
 
 #######################################
@@ -729,6 +759,7 @@ template(`userdom_common_user_template',`
 	')
 
 	optional_policy(`
+		dbus_role_template($1, $1_r, $1_t)
 		dbus_system_bus_client($1_t)
 
 		optional_policy(`
@@ -766,6 +797,10 @@ template(`userdom_common_user_template',`
 
 		optional_policy(`
 			xserver_dbus_chat_xdm($1_t)
+		')
+
+		optional_policy(`
+			systemd_role_template($1, $1_r, $1_t)
 		')
 	')
 
@@ -866,10 +901,6 @@ template(`userdom_common_user_template',`
 
 	optional_policy(`
 		slrnpull_search_spool($1_t)
-	')
-
-	optional_policy(`
-		systemd_role_template($1, $1_r, $1_t)
 	')
 
 	optional_policy(`
@@ -1084,7 +1115,7 @@ template(`userdom_restricted_xwindows_user_template',`
 	# Local policy
 	#
 
-	auth_role($1_r, $1_t)
+	auth_role($1, $1_t, $1_application_exec_domain, $1_r)
 	auth_search_pam_console_data($1_t)
 
 	dev_read_sound($1_t)
@@ -1099,7 +1130,7 @@ template(`userdom_restricted_xwindows_user_template',`
 	logging_send_audit_msgs($1_t)
 	selinux_get_enforce_mode($1_t)
 
-	xserver_restricted_role($1_r, $1_t)
+	xserver_restricted_role($1, $1_t, $1_application_exec_domain, $1_r)
 
 	optional_policy(`
 		alsa_read_config($1_t)
@@ -1114,20 +1145,20 @@ template(`userdom_restricted_xwindows_user_template',`
 		')
 
 		optional_policy(`
-			gnome_role_template($1, $1_r, $1_t)
+			gnome_role_template($1, $1_t, $1_application_exec_domain, $1_r)
 		')
 
 		optional_policy(`
-			wm_role_template($1, $1_r, $1_t)
+			wm_role_template($1, $1_t, $1_application_exec_domain, $1_r)
 		')
 	')
 
 	optional_policy(`
-		java_role($1_r, $1_t)
+		java_role($1, $1_t, $1_application_exec_domain, $1_r)
 	')
 
 	optional_policy(`
-		pulseaudio_role($1_r, $1_t)
+		pulseaudio_role($1, $1_t, $1_application_exec_domain, $1_r)
 	')
 
 	optional_policy(`
@@ -1409,6 +1440,10 @@ template(`userdom_admin_user_template',`
 	')
 
 	optional_policy(`
+		usbguard_stream_connect($1_t)
+	')
+
+	optional_policy(`
 		userhelper_exec($1_t)
 	')
 
@@ -1453,7 +1488,7 @@ template(`userdom_admin_user_template',`
 ##	</summary>
 ## </param>
 #
-template(`userdom_security_admin_template',`
+interface(`userdom_security_admin_template',`
 	allow $1 self:capability { dac_override dac_read_search };
 
 	corecmd_exec_shell($1)
@@ -1483,6 +1518,7 @@ template(`userdom_security_admin_template',`
 	selinux_set_enforce_mode($1)
 	selinux_set_all_booleans($1)
 	selinux_set_parameters($1)
+	selinux_read_policy($1)
 
 	files_relabel_non_auth_files($1)
 
@@ -1517,6 +1553,10 @@ template(`userdom_security_admin_template',`
 
 	optional_policy(`
 		netlabel_run_mgmt($1, $2)
+	')
+
+	optional_policy(`
+		netutils_run_ss($1, $2)
 	')
 
 	optional_policy(`
@@ -2244,6 +2284,24 @@ interface(`userdom_manage_all_user_home_content',`
 	manage_lnk_files_pattern($1, user_home_content_type, user_home_content_type)
 	manage_fifo_files_pattern($1, user_home_content_type, user_home_content_type)
 	manage_sock_files_pattern($1, user_home_content_type, user_home_content_type)
+')
+
+########################################
+## <summary>
+##	Map all user home content, including application-specific resources.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access
+##	</summary>
+## </param>
+#
+interface(`userdom_map_all_user_home_content_files',`
+	gen_require(`
+		attribute user_home_content_type;
+	')
+
+	allow $1 user_home_content_type:file map;
 ')
 
 ########################################
@@ -3111,6 +3169,25 @@ interface(`userdom_manage_user_tmp_symlinks',`
 	manage_lnk_files_pattern($1, user_tmp_t, user_tmp_t)
 	files_search_tmp($1)
 	userdom_search_user_runtime($1)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to read and write
+##	temporary pipes.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`userdom_dontaudit_rw_user_tmp_pipes',`
+	gen_require(`
+		type user_tmp_t;
+	')
+
+	dontaudit $1 user_tmp_t:fifo_file rw_fifo_file_perms;
 ')
 
 ########################################
@@ -4512,9 +4589,9 @@ interface(`userdom_write_user_tmp_files',`
 ##      temporary files.
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain to not audit.
-##      </summary>
+##	<summary>
+##	Domain to not audit.
+##	</summary>
 ## </param>
 #
 interface(`userdom_dontaudit_write_user_tmp_files',`
@@ -4815,9 +4892,9 @@ interface(`userdom_relabel_user_certs',`
 ##     unserdomain stream.
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain to not audit.
-##     </summary>
+##	<summary>
+##	Domain to not audit.
+##	</summary>
 ## </param>
 #
 interface(`userdom_dontaudit_rw_all_users_stream_sockets',`

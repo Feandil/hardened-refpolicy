@@ -1,4 +1,4 @@
-policy_module(watchdog, 1.16.0)
+policy_module(watchdog, 1.16.1)
 
 #################################
 #
@@ -75,8 +75,6 @@ fs_search_auto_mountpoints(watchdog_t)
 auth_append_login_records(watchdog_t)
 
 logging_send_syslog_msg(watchdog_t)
-
-mcs_killall(watchdog_t)
 
 miscfiles_read_localization(watchdog_t)
 

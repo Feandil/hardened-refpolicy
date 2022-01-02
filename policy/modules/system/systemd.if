@@ -42,6 +42,7 @@ template(`systemd_role_template',`
 	type $1_systemd_t, systemd_user_session_type, systemd_log_parse_env_type;
 	init_pgm_spec_user_daemon_domain($1_systemd_t)
 	domain_user_exemption_target($1_systemd_t)
+	userdom_application_exec_domain($1_systemd_t, $1)
 	ubac_constrained($1_systemd_t)
 	role $2 types $1_systemd_t;
 
@@ -80,11 +81,6 @@ template(`systemd_role_template',`
 	allow $1_systemd_t $3:dir search_dir_perms;
 	allow $1_systemd_t $3:file read_file_perms;
 	allow $1_systemd_t $3:lnk_file read_lnk_file_perms;
-
-	filetrans_pattern(systemd_user_session_type, systemd_user_runtime_t, systemd_user_runtime_unit_t, dir, "generator.early")
-	filetrans_pattern(systemd_user_session_type, systemd_user_runtime_t, systemd_user_runtime_unit_t, dir, "generator.late")
-	filetrans_pattern(systemd_user_session_type, systemd_user_runtime_t, systemd_user_runtime_unit_t, dir, "transient")
-	filetrans_pattern(systemd_user_session_type, systemd_user_runtime_t, systemd_user_runtime_unit_t, dir, "user")
 
 	dev_read_urand($1_systemd_t)
 
@@ -164,6 +160,8 @@ template(`systemd_role_template',`
 	systemd_status_user_runtime_units($3)
 	systemd_stop_user_runtime_units($3)
 
+	systemd_watch_passwd_runtime_dirs($3)
+
 	optional_policy(`
 		xdg_config_filetrans($1_systemd_t, systemd_conf_home_t, dir, "systemd")
 		xdg_data_filetrans($1_systemd_t, systemd_data_home_t, dir, "systemd")
@@ -178,19 +176,19 @@ template(`systemd_role_template',`
 ##   specified systemd user instance.
 ## </summary>
 ## <param name="prefix">
-##   <summary>
-##     Prefix for the user domain.
-##   </summary>
+##	<summary>
+##	Prefix for the user domain.
+##	</summary>
 ## </param>
 ## <param name="entry_point">
-##   <summary>
-##     Entry point file type for the domain.
-##   </summary>
+##	<summary>
+##	Entry point file type for the domain.
+##	</summary>
 ## </param>
 ## <param name="domain">
-##   <summary>
-##     Domain to allow the systemd user domain to run.
-##   </summary>
+##	<summary>
+##	Domain to allow the systemd user domain to run.
+##	</summary>
 ## </param>
 #
 template(`systemd_user_daemon_domain',`
@@ -200,8 +198,7 @@ template(`systemd_user_daemon_domain',`
 
 	domtrans_pattern($1_systemd_t, $2, $3)
 
-	allow $1_systemd_t $3:process signal_perms;
-	allow $3 $1_systemd_t:unix_stream_socket rw_socket_perms;
+	systemd_user_app_status($1, $3)
 ')
 
 ######################################
@@ -210,9 +207,9 @@ template(`systemd_user_daemon_domain',`
 ##   can be managed by systemd user instances for socket activation.
 ## </summary>
 ## <param name="file_type">
-##   <summary>
-##     File type to be associated.
-##   </summary>
+##	<summary>
+##	File type to be associated.
+##	</summary>
 ## </param>
 #
 interface(`systemd_user_activated_sock_file',`
@@ -230,14 +227,14 @@ interface(`systemd_user_activated_sock_file',`
 ##   for socket activation.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain to be associated.
-##   </summary>
+##	<summary>
+##	Domain to be associated.
+##	</summary>
 ## </param>
 ## <param name="sock_file_type">
-##   <summary>
-##     File type of the domain's sock files to be associated.
-##   </summary>
+##	<summary>
+##	File type of the domain's sock files to be associated.
+##	</summary>
 ## </param>
 #
 interface(`systemd_user_unix_stream_activated_socket',`
@@ -251,13 +248,53 @@ interface(`systemd_user_unix_stream_activated_socket',`
 
 ######################################
 ## <summary>
+##   Allow the target domain to be monitored and have its output
+##   captured by the specified systemd user instance domain.
+## </summary>
+## <param name="prefix">
+##	<summary>
+##	Prefix for the user domain.
+##	</summary>
+## </param>
+## <param name="domain">
+##	<summary>
+##	Domain to allow the systemd user instance to monitor.
+##	</summary>
+## </param>
+#
+template(`systemd_user_app_status',`
+	gen_require(`
+		type $1_systemd_t;
+	')
+
+	# This interface does not imply permissions for the systemd user
+	# domain to run the application. Instead, these rules are necessary
+	# for a systemd --user instance to monitor an application as well as
+	# any child processes of that application, children of those, and so
+	# on.
+
+	# systemd --user instances need to be able to read the state of the
+	# app it runs and capture its output to journald
+	ps_process_pattern($1_systemd_t, $2)
+	allow $1_systemd_t $2:process signal_perms;
+	allow $2 $1_systemd_t:fd use;
+	allow $2 $1_systemd_t:unix_stream_socket rw_socket_perms;
+
+	# apps run by systemd --user instances need to be able to read the
+	# state of the systemd --user instance
+	ps_process_pattern($2, $1_systemd_t)
+	allow $2 $1_systemd_t:process sigchld;
+')
+
+######################################
+## <summary>
 ##   Allow the specified domain to search systemd config home
 ##   content.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_search_conf_home_content',`
@@ -274,9 +311,9 @@ interface(`systemd_search_conf_home_content',`
 ##   content.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_manage_conf_home_content',`
@@ -295,9 +332,9 @@ interface(`systemd_manage_conf_home_content',`
 ##   content.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_relabel_conf_home_content',`
@@ -316,9 +353,9 @@ interface(`systemd_relabel_conf_home_content',`
 ##   content.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_search_data_home_content',`
@@ -335,9 +372,9 @@ interface(`systemd_search_data_home_content',`
 ##   content.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_manage_data_home_content',`
@@ -356,9 +393,9 @@ interface(`systemd_manage_data_home_content',`
 ##   content.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_relabel_data_home_content',`
@@ -377,9 +414,9 @@ interface(`systemd_relabel_data_home_content',`
 ##   content.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_search_user_runtime',`
@@ -395,9 +432,9 @@ interface(`systemd_search_user_runtime',`
 ##   Allow the specified domain to read systemd user runtime files.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_user_runtime_files',`
@@ -413,9 +450,9 @@ interface(`systemd_read_user_runtime_files',`
 ##   Allow the specified domain to read systemd user runtime lnk files.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_user_runtime_lnk_files',`
@@ -432,9 +469,9 @@ interface(`systemd_read_user_runtime_lnk_files',`
 ##   user unit files.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_user_unit_files',`
@@ -452,9 +489,9 @@ interface(`systemd_read_user_unit_files',`
 ##   Allow the specified domain to read systemd user runtime unit files.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_user_runtime_units',`
@@ -472,9 +509,9 @@ interface(`systemd_read_user_runtime_units',`
 ##   directories.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_search_user_runtime_unit_dirs',`
@@ -491,9 +528,9 @@ interface(`systemd_search_user_runtime_unit_dirs',`
 ##   user runtime unit directories.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_list_user_runtime_unit_dirs',`
@@ -509,9 +546,9 @@ interface(`systemd_list_user_runtime_unit_dirs',`
 ##   Allow the specified domain to get the status of systemd user runtime units.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_status_user_runtime_units',`
@@ -528,9 +565,9 @@ interface(`systemd_status_user_runtime_units',`
 ##   Allow the specified domain to start systemd user runtime units.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_start_user_runtime_units',`
@@ -547,9 +584,9 @@ interface(`systemd_start_user_runtime_units',`
 ##   Allow the specified domain to stop systemd user runtime units.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_stop_user_runtime_units',`
@@ -566,9 +603,9 @@ interface(`systemd_stop_user_runtime_units',`
 ##   Allow the specified domain to reload systemd user runtime units.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_reload_user_runtime_units',`
@@ -586,9 +623,9 @@ interface(`systemd_reload_user_runtime_units',`
 ##   log parse environment type.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Type to be used as a log parse environment type.
-##   </summary>
+##	<summary>
+##	Type to be used as a log parse environment type.
+##	</summary>
 ## </param>
 #
 interface(`systemd_log_parse_environment',`
@@ -606,9 +643,9 @@ interface(`systemd_log_parse_environment',`
 ##   and groups allocated through the DynamicUser= option in systemd unit files
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access
-##   </summary>
+##	<summary>
+##	Domain allowed access
+##	</summary>
 ## </param>
 #
 interface(`systemd_use_nss',`
@@ -633,9 +670,9 @@ interface(`systemd_use_nss',`
 ##   that uses PrivateDevices=yes in section [Service].
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access
-##   </summary>
+##	<summary>
+##	Domain allowed access
+##	</summary>
 ## </param>
 #
 interface(`systemd_PrivateDevices',`
@@ -650,9 +687,9 @@ interface(`systemd_PrivateDevices',`
 ##  Allow domain to read udev hwdb file
 ## </summary>
 ## <param name="domain">
-## <summary>
-##  domain allowed access
-## </summary>
+##	<summary>
+##	domain allowed access
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_hwdb',`
@@ -668,9 +705,9 @@ interface(`systemd_read_hwdb',`
 ##  Allow domain to map udev hwdb file
 ## </summary>
 ## <param name="domain">
-## <summary>
-##  domain allowed access
-## </summary>
+##	<summary>
+##	domain allowed access
+##	</summary>
 ## </param>
 #
 interface(`systemd_map_hwdb',`
@@ -686,9 +723,9 @@ interface(`systemd_map_hwdb',`
 ##   Read systemd_login PID files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_logind_pids',`
@@ -701,9 +738,9 @@ interface(`systemd_read_logind_pids',`
 ##   Manage systemd_login PID pipes.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_manage_logind_pid_pipes',`
@@ -716,9 +753,9 @@ interface(`systemd_manage_logind_pid_pipes',`
 ##     Write systemd_login named pipe.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_write_logind_pid_pipes',`
@@ -728,12 +765,31 @@ interface(`systemd_write_logind_pid_pipes',`
 
 ######################################
 ## <summary>
+##   Watch systemd-logind runtime dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_watch_logind_runtime_dirs',`
+	gen_require(`
+		type systemd_logind_runtime_t;
+	')
+
+	files_search_runtime($1)
+	allow $1 systemd_logind_runtime_t:dir watch;
+')
+
+######################################
+## <summary>
 ##   Read systemd-logind runtime files.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_logind_runtime_files',`
@@ -751,9 +807,9 @@ interface(`systemd_read_logind_runtime_files',`
 ##   Manage systemd-logind runtime pipes.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_manage_logind_runtime_pipes',`
@@ -770,9 +826,9 @@ interface(`systemd_manage_logind_runtime_pipes',`
 ##     Write systemd-logind runtime named pipe.
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_write_logind_runtime_pipes',`
@@ -791,9 +847,9 @@ interface(`systemd_write_logind_runtime_pipes',`
 ##   logind file descriptors.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_use_logind_fds',`
@@ -806,12 +862,31 @@ interface(`systemd_use_logind_fds',`
 
 ######################################
 ## <summary>
+##      Watch logind sessions dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_watch_logind_sessions_dirs',`
+	gen_require(`
+		type systemd_sessions_runtime_t;
+	')
+
+	init_search_run($1)
+	allow $1 systemd_sessions_runtime_t:dir watch;
+')
+
+######################################
+## <summary>
 ##      Read logind sessions files.
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_logind_sessions_files',`
@@ -830,9 +905,9 @@ interface(`systemd_read_logind_sessions_files',`
 ##      Write inherited logind sessions pipes.
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_write_inherited_logind_sessions_pipes',`
@@ -850,9 +925,9 @@ interface(`systemd_write_inherited_logind_sessions_pipes',`
 ##      Write inherited logind inhibit pipes.
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_write_inherited_logind_inhibit_pipes',`
@@ -871,9 +946,9 @@ interface(`systemd_write_inherited_logind_inhibit_pipes',`
 ##   systemd logind over dbus.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_dbus_chat_logind',`
@@ -1004,9 +1079,9 @@ interface(`systemd_read_machines',`
 ##     Allow connecting to /run/systemd/userdb/io.systemd.Machine socket
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain that can access the socket
-##     </summary>
+##	<summary>
+##	Domain that can access the socket
+##	</summary>
 ## </param>
 #
 interface(`systemd_connect_machined',`
@@ -1023,9 +1098,9 @@ interface(`systemd_connect_machined',`
 ##   systemd hostnamed over dbus.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_dbus_chat_hostnamed',`
@@ -1043,9 +1118,9 @@ interface(`systemd_dbus_chat_hostnamed',`
 ##      allow systemd_passwd_agent to inherit fds
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain that owns the fds
-##      </summary>
+##	<summary>
+##	Domain that owns the fds
+##	</summary>
 ## </param>
 #
 interface(`systemd_use_passwd_agent_fds',`
@@ -1061,14 +1136,14 @@ interface(`systemd_use_passwd_agent_fds',`
 ##      allow systemd_passwd_agent to be run by admin
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain that runs it
-##      </summary>
+##	<summary>
+##	Domain that runs it
+##	</summary>
 ## </param>
 ## <param name="role">
-##      <summary>
-##      role that it runs in
-##      </summary>
+##	<summary>
+##	role that it runs in
+##	</summary>
 ## </param>
 #
 interface(`systemd_run_passwd_agent',`
@@ -1111,9 +1186,9 @@ interface(`systemd_use_passwd_agent',`
 ##      Transition to systemd_passwd_runtime_t when creating dirs
 ## </summary>
 ## <param name="domain">
-##      <summary>
+##	<summary>
 ##	Domain allowed access.
-##      </summary>
+##	</summary>
 ## </param>
 #
 interface(`systemd_filetrans_passwd_runtime_dirs',`
@@ -1132,9 +1207,9 @@ interface(`systemd_filetrans_passwd_runtime_dirs',`
 ##  directory.
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_filetrans_userdb_runtime_dirs', `
@@ -1150,9 +1225,9 @@ interface(`systemd_filetrans_userdb_runtime_dirs', `
 ##  Allow to domain to create systemd-passwd symlink
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_manage_passwd_runtime_symlinks',`
@@ -1165,12 +1240,30 @@ interface(`systemd_manage_passwd_runtime_symlinks',`
 
 ########################################
 ## <summary>
+##   Allow a domain to watch systemd-passwd runtime dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_watch_passwd_runtime_dirs',`
+	gen_require(`
+		type systemd_passwd_runtime_t;
+	')
+
+	allow $1 systemd_passwd_runtime_t:dir watch;
+')
+
+########################################
+## <summary>
 ##      manage systemd unit dirs and the files in them  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_manage_all_units',`
@@ -1183,9 +1276,9 @@ interface(`systemd_manage_all_units',`
 ##      Allow domain to list the contents of systemd_journal_t dirs
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_list_journal_dirs',`
@@ -1201,9 +1294,9 @@ interface(`systemd_list_journal_dirs',`
 ##      Allow domain to read systemd_journal_t files
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_journal_files',`
@@ -1220,9 +1313,9 @@ interface(`systemd_read_journal_files',`
 ##      Allow domain to create/manage systemd_journal_t files
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_manage_journal_files',`
@@ -1233,6 +1326,24 @@ interface(`systemd_manage_journal_files',`
 	manage_dirs_pattern($1, systemd_journal_t, systemd_journal_t)
 	manage_files_pattern($1, systemd_journal_t, systemd_journal_t)
 	allow $1 systemd_journal_t:file map;
+')
+
+########################################
+## <summary>
+##      Allow domain to add a watch on systemd_journal_t directories
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_watch_journal_dirs',`
+	gen_require(`
+		type systemd_journal_t;
+	')
+
+	allow $1 systemd_journal_t:dir watch;
 ')
 
 ########################################
@@ -1281,7 +1392,7 @@ interface(`systemd_relabelto_journal_files',`
 ## <param name="domain">
 ##	<summary>
 ##	Domain allowed access.
-##	 </summary>
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_networkd_units',`
@@ -1301,7 +1412,7 @@ interface(`systemd_read_networkd_units',`
 ## <param name="domain">
 ##	<summary>
 ##	Domain allowed access.
-##	 </summary>
+##	</summary>
 ## </param>
 #
 interface(`systemd_manage_networkd_units',`
@@ -1354,6 +1465,27 @@ interface(`systemd_startstop_networkd',`
 
 ########################################
 ## <summary>
+##   Send and receive messages from
+##   systemd networkd over dbus.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_dbus_chat_networkd',`
+	gen_require(`
+		type systemd_networkd_t;
+		class dbus send_msg;
+	')
+
+	allow $1 systemd_networkd_t:dbus send_msg;
+	allow systemd_networkd_t $1:dbus send_msg;
+')
+
+########################################
+## <summary>
 ##	Allow specified domain to get status of systemd-networkd
 ## </summary>
 ## <param name="domain">
@@ -1376,9 +1508,9 @@ interface(`systemd_status_networkd',`
 ## Relabel systemd_networkd tun socket.
 ## </summary>
 ## <param name="domain">
-## <summary>
-## Domain allowed access.
-## </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_relabelfrom_networkd_tun_sockets',`
@@ -1394,9 +1526,9 @@ interface(`systemd_relabelfrom_networkd_tun_sockets',`
 ## Read/Write from systemd_networkd netlink route socket.
 ## </summary>
 ## <param name="domain">
-## <summary>
-## Domain allowed access.
-## </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_rw_networkd_netlink_route_sockets',`
@@ -1412,9 +1544,9 @@ interface(`systemd_rw_networkd_netlink_route_sockets',`
 ##  Allow domain to list dirs under /run/systemd/netif
 ## </summary>
 ## <param name="domain">
-## <summary>
-##  domain permitted the access
-## </summary>
+##	<summary>
+##	domain permitted the access
+##	</summary>
 ## </param>
 #
 interface(`systemd_list_networkd_runtime',`
@@ -1449,9 +1581,9 @@ interface(`systemd_watch_networkd_runtime_dirs',`
 ##  Allow domain to read files generated by systemd_networkd
 ## </summary>
 ## <param name="domain">
-## <summary>
-##  domain allowed access
-## </summary>
+##	<summary>
+##	domain allowed access
+##	</summary>
 ## </param>
 #
 
@@ -1469,9 +1601,9 @@ interface(`systemd_read_networkd_runtime',`
 ##     Allow systemd_logind_t to read process state for cgroup file
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain systemd_logind_t may access.
-##     </summary>
+##	<summary>
+##	Domain systemd_logind_t may access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_logind_state',`
@@ -1672,17 +1804,12 @@ interface(`systemd_relabelto_tmpfiles_conf_files',`
 
 #######################################
 ## <summary>
-##  Allow systemd_tmpfiles_t to manage filesystem objects
+##	Allow systemd_tmpfiles_t to manage filesystem objects
 ## </summary>
 ## <param name="type">
-## <summary>
-##  type of object to manage
-## </summary>
-## </param>
-## <param name="class">
-## <summary>
-##  object class to manage
-## </summary>
+##	<summary>
+##	Type of object to manage
+##	</summary>
 ## </param>
 #
 interface(`systemd_tmpfilesd_managed',`
@@ -1690,8 +1817,15 @@ interface(`systemd_tmpfilesd_managed',`
 		type systemd_tmpfiles_t;
 	')
 
-	allow systemd_tmpfiles_t $1:dir list_dir_perms;
-	allow systemd_tmpfiles_t $1:$2 { setattr relabelfrom relabelto create };
+	allow systemd_tmpfiles_t $1:dir { manage_dir_perms relabel_dir_perms  };
+	allow systemd_tmpfiles_t $1:file { create setattr unlink write_file_perms relabel_file_perms };
+	allow systemd_tmpfiles_t $1:lnk_file { create setattr unlink relabel_lnk_file_perms };
+	allow systemd_tmpfiles_t $1:fifo_file { create setattr unlink relabel_fifo_file_perms };
+
+	ifelse(`$2',`',`',`
+		refpolicywarn(`$0($*) second parameter is deprecated.')
+		allow systemd_tmpfiles_t $1:$2 { setattr relabelfrom relabelto create };
+	')
 ')
 
 ########################################
@@ -1700,9 +1834,9 @@ interface(`systemd_tmpfilesd_managed',`
 ##   systemd resolved over dbus.
 ## </summary>
 ## <param name="domain">
-##   <summary>
-##     Domain allowed access.
-##   </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`systemd_dbus_chat_resolved',`
@@ -1720,9 +1854,9 @@ interface(`systemd_dbus_chat_resolved',`
 ##  Allow domain to read resolv.conf file generated by systemd_resolved
 ## </summary>
 ## <param name="domain">
-## <summary>
-##  domain allowed access
-## </summary>
+##	<summary>
+##	domain allowed access
+##	</summary>
 ## </param>
 #
 interface(`systemd_read_resolved_runtime',`
@@ -1738,9 +1872,9 @@ interface(`systemd_read_resolved_runtime',`
 ##  Allow domain to getattr on .updated file (generated by systemd-update-done
 ## </summary>
 ## <param name="domain">
-## <summary>
-##  domain allowed access
-## </summary>
+##	<summary>
+##	domain allowed access
+##	</summary>
 ## </param>
 #
 interface(`systemd_getattr_updated_runtime',`
@@ -1835,9 +1969,9 @@ interface(`systemd_domtrans_sysusers', `
 ##	</summary>
 ## </param>
 ## <param name="role">
-##  <summary>
-##  Role allowed access.
-##  </summary>
+##	<summary>
+##	Role allowed access.
+##	</summary>
 ## </param>
 ## <rolecap/>
 #

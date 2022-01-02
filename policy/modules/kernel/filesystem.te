@@ -1,4 +1,4 @@
-policy_module(filesystem, 1.29.1)
+policy_module(filesystem, 1.30.3)
 
 ########################################
 #
@@ -9,6 +9,7 @@ attribute filesystem_image_file_type;
 attribute filesystem_type;
 attribute filesystem_unconfined_type;
 attribute noxattrfs;
+attribute pseudofs;
 attribute xattrfs;
 
 ##############################
@@ -25,6 +26,7 @@ sid fs gen_context(system_u:object_r:fs_t,s0)
 fs_use_xattr btrfs gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr ceph gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr encfs gen_context(system_u:object_r:fs_t,s0);
+fs_use_xattr erofs gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr ext2 gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr ext3 gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr ext4 gen_context(system_u:object_r:fs_t,s0);
@@ -38,6 +40,7 @@ fs_use_xattr jfs gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr lustre gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr overlay gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr squashfs gen_context(system_u:object_r:fs_t,s0);
+fs_use_xattr ubifs gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr xfs gen_context(system_u:object_r:fs_t,s0);
 fs_use_xattr zfs gen_context(system_u:object_r:fs_t,s0);
 
@@ -102,7 +105,7 @@ files_mountpoint(ecryptfs_t)
 genfscon ecryptfs / gen_context(system_u:object_r:ecryptfs_t,s0)
 
 type efivarfs_t;
-fs_noxattr_type(efivarfs_t)
+fs_pseudo_type(efivarfs_t)
 files_mountpoint(efivarfs_t)
 genfscon efivarfs / gen_context(system_u:object_r:efivarfs_t,s0)
 
@@ -154,9 +157,9 @@ dev_associate_sysfs(pstore_t)
 genfscon pstore / gen_context(system_u:object_r:pstore_t,s0)
 
 type ramfs_t;
-fs_type(ramfs_t)
+fs_xattr_type(ramfs_t)
 files_mountpoint(ramfs_t)
-genfscon ramfs / gen_context(system_u:object_r:ramfs_t,s0)
+fs_use_trans ramfs gen_context(system_u:object_r:ramfs_t,s0);
 
 type romfs_t;
 fs_type(romfs_t)

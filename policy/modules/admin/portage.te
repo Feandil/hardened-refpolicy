@@ -111,6 +111,7 @@ kernel_read_kernel_sysctls(gcc_config_t)
 corecmd_exec_shell(gcc_config_t)
 corecmd_exec_bin(gcc_config_t)
 corecmd_manage_bin_files(gcc_config_t)
+corecmd_manage_bin_symlinks(gcc_config_t)
 
 domain_use_interactive_fds(gcc_config_t)
 
@@ -131,6 +132,7 @@ libs_run_ldconfig(gcc_config_t, portage_roles)
 libs_manage_shared_libs(gcc_config_t)
 # gcc-config creates a temp dir for the libs
 libs_manage_lib_dirs(gcc_config_t)
+libs_manage_lib_symlinks(gcc_config_t)
 
 logging_send_syslog_msg(gcc_config_t)
 
@@ -509,6 +511,7 @@ gen_tunable(portage_enable_test, false)
 	dontaudit portage_sandbox_t self:capability sys_admin;
 
 	dev_getattr_xserver_misc_dev(portage_sandbox_t)
+	dev_rwx_zero(portage_sandbox_t)
 
 	kernel_read_vm_overcommit_sysctl(portage_sandbox_t)
 

@@ -1,4 +1,4 @@
-policy_module(usermanage, 1.25.0)
+policy_module(usermanage, 1.25.2)
 
 ########################################
 #
@@ -310,6 +310,7 @@ read_files_pattern(passwd_t, crack_db_t, crack_db_t)
 
 kernel_read_crypto_sysctls(passwd_t)
 kernel_read_kernel_sysctls(passwd_t)
+kernel_dontaudit_getattr_proc(passwd_t)
 
 # for SSP
 dev_read_urand(passwd_t)
@@ -321,6 +322,7 @@ mls_file_write_all_levels(passwd_t)
 mls_file_downgrade(passwd_t)
 
 selinux_get_fs_mount(passwd_t)
+selinux_use_status_page(passwd_t)
 selinux_validate_context(passwd_t)
 selinux_compute_access_vector(passwd_t)
 selinux_compute_create_context(passwd_t)
@@ -478,6 +480,7 @@ allow useradd_t self:unix_stream_socket connectto;
 
 # for getting the number of groups
 kernel_read_kernel_sysctls(useradd_t)
+kernel_dontaudit_getattr_proc(useradd_t)
 
 corecmd_exec_shell(useradd_t)
 # Execute /usr/bin/{passwd,chfn,chsh} and /usr/sbin/{useradd,vipw}.

@@ -4,23 +4,34 @@
 ## <summary>
 ##	Role access for password authentication.
 ## </summary>
-## <param name="role">
+## <param name="role_prefix">
 ##	<summary>
-##	Role allowed access.
+##	The prefix of the user role (e.g., user
+##	is the prefix for user_r).
 ##	</summary>
 ## </param>
-## <param name="domain">
+## <param name="user_domain">
 ##	<summary>
-##	Domain allowed access.
+##	User domain for the role.
+##	</summary>
+## </param>
+## <param name="user_exec_domain">
+##	<summary>
+##	User exec domain for execute and transition access.
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	Role allowed access
 ##	</summary>
 ## </param>
 #
-interface(`auth_role',`
+template(`auth_role',`
 	gen_require(`
 		type chkpwd_t, chkpwd_exec_t, shadow_t;
 	')
 
-	role $1 types chkpwd_t;
+	role $4 types chkpwd_t;
 
 	# Transition from the user domain to this domain.
 	domtrans_pattern($2, chkpwd_exec_t, chkpwd_t)
@@ -41,25 +52,17 @@ interface(`auth_role',`
 ## </param>
 #
 interface(`auth_use_pam',`
+	gen_require(`
+		attribute can_read_shadow_passwords, nsswitch_domain, pam_domain;
+	')
 
-	# for SSP/ProPolice
-	dev_read_urand($1)
-	# for encrypted homedir
-	dev_read_sysfs($1)
+	typeattribute $1 can_read_shadow_passwords, nsswitch_domain, pam_domain;
 
-	auth_create_faillog_files($1)
+	#
+	# due to the nested typeattributes:
+	#
+
 	auth_domtrans_chk_passwd($1)
-	auth_domtrans_upd_passwd($1)
-	auth_dontaudit_read_shadow($1)
-	auth_rw_lastlog($1)
-	auth_rw_faillog($1)
-	auth_rw_login_records($1)
-	auth_setattr_faillog_files($1)
-	auth_exec_pam($1)
-	auth_use_nsswitch($1)
-
-	logging_send_audit_msgs($1)
-	logging_send_syslog_msg($1)
 
 	optional_policy(`
 		dbus_system_bus_client($1)
@@ -77,10 +80,6 @@ interface(`auth_use_pam',`
 	optional_policy(`
 		kerberos_manage_host_rcache($1)
 		kerberos_read_config($1)
-	')
-
-	optional_policy(`
-		nis_authenticate($1)
 	')
 
 	ifdef(`distro_gentoo',`
@@ -431,10 +430,6 @@ interface(`auth_domtrans_chk_passwd',`
 		pcscd_read_runtime_files($1)
 		pcscd_stream_connect($1)
 	')
-
-	optional_policy(`
-		samba_stream_connect_winbind($1)
-	')
 ')
 
 ########################################
@@ -449,13 +444,9 @@ interface(`auth_domtrans_chk_passwd',`
 ## </param>
 #
 interface(`auth_domtrans_chkpwd',`
-	gen_require(`
-		type chkpwd_t, chkpwd_exec_t, shadow_t;
-	')
+	refpolicywarn(`$0($*) has been deprecated, please use auth_domtrans_chk_passwd($1); auth_domtrans_upd_passwd($1) instead.')
 
-	corecmd_search_bin($1)
-	domtrans_pattern($1, chkpwd_exec_t, chkpwd_t)
-	dontaudit $1 shadow_t:file { getattr read };
+	auth_domtrans_chk_passwd($1)
 	auth_domtrans_upd_passwd($1)
 ')
 
@@ -488,9 +479,9 @@ interface(`auth_run_chk_passwd',`
 ##	Execute a domain transition to run unix_update.
 ## </summary>
 ## <param name="domain">
-## <summary>
+##	<summary>
 ##	Domain allowed to transition.
-## </summary>
+##	</summary>
 ## </param>
 #
 interface(`auth_domtrans_upd_passwd',`
@@ -691,6 +682,7 @@ interface(`auth_rw_shadow',`
 	')
 
 	files_list_etc($1)
+	auth_rw_shadow_lock($1)
 	allow $1 shadow_t:file rw_file_perms;
 	typeattribute $1 can_read_shadow_passwords, can_write_shadow_passwords;
 ')
@@ -712,6 +704,7 @@ interface(`auth_manage_shadow',`
 		type shadow_t;
 	')
 
+	auth_rw_shadow_lock($1)
 	allow $1 shadow_t:file manage_file_perms;
 	typeattribute $1 can_read_shadow_passwords, can_write_shadow_passwords;
 ')
@@ -726,9 +719,9 @@ interface(`auth_manage_shadow',`
 ##	</summary>
 ## </param>
 ## <param name="name" optional="true">
-##      <summary>
-##      The name of the object being created.
-##      </summary>
+##	<summary>
+##	The name of the object being created.
+##	</summary>
 ## </param>
 #
 interface(`auth_etc_filetrans_shadow',`
@@ -781,6 +774,24 @@ interface(`auth_relabel_shadow',`
 	files_search_etc($1)
 	allow $1 shadow_t:file relabel_file_perms;
 	typeattribute $1 can_relabelto_shadow_passwords;
+')
+
+########################################
+## <summary>
+##	Read/Write shadow lock files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_rw_shadow_lock',`
+	gen_require(`
+		type shadow_lock_t;
+	')
+
+	rw_files_pattern($1, shadow_lock_t, shadow_lock_t)
 ')
 
 #######################################
@@ -958,9 +969,9 @@ interface(`auth_rw_lastlog',`
 ##     Manage the last logins log.
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`auth_manage_lastlog',`
@@ -1076,9 +1087,9 @@ interface(`auth_read_var_auth',`
 ##  and pam applets etc.
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`auth_rw_var_auth',`

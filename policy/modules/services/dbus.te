@@ -1,4 +1,4 @@
-policy_module(dbus, 1.30.2)
+policy_module(dbus, 1.31.1)
 
 gen_require(`
 	class dbus all_dbus_perms;
@@ -129,6 +129,7 @@ mls_socket_read_to_clearance(system_dbusd_t)
 mls_dbus_recv_all_levels(system_dbusd_t)
 
 selinux_get_fs_mount(system_dbusd_t)
+selinux_use_status_page(system_dbusd_t)
 selinux_validate_context(system_dbusd_t)
 selinux_compute_access_vector(system_dbusd_t)
 selinux_compute_create_context(system_dbusd_t)
@@ -198,7 +199,7 @@ optional_policy(`
 	systemd_use_inherited_machined_ptys(system_dbusd_t)
 
 	# allow populating of /var/lib/dbus by systemd-tmpfilesd
-	systemd_tmpfilesd_managed(system_dbusd_var_lib_t, dir)
+	systemd_tmpfilesd_managed(system_dbusd_var_lib_t)
 ')
 
 optional_policy(`
@@ -252,7 +253,8 @@ userdom_user_home_dir_filetrans(session_bus_type, session_dbusd_home_t, dir, ".d
 
 manage_dirs_pattern(session_bus_type, session_dbusd_tmp_t, session_dbusd_tmp_t)
 manage_files_pattern(session_bus_type, session_dbusd_tmp_t, session_dbusd_tmp_t)
-files_tmp_filetrans(session_bus_type, session_dbusd_tmp_t, { dir file })
+manage_sock_files_pattern(session_bus_type, session_dbusd_tmp_t, session_dbusd_tmp_t)
+files_tmp_filetrans(session_bus_type, session_dbusd_tmp_t, { dir file sock_file })
 
 manage_dirs_pattern(session_bus_type, session_dbusd_runtime_t, session_dbusd_runtime_t)
 manage_files_pattern(session_bus_type, session_dbusd_runtime_t, session_dbusd_runtime_t)

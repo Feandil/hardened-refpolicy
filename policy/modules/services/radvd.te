@@ -1,4 +1,4 @@
-policy_module(radvd, 1.20.0)
+policy_module(radvd, 1.21.0)
 
 ########################################
 #
@@ -48,6 +48,7 @@ corenet_raw_sendrecv_generic_if(radvd_t)
 corenet_tcp_sendrecv_generic_node(radvd_t)
 corenet_udp_sendrecv_generic_node(radvd_t)
 corenet_raw_sendrecv_generic_node(radvd_t)
+corenet_sendrecv_icmp_packets(radvd_t)
 
 dev_read_sysfs(radvd_t)
 
