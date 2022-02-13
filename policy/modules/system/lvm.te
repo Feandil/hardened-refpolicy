@@ -1,4 +1,4 @@
-policy_module(lvm, 1.27.0)
+policy_module(lvm)
 
 ########################################
 #
@@ -249,6 +249,10 @@ optional_policy(`
 
 optional_policy(`
 	rpm_manage_script_tmp_files(lvm_t)
+')
+
+optional_policy(`
+	systemd_rw_homework_semaphores(lvm_t)
 ')
 
 optional_policy(`

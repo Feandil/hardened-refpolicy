@@ -1,4 +1,4 @@
-policy_module(logging, 1.34.0)
+policy_module(logging)
 
 ########################################
 #
@@ -381,6 +381,7 @@ optional_policy(`
 # cjp: why net_admin!
 allow syslogd_t self:capability { chown dac_override fsetid net_admin setgid setuid sys_admin sys_nice sys_resource sys_tty_config };
 dontaudit syslogd_t self:capability { sys_ptrace };
+dontaudit syslogd_t self:cap_userns { kill sys_ptrace };
 # setpgid for metalog
 # setrlimit for syslog-ng
 # getsched for syslog-ng
@@ -517,6 +518,7 @@ userdom_dontaudit_search_user_home_dirs(syslogd_t)
 
 ifdef(`init_systemd',`
 	# for systemd-journal
+	allow syslogd_t self:capability audit_control;
 	allow syslogd_t self:netlink_audit_socket connected_socket_perms;
 	allow syslogd_t self:capability2 audit_read;
 	allow syslogd_t self:capability { chown setgid setuid sys_ptrace };
@@ -547,6 +549,7 @@ ifdef(`init_systemd',`
 	init_dgram_send(syslogd_t)
 	init_read_runtime_pipes(syslogd_t)
 	init_read_runtime_symlinks(syslogd_t)
+	init_read_runtime_files(syslogd_t)
 	init_read_state(syslogd_t)
 
 	# needed for systemd-initrd case when syslog socket is unlabelled

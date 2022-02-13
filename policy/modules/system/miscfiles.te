@@ -1,4 +1,4 @@
-policy_module(miscfiles, 1.20.0)
+policy_module(miscfiles)
 
 ########################################
 #
@@ -35,6 +35,10 @@ files_type(hwdata_t)
 #
 type locale_t;
 files_type(locale_t)
+
+optional_policy(`
+	container_mountpoint(locale_t)
+')
 
 #
 # man_t is the type for the man directories.

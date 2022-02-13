@@ -1,4 +1,4 @@
-policy_module(ntp, 1.23.0)
+policy_module(ntp)
 
 ########################################
 #
@@ -54,8 +54,8 @@ init_system_domain(ntpd_t, ntpdate_exec_t)
 #
 
 # sys_time : modify system time
-allow ntpd_t self:capability { chown dac_override kill setgid setuid sys_time ipc_lock ipc_owner sys_chroot sys_nice };
-dontaudit ntpd_t self:capability { net_admin sys_tty_config fsetid sys_nice sys_resource };
+allow ntpd_t self:capability { chown dac_override kill setgid setuid sys_time ipc_lock ipc_owner sys_chroot sys_nice sys_resource };
+dontaudit ntpd_t self:capability { net_admin sys_tty_config fsetid };
 allow ntpd_t self:process { signal_perms getcap setcap setsched setrlimit };
 allow ntpd_t self:fifo_file rw_fifo_file_perms;
 allow ntpd_t self:shm create_shm_perms;
@@ -64,6 +64,7 @@ allow ntpd_t self:unix_dgram_socket sendto;
 
 allow ntpd_t ntp_conf_t:file read_file_perms;
 
+allow ntpd_t ntp_drift_t:lnk_file read_lnk_file_perms;
 manage_dirs_pattern(ntpd_t, ntp_drift_t, ntp_drift_t)
 manage_files_pattern(ntpd_t, ntp_drift_t, ntp_drift_t)
 files_etc_filetrans(ntpd_t, ntp_drift_t, file)
@@ -96,6 +97,7 @@ can_exec(ntpd_t, ntpd_exec_t)
 kernel_read_kernel_sysctls(ntpd_t)
 kernel_read_system_state(ntpd_t)
 kernel_read_network_state(ntpd_t)
+kernel_read_crypto_sysctls(ntpd_t)
 kernel_request_load_module(ntpd_t)
 
 corenet_all_recvfrom_netlabel(ntpd_t)

@@ -1,4 +1,4 @@
-policy_module(staff, 2.13.2)
+policy_module(staff)
 
 ########################################
 #
@@ -21,6 +21,10 @@ optional_policy(`
 
 optional_policy(`
 	auditadm_role_change(staff_r)
+')
+
+optional_policy(`
+	container_user_role(staff, staff_t, staff_application_exec_domain, staff_r)
 ')
 
 optional_policy(`

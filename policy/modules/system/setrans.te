@@ -1,4 +1,4 @@
-policy_module(setrans, 1.17.0)
+policy_module(setrans)
 
 gen_require(`
 	class context contains;
@@ -25,10 +25,6 @@ init_unit_file(setrans_unit_t)
 
 ifdef(`distro_debian',`
 	init_daemon_runtime_file(setrans_runtime_t, dir, "setrans")
-')
-
-ifdef(`enable_mcs',`
-	init_ranged_daemon_domain(setrans_t, setrans_exec_t, s0 - mcs_systemhigh)
 ')
 
 ifdef(`enable_mls',`

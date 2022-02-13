@@ -1,4 +1,4 @@
-policy_module(cron, 2.19.1)
+policy_module(cron)
 
 gen_require(`
 	class passwd rootok;
@@ -112,10 +112,6 @@ ubac_constrained(user_cron_spool_t)
 type user_cron_spool_log_t;
 logging_log_file(user_cron_spool_log_t)
 ubac_constrained(user_cron_spool_log_t)
-
-ifdef(`enable_mcs',`
-	init_ranged_daemon_domain(crond_t, crond_exec_t, s0 - mcs_systemhigh)
-')
 
 optional_policy(`
 	mta_system_content(cron_spool_t)

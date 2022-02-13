@@ -1,4 +1,4 @@
-policy_module(udev, 1.30.2)
+policy_module(udev)
 
 ########################################
 #
@@ -29,11 +29,6 @@ files_type(udev_rules_t)
 type udev_runtime_t alias { udev_tbl_t udev_var_run_t };
 files_runtime_file(udev_runtime_t)
 init_daemon_runtime_file(udev_runtime_t, dir, "udev")
-
-ifdef(`enable_mcs',`
-	kernel_ranged_domtrans_to(udev_t, udev_exec_t, s0 - mcs_systemhigh)
-	init_ranged_daemon_domain(udev_t, udev_exec_t, s0 - mcs_systemhigh)
-')
 
 ########################################
 #
@@ -142,6 +137,7 @@ fs_list_inotifyfs(udev_t)
 fs_read_cgroup_files(udev_t)
 fs_rw_anon_inodefs_files(udev_t)
 fs_search_tracefs(udev_t)
+fs_manage_efivarfs_files(udev_t)
 
 mls_file_read_all_levels(udev_t)
 mls_file_write_all_levels(udev_t)

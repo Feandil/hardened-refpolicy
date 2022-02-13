@@ -1,4 +1,4 @@
-policy_module(sysadm, 2.19.2)
+policy_module(sysadm)
 
 ########################################
 #
@@ -280,6 +280,10 @@ optional_policy(`
 
 optional_policy(`
 	consoletype_run(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	container_admin(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`

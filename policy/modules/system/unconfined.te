@@ -1,4 +1,4 @@
-policy_module(unconfined, 3.16.2)
+policy_module(unconfined)
 
 ########################################
 #
@@ -78,6 +78,10 @@ optional_policy(`
 
 optional_policy(`
 	bootloader_run(unconfined_t, unconfined_r)
+')
+
+optional_policy(`
+	container_user_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
 ')
 
 optional_policy(`

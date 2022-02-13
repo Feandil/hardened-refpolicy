@@ -1,4 +1,4 @@
-policy_module(ftp, 1.26.0)
+policy_module(ftp)
 
 ########################################
 #
@@ -156,10 +156,6 @@ role system_r types sftpd_t;
 
 type xferlog_t;
 logging_log_file(xferlog_t)
-
-ifdef(`enable_mcs',`
-	init_ranged_daemon_domain(ftpd_t, ftpd_exec_t, s0 - mcs_systemhigh)
-')
 
 ifdef(`enable_mls',`
 	init_ranged_daemon_domain(ftpd_t, ftpd_exec_t, mls_systemhigh)

@@ -1,4 +1,4 @@
-policy_module(ssh, 2.16.4)
+policy_module(ssh)
 
 ########################################
 #
@@ -52,10 +52,6 @@ init_unit_file(sshd_keygen_unit_t)
 
 type sshd_unit_t;
 init_unit_file(sshd_unit_t)
-
-ifdef(`enable_mcs',`
-	init_ranged_daemon_domain(sshd_t, sshd_exec_t, s0 - mcs_systemhigh)
-')
 
 type ssh_t;
 type ssh_exec_t;
@@ -343,7 +339,9 @@ allow ssh_keygen_t sshd_key_t:file manage_file_perms;
 files_etc_filetrans(ssh_keygen_t, sshd_key_t, file)
 
 kernel_read_kernel_sysctls(ssh_keygen_t)
+kernel_read_crypto_sysctls(ssh_keygen_t)
 kernel_dontaudit_getattr_proc(ssh_keygen_t)
+kernel_dontaudit_read_system_state(ssh_keygen_t)
 
 fs_search_auto_mountpoints(ssh_keygen_t)
 

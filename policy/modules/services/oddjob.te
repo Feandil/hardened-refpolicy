@@ -1,4 +1,4 @@
-policy_module(oddjob, 1.14.0)
+policy_module(oddjob)
 
 ########################################
 #
@@ -24,10 +24,6 @@ role oddjob_mkhomedir_roles types oddjob_mkhomedir_t;
 
 type oddjob_runtime_t alias oddjob_var_run_t;
 files_runtime_file(oddjob_runtime_t)
-
-ifdef(`enable_mcs',`
-	init_ranged_daemon_domain(oddjob_t, oddjob_exec_t, s0 - mcs_systemhigh)
-')
 
 ########################################
 #
