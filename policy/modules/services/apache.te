@@ -515,7 +515,7 @@ auth_use_nsswitch(httpd_t)
 
 init_rw_inherited_script_tmp_files(httpd_t)
 
-libs_read_lib_files(httpd_t)
+libs_exec_lib_files(httpd_t)
 
 logging_send_syslog_msg(httpd_t)
 
@@ -534,10 +534,6 @@ ifdef(`TODO',`
 
 		logging_send_audit_msgs(httpd_t)
 	')
-')
-
-ifdef(`hide_broken_symptoms',`
-	libs_exec_lib_files(httpd_t)
 ')
 
 ifdef(`init_systemd', `
@@ -815,8 +811,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	mailman_stream_connect_cgi(httpd_t)
 	mailman_signal_cgi(httpd_t)
 	mailman_domtrans_cgi(httpd_t)
+	mailman_map_data_files(httpd_t)
 	mailman_read_data_files(httpd_t)
 	mailman_search_data(httpd_t)
 	mailman_read_archive(httpd_t)

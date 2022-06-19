@@ -73,6 +73,8 @@ template(`sudo_role_template',`
 	allow $1_sudo_t self:key manage_key_perms;
 	dontaudit $1_sudo_t self:capability { dac_read_search sys_ptrace };
 
+        dontaudit $1_sudo_t $3:socket_class_set { read write };
+
 	# By default, revert to the calling domain when a shell is executed.
 	corecmd_shell_domtrans($1_sudo_t, $2)
 	corecmd_bin_domtrans($1_sudo_t, $2)
@@ -143,8 +145,10 @@ template(`sudo_role_template',`
 	userdom_dontaudit_search_user_home_content($1_sudo_t)
 	userdom_dontaudit_search_user_home_dirs($1_sudo_t)
 
-	ifdef(`hide_broken_symptoms', `
-		dontaudit $1_sudo_t $3:socket_class_set { read write };
+	tunable_policy(`allow_polyinstantiation',`
+		allow $1_sudo_t self:capability sys_admin;
+		fs_mount_xattr_fs($1_sudo_t)
+		fs_unmount_xattr_fs($1_sudo_t)
 	')
 
 	tunable_policy(`sudo_allow_user_exec_domains',`
