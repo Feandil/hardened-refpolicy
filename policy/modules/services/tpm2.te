@@ -27,8 +27,9 @@ allow tpm2_abrmd_t self:fifo_file rw_inherited_fifo_file_perms;
 
 dev_rw_tpm(tpm2_abrmd_t)
 
-kernel_read_crypto_sysctls(tpm2_abrmd_t)
 kernel_read_system_state(tpm2_abrmd_t)
+
+logging_send_syslog_msg(tpm2_abrmd_t)
 
 optional_policy(`
 	dbus_system_domain(tpm2_abrmd_t, tpm2_abrmd_exec_t)
@@ -46,7 +47,6 @@ dev_rw_tpm(tpm2_t)
 
 files_read_etc_files(tpm2_t)
 
-kernel_read_crypto_sysctls(tpm2_t)
 kernel_read_system_state(tpm2_t)
 
 miscfiles_read_generic_certs(tpm2_t)

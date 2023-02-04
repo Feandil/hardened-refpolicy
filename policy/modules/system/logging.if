@@ -703,6 +703,7 @@ interface(`logging_send_syslog_msg',`
 		allow syslogd_t $1:process signull;
 
 		kernel_dgram_send($1)
+		kernel_stream_connect($1)
 	')
 
 ')
@@ -861,21 +862,6 @@ interface(`logging_delete_devlog_socket',`
 	')
 
 	allow $1 devlog_t:sock_file unlink;
-')
-
-########################################
-## <summary>
-##	Create, read, write, and delete syslog PID sockets.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`logging_manage_pid_sockets',`
-	refpolicywarn(`$0($*) has been deprecated, please use logging_manage_runtime_sockets() instead.')
-	logging_manage_runtime_sockets($1)
 ')
 
 ########################################

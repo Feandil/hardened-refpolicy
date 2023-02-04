@@ -349,6 +349,7 @@ interface(`sysnet_read_config',`
 	files_search_runtime($1)
 	allow $1 net_conf_t:dir list_dir_perms;
 	allow $1 net_conf_t:file read_file_perms;
+	allow $1 net_conf_t:lnk_file read_lnk_file_perms;
 
 	ifdef(`distro_debian',`
 		files_search_runtime($1)
@@ -549,36 +550,6 @@ interface(`sysnet_manage_config',`
 
 #######################################
 ## <summary>
-##	Read the dhcp client pid file.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`sysnet_read_dhcpc_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use sysnet_read_dhcpc_runtime_files() instead.')
-	sysnet_read_dhcpc_runtime_files($1)
-')
-
-#######################################
-## <summary>
-##	Delete the dhcp client pid file.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`sysnet_delete_dhcpc_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use sysnet_delete_dhcpc_runtime_files() instead.')
-	sysnet_delete_dhcpc_runtime_files($1)
-')
-
-#######################################
-## <summary>
 ##	Read dhcp client runtime files.
 ## </summary>
 ## <param name="domain">
@@ -612,6 +583,24 @@ interface(`sysnet_delete_dhcpc_runtime_files',`
 	')
 
 	allow $1 dhcpc_runtime_t:file unlink;
+')
+
+#######################################
+## <summary>
+##	Create, read, write, and delete dhcp client runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`sysnet_manage_dhcpc_runtime_files',`
+	gen_require(`
+		type dhcpc_runtime_t;
+	')
+
+	manage_files_pattern($1, dhcpc_runtime_t, dhcpc_runtime_t)
 ')
 
 #######################################
@@ -900,6 +889,7 @@ interface(`sysnet_dns_name_resolve',`
 	ifdef(`init_systemd',`
 		optional_policy(`
 			systemd_dbus_chat_resolved($1)
+			systemd_stream_connect_resolved($1)
 		')
 		# This seems needed when the mymachines NSS module is used
 		optional_policy(`

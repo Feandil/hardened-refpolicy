@@ -29,6 +29,9 @@ files_type(udev_rules_t)
 type udev_runtime_t alias { udev_tbl_t udev_var_run_t };
 files_runtime_file(udev_runtime_t)
 init_daemon_runtime_file(udev_runtime_t, dir, "udev")
+optional_policy(`
+	kubernetes_mountpoint(udev_runtime_t)
+')
 
 ########################################
 #
@@ -51,6 +54,8 @@ allow udev_t self:unix_stream_socket connectto;
 allow udev_t self:netlink_kobject_uevent_socket create_socket_perms;
 allow udev_t self:netlink_generic_socket create_socket_perms;
 allow udev_t self:rawip_socket create_socket_perms;
+# rdma_rename
+allow udev_t self:netlink_rdma_socket create_socket_perms;
 
 ifdef(`init_systemd',`
 	# systemd-vconsole-setup will be called by udev during virtual terminal initialization
@@ -96,10 +101,10 @@ kernel_rw_unix_dgram_sockets(udev_t)
 kernel_signal(udev_t)
 kernel_search_debugfs(udev_t)
 kernel_search_key(udev_t)
-
+# kpartx:
+kernel_get_sysvipc_info(udev_t)
 #https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=235182
 kernel_rw_net_sysctls(udev_t)
-kernel_read_crypto_sysctls(udev_t)
 kernel_read_network_state(udev_t)
 kernel_read_software_raid_state(udev_t)
 kernel_dontaudit_search_unlabeled(udev_t)
@@ -196,6 +201,9 @@ sysnet_signal_dhcpc(udev_t)
 sysnet_manage_config(udev_t)
 sysnet_etc_filetrans_config(udev_t)
 
+systemd_map_hwdb(udev_t)
+systemd_read_hwdb(udev_t)
+
 userdom_dontaudit_getattr_user_home_dirs(udev_t)
 userdom_dontaudit_search_user_home_content(udev_t)
 
@@ -260,10 +268,10 @@ ifdef(`init_systemd',`
 	init_stream_connect(udev_t)
 	init_start_system(udev_t)
 
-	systemd_map_hwdb(udev_t)
-	systemd_read_hwdb(udev_t)
 	systemd_read_logind_sessions_files(udev_t)
 	systemd_read_logind_runtime_files(udev_t)
+	# udev searches for .link files and applies custom udev rules
+	systemd_read_networkd_runtime(udev_t)
 
 	optional_policy(`
 		init_dbus_chat(udev_t)
@@ -396,6 +404,10 @@ ifdef(`distro_gentoo',`
 	init_domtrans_script(udev_t)
 ')
 
+optional_policy(`
+	zfs_read_config(udev_t)
+')
+
 ########################################
 #
 # udevadm Local policy
@@ -415,18 +427,28 @@ read_files_pattern(udevadm_t, udev_runtime_t, udev_runtime_t)
 read_lnk_files_pattern(udevadm_t, udev_runtime_t, udev_runtime_t)
 allow udevadm_t udev_runtime_t:dir watch;
 
+dev_getattr_sysfs(udevadm_t)
 dev_rw_sysfs(udevadm_t)
+dev_getattr_all_chr_files(udevadm_t)
+dev_getattr_generic_chr_files(udevadm_t)
 dev_read_urand(udevadm_t)
+
+domain_use_interactive_fds(udevadm_t)
 
 files_read_etc_files(udevadm_t)
 files_read_usr_files(udevadm_t)
 
+fs_getattr_xattr_fs(udevadm_t)
+
 init_list_runtime(udevadm_t)
 init_read_state(udevadm_t)
 
+kernel_dontaudit_getattr_proc(udevadm_t)
 kernel_read_kernel_sysctls(udevadm_t)
 kernel_read_system_state(udevadm_t)
 
 seutil_read_file_contexts(udevadm_t)
 
-fs_getattr_xattr_fs(udevadm_t)
+storage_getattr_fixed_disk_dev(udevadm_t)
+
+userdom_use_user_terminals(udevadm_t)

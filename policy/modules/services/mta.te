@@ -69,12 +69,13 @@ read_files_pattern(user_mail_domain, { etc_mail_t etc_aliases_t }, { etc_mail_t 
 
 manage_files_pattern(user_mail_domain, { mqueue_spool_t mail_spool_t }, { mqueue_spool_t mail_spool_t })
 read_lnk_files_pattern(user_mail_domain, { mqueue_spool_t mail_spool_t }, { mqueue_spool_t mail_spool_t })
+# allow IPC with nullmailer via /var/spool/nullmailer/trigger
+allow user_mail_domain mail_spool_t:fifo_file rw_fifo_file_perms;
 
 allow user_mail_domain sendmail_exec_t:lnk_file read_lnk_file_perms;
 
 can_exec(user_mail_domain, { mta_exec_type sendmail_exec_t })
 
-kernel_read_crypto_sysctls(user_mail_domain)
 kernel_read_system_state(user_mail_domain)
 kernel_read_kernel_sysctls(user_mail_domain)
 kernel_read_network_state(user_mail_domain)
@@ -297,6 +298,11 @@ optional_policy(`
 ')
 
 optional_policy(`
+	sympa_append_inherited_var_files(system_mail_t)
+	symba_dontaudit_rw_inherited_tcp_sockets(system_mail_t)
+')
+
+optional_policy(`
 	unconfined_use_fds(system_mail_t)
 ')
 
@@ -384,6 +390,11 @@ optional_policy(`
 
 optional_policy(`
 	postfix_rw_inherited_master_pipes(mailserver_delivery)
+')
+
+optional_policy(`
+	symba_dontaudit_rw_inherited_tcp_sockets(mailserver_delivery)
+	sympa_domtrans(mailserver_delivery)
 ')
 
 optional_policy(`

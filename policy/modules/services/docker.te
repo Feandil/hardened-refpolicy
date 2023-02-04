@@ -7,6 +7,9 @@ policy_module(docker)
 
 container_engine_domain_template(dockerd)
 container_system_engine(dockerd_t)
+optional_policy(`
+	kubernetes_container_engine(dockerd_t)
+')
 type dockerd_exec_t;
 container_engine_executable_file(dockerd_exec_t)
 application_domain(dockerd_t, dockerd_exec_t)
@@ -34,6 +37,7 @@ application_domain(dockerc_user_t, dockerc_exec_t)
 # Docker daemon local policy
 #
 
+allow dockerd_t self:process getattr;
 allow dockerd_t self:netlink_netfilter_socket create_socket_perms;
 allow dockerd_t self:netlink_xfrm_socket create_socket_perms;
 
@@ -69,6 +73,8 @@ ifdef(`init_systemd',`
 	init_start_transient_units(dockerd_t)
 	init_start_system(dockerd_t)
 	init_stop_system(dockerd_t)
+	init_get_system_status(dockerd_t)
+	init_stop_generic_units(dockerd_t)
 ')
 
 ########################################
@@ -129,9 +135,9 @@ container_use_container_ptys(dockerd_user_t)
 ifdef(`init_systemd',`
 	systemd_search_user_runtime(dockerd_user_t)
 	systemd_write_user_runtime_socket(dockerd_user_t)
+	systemd_get_user_runtime_units_status(dockerd_user_t)
 	systemd_start_user_runtime_units(dockerd_user_t)
 	systemd_stop_user_runtime_units(dockerd_user_t)
-	systemd_status_user_runtime_units(dockerd_user_t)
 ')
 
 optional_policy(`

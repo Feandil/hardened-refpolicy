@@ -209,6 +209,12 @@ ifdef(`distro_ubuntu',`
 ')
 
 optional_policy(`
+	tunable_policy(`glusterfs_modify_policy',`
+		glusterfs_use_daemon_fds(load_policy_t)
+	')
+')
+
+optional_policy(`
 	portage_dontaudit_use_fds(load_policy_t)
 ')
 
@@ -690,7 +696,17 @@ ifdef(`distro_ubuntu',`
 ')
 
 optional_policy(`
+	tunable_policy(`glusterfs_modify_policy',`
+		glusterfs_use_daemon_fds(setfiles_t)
+	')
+')
+
+optional_policy(`
 	apt_use_fds(setfiles_t)
+')
+
+optional_policy(`
+	container_getattr_fs(setfiles_t)
 ')
 
 optional_policy(`

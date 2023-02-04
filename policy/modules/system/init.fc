@@ -28,7 +28,8 @@ ifdef(`distro_gentoo',`
 /usr/bin/systemd	--	gen_context(system_u:object_r:init_exec_t,s0)
 /usr/bin/upstart	--	gen_context(system_u:object_r:init_exec_t,s0)
 
-/usr/lib/systemd/systemd --	gen_context(system_u:object_r:init_exec_t,s0)
+/usr/lib/dracut/modules\.d/[^/]+/.*\.service	--	gen_context(system_u:object_r:systemd_unit_t,s0)
+/usr/lib/systemd/systemd -- gen_context(system_u:object_r:init_exec_t,s0)
 /usr/lib/systemd/systemd-shutdown	--	gen_context(system_u:object_r:init_exec_t,s0)
 /usr/lib/systemd/system-preset(/.*)? gen_context(system_u:object_r:systemd_unit_t,s0)
 /usr/lib/systemd/user-preset(/.*)? gen_context(system_u:object_r:systemd_unit_t,s0)
@@ -82,7 +83,6 @@ ifdef(`distro_debian',`
 
 ifdef(`distro_gentoo', `
 /var/lib/init\.d(/.*)?		gen_context(system_u:object_r:initrc_state_t,s0)
-/var/lib/ip6?tables(/.*)?	gen_context(system_u:object_r:initrc_tmp_t,s0)
 
 /run/openrc(/.*)?		gen_context(system_u:object_r:initrc_state_t,s0)
 /run/svscan\.pid	--	gen_context(system_u:object_r:initrc_runtime_t,s0)

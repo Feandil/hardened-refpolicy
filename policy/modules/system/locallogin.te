@@ -145,6 +145,8 @@ ifdef(`init_systemd',`
 	auth_manage_faillog(local_login_t)
 
 	init_dbus_chat(local_login_t)
+	init_use_fds(local_login_t)
+
 	systemd_connect_machined(local_login_t)
 	systemd_dbus_chat_logind(local_login_t)
 	systemd_use_logind_fds(local_login_t)
@@ -242,7 +244,6 @@ allow sulogin_t self:msgq create_msgq_perms;
 allow sulogin_t self:msg { send receive };
 
 kernel_read_system_state(sulogin_t)
-kernel_read_crypto_sysctls(sulogin_t)
 kernel_stream_connect(sulogin_t)
 kernel_use_fds(sulogin_t)
 # because file systems are not mounted:

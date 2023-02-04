@@ -87,7 +87,6 @@ can_exec(policykit_t, policykit_exec_t)
 domtrans_pattern(policykit_t, policykit_auth_exec_t, policykit_auth_t)
 domtrans_pattern(policykit_t, policykit_resolve_exec_t, policykit_resolve_t)
 
-kernel_read_crypto_sysctls(policykit_t)
 kernel_read_kernel_sysctls(policykit_t)
 kernel_read_system_state(policykit_t)
 
@@ -135,7 +134,9 @@ optional_policy(`
 
 optional_policy(`
 	# for /run/systemd/machines
+	systemd_connect_machined(policykit_t)
 	systemd_read_machines(policykit_t)
+	systemd_watch_machines_dirs(policykit_t)
 
 	# for /run/systemd/seats/seat*
 	systemd_read_logind_sessions_files(policykit_t)

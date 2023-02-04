@@ -649,6 +649,25 @@ interface(`dbus_watch_system_bus_runtime_dirs',`
 
 ########################################
 ## <summary>
+##	Read system bus runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dbus_read_system_bus_runtime_files',`
+	gen_require(`
+		type system_dbusd_runtime_t;
+	')
+
+	allow $1 system_dbusd_runtime_t:file read;
+')
+
+
+########################################
+## <summary>
 ##	List system bus runtime directories.
 ## </summary>
 ## <param name="domain">
@@ -699,6 +718,25 @@ interface(`dbus_read_system_bus_runtime_named_sockets',`
 	')
 
 	allow $1 system_dbusd_runtime_t:sock_file read;
+')
+
+#######################################
+## <summary>
+##	Do not audit attempts to write to
+##	system bus runtime named sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`dbus_dontaudit_write_system_bus_runtime_named_sockets',`
+	gen_require(`
+		type system_dbusd_runtime_t;
+	')
+
+	dontaudit $1 system_dbusd_runtime_t:sock_file write;
 ')
 
 ########################################

@@ -248,7 +248,6 @@ files_tmp_filetrans(sshd_t, sshd_tmp_t, { dir file sock_file })
 corecmd_exec_bin(sshd_t)
 
 kernel_link_key(sshd_t)
-kernel_read_crypto_sysctls(sshd_t)
 kernel_search_key(sshd_t)
 
 term_use_all_ptys(sshd_t)
@@ -288,6 +287,8 @@ tunable_policy(`ssh_sysadm_login',`
 tunable_policy(`allow_polyinstantiation',`
 	allow sshd_t self:capability dac_override;
 	files_relabel_generic_tmp_dirs(sshd_t)
+
+	seutil_exec_setfiles(sshd_t)
 ')
 
 optional_policy(`
@@ -339,7 +340,6 @@ allow ssh_keygen_t sshd_key_t:file manage_file_perms;
 files_etc_filetrans(ssh_keygen_t, sshd_key_t, file)
 
 kernel_read_kernel_sysctls(ssh_keygen_t)
-kernel_read_crypto_sysctls(ssh_keygen_t)
 kernel_dontaudit_getattr_proc(ssh_keygen_t)
 kernel_dontaudit_read_system_state(ssh_keygen_t)
 
@@ -354,6 +354,7 @@ term_dontaudit_use_console(ssh_keygen_t)
 domain_use_interactive_fds(ssh_keygen_t)
 
 files_read_etc_files(ssh_keygen_t)
+files_read_usr_files(ssh_keygen_t)
 
 init_use_fds(ssh_keygen_t)
 init_use_script_ptys(ssh_keygen_t)

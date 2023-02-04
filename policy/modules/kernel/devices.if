@@ -2370,6 +2370,60 @@ interface(`dev_rw_framebuffer',`
 
 ########################################
 ## <summary>
+##	Allow read/write the hypervkvp device
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_rw_hyperv_kvp',`
+	gen_require(`
+		type device_t, hyperv_kvp_device_t;
+	')
+
+	rw_chr_files_pattern($1, device_t, hyperv_kvp_device_t)
+')
+
+########################################
+## <summary>
+##	Allow read/write the hypervvssd device
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_rw_hyperv_vss',`
+	gen_require(`
+		type device_t, hyperv_vss_device_t;
+	')
+
+	rw_chr_files_pattern($1, device_t, hyperv_vss_device_t)
+')
+
+########################################
+## <summary>
+##	Allow read/write access to InfiniBand devices.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_rw_infiniband',`
+	gen_require(`
+		type device_t, infiniband_device_t;
+	')
+
+	rw_chr_files_pattern($1, device_t, infiniband_device_t)
+')
+
+########################################
+## <summary>
 ##	Read the kernel messages
 ## </summary>
 ## <param name="domain">
@@ -3326,51 +3380,6 @@ interface(`dev_rw_mtrr',`
 
 	rw_files_pattern($1, device_t, mtrr_device_t)
 	rw_chr_files_pattern($1, device_t, mtrr_device_t)
-')
-
-########################################
-## <summary>
-##	Get the attributes of the network control device  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_getattr_netcontrol_dev',`
-	refpolicywarn(`$0() has been deprecated, use dev_getattr_pmqos_dev() instead.')
-	dev_getattr_pmqos_dev($1)
-')
-
-########################################
-## <summary>
-##	Read the network control identity.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_read_netcontrol',`
-	refpolicywarn(`$0() has been deprecated, use dev_read_pmqos() instead.')
-	dev_read_pmqos($1)
-')
-
-########################################
-## <summary>
-##	Read and write the the network control device.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_rw_netcontrol',`
-	refpolicywarn(`$0() has been deprecated, use dev_rw_pmqos() instead.')
-	dev_rw_pmqos($1)
 ')
 
 ########################################
@@ -4809,6 +4818,24 @@ interface(`dev_create_urand_dev',`
 	')
 
 	create_chr_files_pattern($1, device_t, urandom_device_t)
+')
+
+########################################
+## <summary>
+##  Set attributes on the urandom device (/dev/urandom).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_setattr_urand_dev',`
+	gen_require(`
+		type device_t, urandom_device_t;
+	')
+
+	setattr_chr_files_pattern($1, device_t, urandom_device_t)
 ')
 
 ########################################

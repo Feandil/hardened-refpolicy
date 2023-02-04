@@ -194,7 +194,7 @@ domain_use_interactive_fds(postfix_user_domains)
 # Master local policy
 #
 
-allow postfix_master_t self:capability { chown dac_read_search dac_override fowner kill setgid setuid sys_tty_config };
+allow postfix_master_t self:capability { chown dac_read_search dac_override fowner fsetid kill setgid setuid sys_tty_config };
 allow postfix_master_t self:capability2 block_suspend;
 allow postfix_master_t self:process setrlimit;
 allow postfix_master_t self:tcp_socket create_stream_socket_perms;
@@ -207,7 +207,7 @@ allow postfix_master_t postfix_etc_t:dir rw_dir_perms;
 allow postfix_master_t postfix_etc_t:file rw_file_perms;
 
 allow postfix_master_t postfix_data_t:dir manage_dir_perms;
-allow postfix_master_t postfix_data_t:file manage_file_perms;
+allow postfix_master_t postfix_data_t:file mmap_manage_file_perms;
 
 allow postfix_master_t postfix_keytab_t:file read_file_perms;
 
@@ -291,6 +291,8 @@ corecmd_exec_bin(postfix_master_t)
 domain_use_interactive_fds(postfix_master_t)
 
 files_search_tmp(postfix_master_t)
+
+init_read_state(postfix_master_t)
 
 term_dontaudit_search_ptys(postfix_master_t)
 
@@ -471,6 +473,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	logwatch_search_cache_dir(postfix_local_t)
+')
+
+optional_policy(`
 	mailman_manage_data_files(postfix_local_t)
 	mailman_append_log(postfix_local_t)
 	mailman_read_log(postfix_local_t)
@@ -502,7 +508,7 @@ allow postfix_map_t self:capability { dac_read_search dac_override setgid setuid
 allow postfix_map_t self:tcp_socket { accept listen };
 
 allow postfix_map_t postfix_etc_t:dir manage_dir_perms;
-allow postfix_map_t postfix_etc_t:file { manage_file_perms map };
+allow postfix_map_t postfix_etc_t:file mmap_manage_file_perms;
 allow postfix_map_t postfix_etc_t:lnk_file manage_lnk_file_perms;
 
 manage_dirs_pattern(postfix_map_t, postfix_map_tmp_t, postfix_map_tmp_t)
@@ -535,6 +541,10 @@ auth_use_nsswitch(postfix_map_t)
 logging_send_syslog_msg(postfix_map_t)
 
 miscfiles_read_localization(postfix_map_t)
+
+optional_policy(`
+	certbot_read_lib(postfix_map_t)
+')
 
 optional_policy(`
 	locallogin_dontaudit_use_fds(postfix_map_t)
@@ -829,6 +839,7 @@ optional_policy(`
 
 optional_policy(`
 	sasl_connect(postfix_smtpd_t)
+	sasl_read_keytab(postfix_smtpd_t)
 ')
 
 optional_policy(`

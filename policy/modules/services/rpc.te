@@ -260,9 +260,11 @@ fs_list_rpc(rpcd_t)
 fs_read_rpc_files(rpcd_t)
 fs_read_rpc_symlinks(rpcd_t)
 fs_rw_rpc_sockets(rpcd_t)
+fs_watch_rpc_pipefs_dirs(rpcd_t)
 fs_get_all_fs_quotas(rpcd_t)
 fs_set_xattr_fs_quotas(rpcd_t)
 fs_getattr_all_fs(rpcd_t)
+fs_ioctl_cgroup_dirs(rpcd_t)
 
 storage_getattr_fixed_disk_dev(rpcd_t)
 
@@ -271,12 +273,21 @@ selinux_dontaudit_read_fs(rpcd_t)
 miscfiles_read_generic_certs(rpcd_t)
 miscfiles_read_generic_tls_privkey(rpcd_t)
 
+# for mount.nfs
+mount_rw_runtime_files(rpcd_t)
+
 seutil_dontaudit_search_config(rpcd_t)
 
 userdom_signal_all_users(rpcd_t)
 
 ifdef(`distro_debian',`
 	term_dontaudit_use_unallocated_ttys(rpcd_t)
+')
+
+optional_policy(`
+	tunable_policy(`container_use_nfs',`
+		kubernetes_use_kubelet_fds(rpcd_t)
+	')
 ')
 
 optional_policy(`
@@ -325,12 +336,14 @@ dev_rw_lvm_control(nfsd_t)
 
 files_getattr_tmp_dirs(nfsd_t)
 files_manage_mounttab(nfsd_t)
+files_search_all_mountpoints(nfsd_t)
 
 fs_mount_nfsd_fs(nfsd_t)
 fs_getattr_all_fs(nfsd_t)
 fs_getattr_all_dirs(nfsd_t)
 fs_list_nfsd_fs(nfsd_t)
 fs_watch_nfsd_dirs(nfsd_t)
+fs_watch_nfsd_files(nfsd_t)
 fs_rw_nfsd_fs(nfsd_t)
 
 storage_dontaudit_read_fixed_disk(nfsd_t)

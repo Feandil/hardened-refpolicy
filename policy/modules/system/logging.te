@@ -94,6 +94,10 @@ ifdef(`enable_mls',`
 	init_ranged_daemon_domain(syslogd_t, syslogd_exec_t, mls_systemhigh)
 ')
 
+optional_policy(`
+	systemd_tmpfilesd_managed(var_log_t)
+')
+
 ########################################
 #
 # Auditctl local policy
@@ -117,6 +121,7 @@ files_read_etc_files(auditctl_t)
 kernel_dontaudit_getattr_proc(auditctl_t)
 kernel_read_kernel_sysctls(auditctl_t)
 kernel_read_proc_symlinks(auditctl_t)
+kernel_read_system_state(auditctl_t)
 kernel_setsched(auditctl_t)
 
 domain_read_all_domains_state(auditctl_t)
@@ -135,6 +140,9 @@ miscfiles_read_localization(auditctl_t)
 
 ifdef(`init_systemd',`
 	init_rw_stream_sockets(auditctl_t)
+
+	systemd_list_userdb_runtime_dirs(auditctl_t)
+	systemd_stream_connect_userdb(auditctl_t)
 ')
 
 optional_policy(`
@@ -429,12 +437,11 @@ files_search_var_lib(syslogd_t)
 
 # manage runtime files
 allow syslogd_t syslogd_runtime_t:dir create_dir_perms;
-allow syslogd_t syslogd_runtime_t:sock_file { create setattr unlink };
+allow syslogd_t syslogd_runtime_t:sock_file manage_sock_file_perms;
 allow syslogd_t syslogd_runtime_t:file map;
 manage_files_pattern(syslogd_t, syslogd_runtime_t, syslogd_runtime_t)
 files_runtime_filetrans(syslogd_t, syslogd_runtime_t, file)
 
-kernel_read_crypto_sysctls(syslogd_t)
 kernel_read_system_state(syslogd_t)
 kernel_read_network_state(syslogd_t)
 kernel_read_kernel_sysctls(syslogd_t)
@@ -556,6 +563,7 @@ ifdef(`init_systemd',`
 	logging_send_syslog_msg(syslogd_t)
 
 	systemd_manage_journal_files(syslogd_t)
+	systemd_watch_journal_dirs(syslogd_t)
 
 	udev_read_runtime_files(syslogd_t)
 

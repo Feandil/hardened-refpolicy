@@ -1355,6 +1355,7 @@ template(`userdom_admin_user_template',`
 	allow $1_t self:cap_userns sys_ptrace;
 	allow $1_t self:process { setexec setfscreate };
 	allow $1_t self:netlink_audit_socket nlmsg_readpriv;
+	allow $1_t self:netlink_tcpdiag_socket create_netlink_socket_perms;
 	allow $1_t self:tun_socket create;
 	# Set password information for other users.
 	allow $1_t self:passwd { passwd chfn chsh };
@@ -1947,6 +1948,25 @@ interface(`userdom_manage_user_home_dirs',`
 	')
 
 	allow $1 user_home_dir_t:dir manage_dir_perms;
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to manage user
+##	home directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`userdom_dontaudit_manage_user_home_dirs',`
+	gen_require(`
+		type user_home_dir_t;
+	')
+
+	dontaudit $1 user_home_dir_t:dir manage_dir_perms;
 ')
 
 ########################################
@@ -3863,33 +3883,6 @@ interface(`userdom_delete_all_user_runtime_chr_files',`
 
 ########################################
 ## <summary>
-##	Create objects in the pid directory
-##	with an automatic type transition to
-##	the user runtime root type.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-## <param name="object_class">
-##	<summary>
-##	The class of the object to be created.
-##	</summary>
-## </param>
-## <param name="name" optional="true">
-##	<summary>
-##	The name of the object being created.
-##	</summary>
-## </param>
-#
-interface(`userdom_pid_filetrans_user_runtime_root',`
-	refpolicywarn(`$0($*) has been deprecated, please use userdom_runtime_filetrans_user_runtime_root() instead.')
-	userdom_runtime_filetrans_user_runtime_root($1, $2, $3)
-')
-
-########################################
-## <summary>
 ##	Create objects in the runtime directory
 ##	with an automatic type transition to
 ##	the user runtime root type.
@@ -4305,6 +4298,25 @@ interface(`userdom_dontaudit_use_user_terminals',`
 
 	dontaudit $1 user_tty_device_t:chr_file rw_term_perms;
 	dontaudit $1 user_devpts_t:chr_file rw_term_perms;
+')
+
+########################################
+## <summary>
+##	Lock user TTYs and PTYs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`userdom_lock_user_terminals',`
+	gen_require(`
+		type user_tty_device_t, user_devpts_t;
+	')
+
+	allow $1 user_tty_device_t:chr_file lock;
+	allow $1 user_devpts_t:chr_file lock;
 ')
 
 ########################################

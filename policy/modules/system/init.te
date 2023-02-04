@@ -18,6 +18,13 @@ gen_tunable(init_upstart, false)
 
 ## <desc>
 ## <p>
+## Enable systemd to create mountpoints.
+## </p>
+## </desc>
+gen_tunable(init_create_mountpoints, false)
+
+## <desc>
+## <p>
 ## Allow all daemons the ability to read/write terminals
 ## </p>
 ## </desc>
@@ -55,6 +62,11 @@ domain_type(init_t)
 domain_entry_file(init_t, init_exec_t)
 kernel_domtrans_to(init_t, init_exec_t)
 role system_r types init_t;
+
+optional_policy(`
+	# required by calico
+	kubernetes_mountpoint(init_t)
+')
 
 #
 # init_runtime_t is the type for /var/run/shutdown.pid and /var/run/systemd.
@@ -416,8 +428,9 @@ ifdef(`init_systemd',`
 	files_relabel_generic_tmp_dirs(init_t)
 	files_mounton_tmp(init_t)
 	files_manage_urandom_seed(init_t)
-	files_read_boot_files(initrc_t)
+	files_read_boot_files(init_t)
 	files_remount_boot(init_t)
+	files_remount_etc(init_t)
 	files_relabel_all_lock_dirs(init_t)
 	files_search_all(init_t)
 	files_unmount_all_file_type_fs(init_t)
@@ -460,6 +473,8 @@ ifdef(`init_systemd',`
 	fs_create_pstore_dirs(init_t)
 	# for network namespaces
 	fs_read_nsfs_files(init_t)
+	# needed by systemd-creds
+	fs_setattr_ramfs_dirs(init_t)
 
 	init_manage_all_unit_files(init_t)
 	init_read_script_state(init_t)
@@ -523,6 +538,8 @@ ifdef(`init_systemd',`
 	term_create_devpts_dirs(init_t)
 	term_create_ptmx(init_t)
 	term_create_controlling_term(init_t)
+	term_watch_unallocated_ttys(init_t)
+	term_watch_reads_unallocated_ttys(init_t)
 
 	# udevd is a "systemd kobject uevent socket activated daemon"
 	udev_create_kobject_uevent_sockets(init_t)
@@ -535,8 +552,29 @@ ifdef(`init_systemd',`
 
 	userdom_relabel_user_runtime_root_dirs(init_t)
 
+	tunable_policy(`init_create_mountpoints',`
+		allow init_t init_mountpoint_type:dir { create_dir_perms add_entry_dir_perms };
+                allow init_t init_mountpoint_type:fifo_file create_fifo_file_perms;
+		allow init_t init_mountpoint_type:sock_file create_sock_file_perms;
+		allow init_t init_mountpoint_type:lnk_file create_lnk_file_perms;
+
+		kernel_write_non_proc_init_mountpoint_files(init_t)
+		kernel_create_non_proc_init_mountpoint_files(init_t)
+	')
+
+	tunable_policy(`init_create_mountpoints && init_mounton_non_security',`
+		files_create_non_security_dirs(init_t)
+		files_create_non_security_files(init_t)
+		files_write_non_security_files(init_t)
+	')
+
 	tunable_policy(`init_mounton_non_security',`
 		files_mounton_non_security(init_t)
+	')
+
+	optional_policy(`
+		# to run systemd-boot-update
+		bootloader_domtrans(init_t)
 	')
 
 	optional_policy(`
@@ -549,6 +587,7 @@ ifdef(`init_systemd',`
 
 	optional_policy(`
 		systemd_dbus_chat_logind(init_t)
+		systemd_create_logind_linger_dir(init_t)
 		systemd_search_all_user_keys(init_t)
 		systemd_create_all_user_keys(init_t)
 		systemd_write_all_user_keys(init_t)
@@ -556,6 +595,23 @@ ifdef(`init_systemd',`
 
 	optional_policy(`
 		dbus_connect_system_bus(init_t)
+	')
+
+	optional_policy(`
+		# kubelet systemd unit reads env files in
+		# /etc/kubernetes and /var/lib/kubelet
+		container_read_var_lib_files(init_t)
+		kubernetes_read_config(init_t)
+	')
+
+	optional_policy(`
+		# var-lib-nfs-rpc_pipefs.mount creates /var/lib/nfs/rpc_pipefs
+		# if it does not exist
+		rpc_create_nfs_state_data_dirs(init_t)
+		rpc_manage_nfs_state_data(init_t)
+
+		fs_rw_nfsd_fs(initrc_t)
+		fs_rw_rpc_named_pipes(initrc_t)
 	')
 
 	optional_policy(`
@@ -675,6 +731,7 @@ manage_dirs_pattern(initrc_t, initrc_state_t, initrc_state_t)
 manage_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
 manage_lnk_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
 manage_fifo_files_pattern(initrc_t, initrc_state_t, initrc_state_t)
+dontaudit initrc_t initrc_state_t:chr_file { create_chr_file_perms setattr };
 
 allow initrc_t initrc_runtime_t:file manage_file_perms;
 files_runtime_filetrans(initrc_t, initrc_runtime_t, file)
@@ -976,6 +1033,8 @@ ifdef(`distro_redhat',`
 
 	fs_read_tmpfs_symlinks(initrc_t)
 	fs_rw_tmpfs_chr_files(initrc_t)
+	fs_manage_tmpfs_dirs(initrc_t)
+	fs_manage_tmpfs_files(initrc_t)
 
 	storage_manage_fixed_disk(initrc_t)
 	storage_dev_filetrans_fixed_disk(initrc_t)
@@ -1056,7 +1115,7 @@ ifdef(`enable_mls',`
 ')
 
 ifdef(`init_systemd',`
-	allow initrc_t init_t:system { start status reboot halt reload };
+	allow initrc_t init_t:system { start stop status reboot halt reload };
 
 	manage_files_pattern(initrc_t, initrc_lock_t, initrc_lock_t)
 	files_lock_filetrans(initrc_t, initrc_lock_t, file)
