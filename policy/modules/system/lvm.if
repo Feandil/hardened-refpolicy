@@ -172,25 +172,6 @@ interface(`lvm_create_lock_dirs',`
 	files_add_entry_lock_dirs($1)
 ')
 
-######################################
-## <summary>
-##	Execute a domain transition to run clvmd.
-## </summary>
-## <param name="domain">
-## <summary>
-##	Domain allowed to transition.
-## </summary>
-## </param>
-#
-interface(`lvm_domtrans_clvmd',`
-	gen_require(`
-		type clvmd_t, clvmd_exec_t;
-	')
-
-	corecmd_search_bin($1)
-	domtrans_pattern($1, clvmd_exec_t, clvmd_t)
-')
-
 ########################################
 ## <summary>
 ##      Use directly LVM library API, conditional part
