@@ -197,6 +197,7 @@ optional_policy(`
 	tunable_policy(`phpfpm_can_clamav_connect_unix',`
 		clamav_stream_connect(phpfpm_t)
 	')
+')
 
 tunable_policy(`phpfpm_exec_shell',`
 	corecmd_exec_shell(phpfpm_t)
