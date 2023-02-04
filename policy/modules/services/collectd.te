@@ -153,12 +153,10 @@ tunable_policy(`collectd_entropy',`
 
 tunable_policy(`collectd_hddtemp',`
 	corenet_tcp_connect_hddtemp_port(collectd_t)
-	corenet_tcp_sendrecv_hddtemp_port(collectd_t)
 ')
 
 tunable_policy(`collectd_http',`
 	corenet_tcp_connect_http_port(collectd_t)
-	corenet_tcp_sendrecv_http_port(collectd_t)
 ')
 
 optional_policy(`
@@ -172,7 +170,6 @@ tunable_policy(`collectd_turbostat',`
 
 tunable_policy(`collectd_nut',`
 	corenet_tcp_connect_ups_port(collectd_t)
-	corenet_tcp_sendrecv_ups_port(collectd_t)
 ')
 
 tunable_policy(`collectd_process',`
