@@ -53,6 +53,9 @@ attribute systemprocess;
 # Mark file type as a daemon pid file
 attribute daemonpidfile;
 
+type init_random_seed_t;
+files_type(init_random_seed_t)
+
 #
 # init_t is the domain of the init process.
 #
@@ -368,6 +371,7 @@ ifdef(`init_systemd',`
 	dev_write_urand(init_t)
 	dev_rw_lvm_control(init_t)
 	dev_rw_autofs(init_t)
+	dev_rw_wireless(init_t)
 	dev_manage_generic_symlinks(init_t)
 	dev_manage_generic_dirs(init_t)
 	dev_manage_null_service(initrc_t)
@@ -429,7 +433,6 @@ ifdef(`init_systemd',`
 	files_manage_generic_tmp_dirs(init_t)
 	files_relabel_generic_tmp_dirs(init_t)
 	files_mounton_tmp(init_t)
-	files_manage_urandom_seed(init_t)
 	files_read_boot_files(init_t)
 	files_remount_boot(init_t)
 	files_remount_etc(init_t)
@@ -479,6 +482,7 @@ ifdef(`init_systemd',`
 	# needed by systemd-creds
 	fs_setattr_ramfs_dirs(init_t)
 
+	init_manage_random_seed(init_t)
 	init_manage_all_unit_files(init_t)
 	init_read_script_state(init_t)
 
@@ -756,6 +760,7 @@ manage_files_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
 logging_log_filetrans(initrc_t, initrc_var_log_t, dir)
 
 init_write_initctl(initrc_t)
+init_manage_random_seed(initrc_t)
 
 kernel_read_system_state(initrc_t)
 kernel_read_software_raid_state(initrc_t)
@@ -850,12 +855,7 @@ files_manage_etc_runtime_files(initrc_t)
 files_etc_filetrans_etc_runtime(initrc_t, file)
 files_exec_etc_files(initrc_t)
 files_read_usr_files(initrc_t)
-files_manage_urandom_seed(initrc_t)
 files_manage_generic_spool(initrc_t)
-# Mount and unmount file systems.
-# cjp: not sure why these are here; should use mount policy
-files_list_default(initrc_t)
-files_mounton_default(initrc_t)
 files_manage_mnt_dirs(initrc_t)
 files_manage_mnt_files(initrc_t)
 
@@ -1043,7 +1043,7 @@ ifdef(`distro_redhat',`
 	fs_manage_tmpfs_files(initrc_t)
 
 	storage_manage_fixed_disk(initrc_t)
-	storage_dev_filetrans_fixed_disk(initrc_t)
+	storage_dev_filetrans_fixed_disk(initrc_t, blk_file)
 	storage_getattr_removable_dev(initrc_t)
 
 	# readahead asks for these
@@ -1178,6 +1178,17 @@ ifdef(`init_systemd',`
 
 	systemd_start_power_units(initrc_t)
 	systemd_watch_networkd_runtime_dirs(initrc_t)
+	systemd_write_notify_socket(initrc_t)
+
+	# Ensures the memory.pressure cgroup file is labelled differently, so
+	# that processes can manage it without having access to the rest of the
+	# cgroup tree. This is a special file so each open is an independent,
+	# separate instance that cannot affect already opened ones, so it is not
+	# necessary to lock it down on a process-by-process base. This is useful
+	# to allow receiving notifications when memory pressure is high, see:
+	# https://systemd.io/MEMORY_PRESSURE/
+	fs_cgroup_filetrans_memory_pressure(init_t, file, "memory.pressure")
+	fs_mounton_cgroup_files(init_t)
 
 	optional_policy(`
 		# create /var/lock/lvm/
@@ -1601,7 +1612,7 @@ ifdef(`init_systemd',`
 	fs_search_cgroup_dirs(daemon)
 
 	# need write to /var/run/systemd/notify
-	init_write_runtime_socket(daemon)
+	systemd_write_notify_socket(daemon)
 ')
 
 tunable_policy(`init_daemons_use_tty',`

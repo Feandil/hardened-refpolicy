@@ -847,6 +847,25 @@ interface(`logging_watch_runtime_dirs',`
 
 ########################################
 ## <summary>
+##	Connect syslog varlink socket files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_stream_connect_journald_varlink',`
+	gen_require(`
+		type syslogd_runtime_t, syslogd_t;
+	')
+
+	init_search_run($1)
+	stream_connect_pattern($1, syslogd_runtime_t, syslogd_runtime_t, syslogd_t)
+')
+
+########################################
+## <summary>
 ##	Delete the syslog socket files
 ## </summary>
 ## <param name="domain">
@@ -1115,28 +1134,6 @@ interface(`logging_watch_all_logs',`
 	')
 
 	allow $1 logfile:file watch;
-')
-
-########################################
-## <summary>
-##	Execute all log files in the caller domain.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-# cjp: not sure why this is needed.  This was added
-# because of logrotate.
-interface(`logging_exec_all_logs',`
-	gen_require(`
-		attribute logfile;
-	')
-
-	files_search_var($1)
-	allow $1 logfile:dir list_dir_perms;
-	can_exec($1, logfile)
 ')
 
 ########################################

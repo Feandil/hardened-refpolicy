@@ -111,6 +111,8 @@ ifdef(`distro_redhat',`
 /etc/xen/qemu-ifup		--	gen_context(system_u:object_r:bin_t,s0)
 /etc/xen/scripts(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 
+/etc/zfs/zfs-functions		--      gen_context(system_u:object_r:bin_t,s0)
+
 ifdef(`distro_debian',`
 /etc/mysql/debian-start		--	gen_context(system_u:object_r:bin_t,s0)
 ')
@@ -318,7 +320,6 @@ ifdef(`distro_debian',`
 /usr/sbin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/sbin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 
-/usr/share/mdadm/checkarray	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/(.*/)?bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ajaxterm/ajaxterm\.py.* --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ajaxterm/qweb\.py.* --	gen_context(system_u:object_r:bin_t,s0)

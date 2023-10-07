@@ -1004,6 +1004,25 @@ interface(`init_unix_stream_socket_connectto',`
 
 ########################################
 ## <summary>
+##	Send to init with a unix socket.
+##  Without any additional permissions.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_unix_stream_socket_sendto',`
+	gen_require(`
+		type init_t;
+	')
+
+	allow $1 init_t:unix_stream_socket sendto;
+')
+
+########################################
+## <summary>
 ##	Inherit and use file descriptors from init.
 ## </summary>
 ## <desc>
@@ -1449,6 +1468,30 @@ interface(`init_relabel_var_lib_dirs',`
 	')
 
 	allow $1 init_var_lib_t:dir relabel_dir_perms;
+')
+
+########################################
+## <summary>
+##	Create, read, write, and delete the
+##	pseudorandom number generator seed
+##	file in /var/lib or /var/run
+##	directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_manage_random_seed',`
+	gen_require(`
+		type init_random_seed_t;
+	')
+
+	files_rw_var_lib_dirs($1)
+	files_rw_runtime_dirs($1)
+
+	allow $1 init_random_seed_t:file manage_file_perms;
 ')
 
 ########################################
@@ -3833,4 +3876,22 @@ interface(`init_getrlimit',`
 	')
 
 	allow $1 init_t:process getrlimit;
+')
+
+########################################
+## <summary>
+##      Allow searching init_t keys
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Source domain
+##      </summary>
+## </param>
+#
+interface(`init_search_keys',`
+	gen_require(`
+		type init_t;
+	')
+
+	allow $1 init_t:key search;
 ')

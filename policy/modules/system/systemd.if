@@ -19,11 +19,6 @@
 ##	The user domain for the role.
 ##	</summary>
 ## </param>
-## <param name="pty_type">
-##	<summary>
-##	The type for the user pty
-##	</summary>
-## </param>
 #
 template(`systemd_role_template',`
 	gen_require(`
@@ -34,6 +29,7 @@ template(`systemd_role_template',`
 		type systemd_user_runtime_t, systemd_user_runtime_notify_t;
 		type systemd_user_unit_t;
 		type systemd_user_runtime_unit_t, systemd_user_transient_unit_t;
+		type systemd_machined_t;
 	')
 
 	#################################
@@ -130,6 +126,7 @@ template(`systemd_role_template',`
 	systemd_search_user_runtime_unit_dirs($1_systemd_t)
 	systemd_search_user_transient_unit_dirs($1_systemd_t)
 	systemd_read_user_units_files($1_systemd_t)
+	systemd_write_notify_socket($1_systemd_t)
 
 	dbus_system_bus_client($1_systemd_t)
 	dbus_spec_session_bus_client($1, $1_systemd_t)
@@ -152,6 +149,12 @@ template(`systemd_role_template',`
 	allow $3 systemd_user_runtime_t:fifo_file { manage_fifo_file_perms relabel_fifo_file_perms };
 	allow $3 systemd_user_runtime_t:lnk_file { manage_lnk_file_perms relabel_lnk_file_perms };
 	allow $3 systemd_user_runtime_t:sock_file { manage_sock_file_perms relabel_sock_file_perms };
+
+	# for "machinectl shell"
+	allow $1_systemd_t systemd_machined_t:fd use;
+	allow $3 systemd_machined_t:fd use;
+	allow $3 systemd_machined_t:dbus send_msg;
+	allow systemd_machined_t $3:dbus send_msg;
 
 	allow $3 systemd_user_runtime_notify_t:sock_file { manage_sock_file_perms relabel_sock_file_perms };
 
@@ -272,6 +275,27 @@ interface(`systemd_user_unix_stream_activated_socket',`
 
 	typeattribute $1 systemd_user_unix_stream_activated_socket_type;
 	systemd_user_activated_sock_file($2)
+')
+
+#######################################
+## <summary>
+##  Allow the specified domain to write to
+##  systemd-notify socket
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_write_notify_socket',`
+	gen_require(`
+		type systemd_runtime_notify_t;
+	')
+
+	init_list_runtime($1)
+	init_unix_stream_socket_sendto($1)
+	allow $1 systemd_runtime_notify_t:sock_file write;
 ')
 
 ######################################
@@ -1513,6 +1537,24 @@ interface(`systemd_connect_machined',`
 	')
 
 	allow $1 systemd_machined_t:unix_stream_socket connectto;
+')
+
+########################################
+## <summary>
+##     dontaudit connecting to /run/systemd/userdb/io.systemd.Machine socket
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain that can access the socket
+##	</summary>
+## </param>
+#
+interface(`systemd_dontaudit_connect_machined',`
+	gen_require(`
+		type systemd_machined_t;
+	')
+
+	dontaudit $1 systemd_machined_t:unix_stream_socket connectto;
 ')
 
 ########################################

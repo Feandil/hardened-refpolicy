@@ -57,6 +57,7 @@ dev_read_realtime_clock(mdadm_t)
 # create links in /dev/md
 dev_create_generic_symlinks(mdadm_t)
 
+domain_dontaudit_search_all_domains_state(mdadm_t)
 domain_use_interactive_fds(mdadm_t)
 
 files_read_etc_files(mdadm_t)
@@ -73,7 +74,7 @@ fs_dontaudit_list_tmpfs(mdadm_t)
 mls_file_read_all_levels(mdadm_t)
 mls_file_write_all_levels(mdadm_t)
 
-storage_dev_filetrans_fixed_disk(mdadm_t)
+storage_dev_filetrans_fixed_disk(mdadm_t, blk_file)
 storage_manage_fixed_disk(mdadm_t)
 storage_read_scsi_generic(mdadm_t)
 storage_write_scsi_generic(mdadm_t)
@@ -95,6 +96,7 @@ userdom_dontaudit_search_user_home_content(mdadm_t)
 
 optional_policy(`
 	cron_system_entry(mdadm_t, mdadm_exec_t)
+	cron_rw_inherited_tmp_files(mdadm_t)
 ')
 
 optional_policy(`

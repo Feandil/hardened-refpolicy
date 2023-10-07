@@ -109,6 +109,9 @@ genfscon proc /mdstat gen_context(system_u:object_r:proc_mdstat_t,s0)
 type proc_net_t, proc_type;
 genfscon proc /net gen_context(system_u:object_r:proc_net_t,s0)
 
+type proc_psi_t, proc_type;
+genfscon proc /pressure gen_context(system_u:object_r:proc_psi_t,s0)
+
 type proc_xen_t, proc_type;
 files_mountpoint(proc_xen_t)
 genfscon proc /xen gen_context(system_u:object_r:proc_xen_t,s0)
@@ -357,10 +360,12 @@ files_delete_root_symlinks(kernel_t)
 files_delete_root_chr_files(kernel_t)
 files_list_root(kernel_t)
 files_list_etc(kernel_t)
+files_mounton_runtime_dirs(kernel_t)
 files_getattr_etc_runtime_dirs(kernel_t)
 files_mounton_etc_runtime_dirs(kernel_t)
 files_list_home(kernel_t)
 files_read_usr_files(kernel_t)
+files_mounton_default(kernel_t)
 
 mcs_process_set_categories(kernel_t)
 
@@ -385,7 +390,7 @@ ifdef(`init_systemd',`
 	')
 
 	optional_policy(`
-		storage_dev_filetrans_fixed_disk(kernel_t)
+		storage_dev_filetrans_fixed_disk(kernel_t, blk_file)
 		storage_setattr_fixed_disk_dev(kernel_t)
 		storage_create_fixed_disk_dev(kernel_t)
 		storage_delete_fixed_disk_dev(kernel_t)
@@ -536,12 +541,6 @@ if(secure_mode_insmod) {
 
 	files_dontaudit_load_kernel_modules(can_load_kernmodule)
 
-	# load_module() calls stop_machine() which
-	# calls sched_setscheduler()
-	# gt: there seems to be no trace of the above, at
-	# least in kernel versions greater than 2.6.37...
-	dontaudit can_load_kernmodule self:capability sys_nice;
-	dontaudit can_load_kernmodule kernel_t:process setsched;
 	dontaudit can_load_kernmodule kernel_t:key search;
 } else {
 	allow can_load_kernmodule self:capability sys_module;
@@ -549,13 +548,7 @@ if(secure_mode_insmod) {
 
 	files_load_kernel_modules(can_load_kernmodule)
 
-	# load_module() calls stop_machine() which
-	# calls sched_setscheduler()
-	# gt: there seems to be no trace of the above, at
-	# least in kernel versions greater than 2.6.37...
-	allow can_load_kernmodule self:capability sys_nice;
 	kernel_search_key(can_load_kernmodule)
-	kernel_setsched(can_load_kernmodule)
 }
 
 ########################################

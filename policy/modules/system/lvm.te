@@ -163,6 +163,7 @@ files_read_etc_files(lvm_t)
 files_watch_etc_files(lvm_t)
 files_read_etc_runtime_files(lvm_t)
 
+fs_getattr_cgroup(lvm_t)
 fs_getattr_xattr_fs(lvm_t)
 fs_search_auto_mountpoints(lvm_t)
 fs_list_tmpfs(lvm_t)
@@ -189,7 +190,7 @@ storage_dontaudit_read_removable_device(lvm_t)
 # LVM(2) needs to create directories (/dev/mapper, /dev/<vg>)
 # and links from /dev/<vg> to /dev/mapper/<vg>-<lv>
 # cjp: needs to create an interface here for fixed disk create
-storage_dev_filetrans_fixed_disk(lvm_t)
+storage_dev_filetrans_fixed_disk(lvm_t, blk_file)
 # Access raw devices and old /dev/lvm (c 109,0).  Is this needed?
 storage_manage_fixed_disk(lvm_t)
 
@@ -219,9 +220,14 @@ sysnet_write_config(lvm_t)
 userdom_use_inherited_user_terminals(lvm_t)
 
 ifdef(`init_systemd',`
+	fs_getattr_cgroup(lvm_t)
+	fs_list_pstore_dirs(lvm_t)
+	fs_manage_hugetlbfs_dirs(lvm_t)
+	fs_search_cgroup_dirs(lvm_t)
+
 	init_rw_stream_sockets(lvm_t)
 
-	fs_manage_hugetlbfs_dirs(lvm_t)
+	miscfiles_read_generic_certs(lvm_t)
 ')
 
 ifdef(`distro_redhat',`

@@ -268,6 +268,7 @@ interface(`mta_manage_mail_home_rw_content',`
 	manage_files_pattern($1, mail_home_rw_t, mail_home_rw_t)
 	allow $1 mail_home_rw_t:file map;
 	manage_lnk_files_pattern($1, mail_home_rw_t, mail_home_rw_t)
+	allow $1 mail_home_rw_t:{ dir file } watch;
 ')
 
 ########################################
@@ -611,6 +612,27 @@ interface(`mta_write_config',`
 
 	files_search_etc($1)
 	write_files_pattern($1, etc_mail_t, etc_mail_t)
+')
+
+########################################
+## <summary>
+##	Create, read, write, and delete
+##	mail server configuration content.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`mta_manage_config',`
+	gen_require(`
+		type etc_mail_t;
+	')
+
+	files_search_etc($1)
+	manage_dirs_pattern($1, etc_mail_t, etc_mail_t)
+	manage_files_pattern($1, etc_mail_t, etc_mail_t)
 ')
 
 ########################################
