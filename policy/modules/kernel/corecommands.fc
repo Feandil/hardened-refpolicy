@@ -130,6 +130,9 @@ ifdef(`distro_gentoo',`
 
 /opt/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 
+/opt/brother/Printers/[^/]+/lpd(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/opt/brother/Printers/[^/]+/cupswrapper(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+
 /opt/google/talkplugin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 
 /opt/gutenprint/cups/lib/filter(/.*)?	gen_context(system_u:object_r:bin_t,s0)
@@ -336,6 +339,7 @@ ifdef(`distro_debian',`
 /usr/share/cluster/.*\.sh		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cluster/ocf-shellfuncs --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cluster/svclib_nfslock --	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/cockpit/motd/update-motd    -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cvs/contrib/rcs2log	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/e16/misc(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/gedit/plugins/externaltools/tools(/.*)? gen_context(system_u:object_r:bin_t,s0)

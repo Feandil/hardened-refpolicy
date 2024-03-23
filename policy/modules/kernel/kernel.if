@@ -1440,7 +1440,7 @@ interface(`kernel_mounton_message_if',`
 	')
 
 	allow $1 proc_t:dir list_dir_perms;
-	allow $1 proc_kmsg_t:file { getattr mounton };
+	allow $1 proc_kmsg_t:file mounton_file_perms;
 ')
 
 ########################################
@@ -1792,7 +1792,7 @@ interface(`kernel_mounton_sysctl_dirs',`
 	')
 
 	allow $1 proc_t:dir list_dir_perms;
-	allow $1 sysctl_t:dir { getattr mounton };
+	allow $1 sysctl_t:dir mounton_dir_perms;
 ')
 
 ########################################
@@ -1832,7 +1832,7 @@ interface(`kernel_mounton_sysctl_files',`
 	')
 
 	allow $1 { proc_t sysctl_t }:dir list_dir_perms;
-	allow $1 sysctl_t:file { getattr mounton };
+	allow $1 sysctl_t:file mounton_file_perms;
 ')
 
 ########################################
@@ -2019,6 +2019,25 @@ interface(`kernel_rw_net_sysctls',`
 
 ########################################
 ## <summary>
+##	Allow caller to mount on network sysctl directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_mounton_net_sysctl_dirs',`
+	gen_require(`
+		type sysctl_net_t;
+	')
+
+	allow $1 sysctl_net_t:dir mounton;
+')
+
+########################################
+## <summary>
 ##	Allow caller to read unix domain
 ##	socket sysctls.
 ## </summary>
@@ -2183,6 +2202,25 @@ interface(`kernel_dontaudit_read_kernel_sysctl',`
 
 ########################################
 ## <summary>
+##	Allow caller to mount on kernel sysctl directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_mounton_kernel_sysctl_dirs',`
+	gen_require(`
+		type sysctl_kernel_t;
+	')
+
+	allow $1 sysctl_kernel_t:dir mounton;
+')
+
+########################################
+## <summary>
 ##	Read generic crypto sysctls.
 ## </summary>
 ## <param name="domain">
@@ -2298,7 +2336,7 @@ interface(`kernel_mounton_kernel_sysctl_files',`
 	')
 
 	allow $1 { proc_t sysctl_t sysctl_kernel_t }:dir list_dir_perms;
-	allow $1 sysctl_kernel_t:file { getattr mounton };
+	allow $1 sysctl_kernel_t:file mounton_file_perms;
 ')
 
 ########################################
@@ -3450,6 +3488,25 @@ interface(`kernel_relabelfrom_unlabeled_chr_devs',`
 	')
 
 	allow $1 unlabeled_t:chr_file relabelfrom_chr_file_perms;
+')
+
+########################################
+## <summary>
+##	Allow caller set the attributes on all unlabeled
+##	directory and file objects.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_setattr_all_unlabeled',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	allow $1 unlabeled_t:dir_file_class_set setattr;
 ')
 
 ########################################
