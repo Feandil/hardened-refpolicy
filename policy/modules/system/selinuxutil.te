@@ -243,9 +243,9 @@ allow newrole_t self:sock_file read_sock_file_perms;
 allow newrole_t self:shm create_shm_perms;
 allow newrole_t self:sem create_sem_perms;
 allow newrole_t self:msgq create_msgq_perms;
-allow newrole_t self:msg { send receive };
+allow newrole_t self:msg { receive send };
 allow newrole_t self:unix_dgram_socket sendto;
-allow newrole_t self:unix_stream_socket { create_stream_socket_perms connectto };
+allow newrole_t self:unix_stream_socket { connectto create_stream_socket_perms };
 allow newrole_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
 
 dontaudit newrole_t self:capability dac_read_search;
@@ -296,6 +296,7 @@ auth_use_nsswitch(newrole_t)
 auth_run_chk_passwd(newrole_t, newrole_roles)
 auth_run_upd_passwd(newrole_t, newrole_roles)
 auth_rw_faillog(newrole_t)
+auth_search_faillog(newrole_t)
 
 # Write to utmp.
 init_rw_utmp(newrole_t)
@@ -503,11 +504,13 @@ corecmd_exec_bin(selinux_dbus_t)
 files_read_etc_symlinks(selinux_dbus_t)
 files_list_usr(selinux_dbus_t)
 
-policykit_dbus_chat(selinux_dbus_t)
-
 miscfiles_read_localization(selinux_dbus_t)
 
 seutil_domtrans_semanage(selinux_dbus_t)
+
+optional_policy(`
+	policykit_dbus_chat(selinux_dbus_t)
+')
 
 ########################################
 #
@@ -629,7 +632,7 @@ allow setfiles_t self:fifo_file rw_fifo_file_perms;
 
 allow setfiles_t { policy_src_t policy_config_t file_context_t default_context_t }:dir list_dir_perms;
 allow setfiles_t { policy_src_t policy_config_t file_context_t default_context_t }:file read_file_perms;
-allow setfiles_t { policy_src_t policy_config_t file_context_t default_context_t }:lnk_file { read_lnk_file_perms ioctl lock };
+allow setfiles_t { policy_src_t policy_config_t file_context_t default_context_t }:lnk_file { ioctl lock read_lnk_file_perms };
 allow setfiles_t file_context_t:file map;
 
 kernel_read_system_state(setfiles_t)

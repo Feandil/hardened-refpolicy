@@ -19,6 +19,7 @@ files_type(bluetooth_conf_rw_t)
 
 type bluetooth_helper_t;
 type bluetooth_helper_exec_t;
+init_system_domain(bluetooth_helper_t, bluetooth_helper_exec_t)
 userdom_user_application_domain(bluetooth_helper_t, bluetooth_helper_exec_t)
 role bluetooth_helper_roles types bluetooth_helper_t;
 
@@ -53,7 +54,7 @@ files_type(bluetooth_var_lib_t)
 
 allow bluetooth_t self:capability { dac_override ipc_lock net_admin net_bind_service net_raw setpcap sys_admin sys_tty_config };
 dontaudit bluetooth_t self:capability sys_tty_config;
-allow bluetooth_t self:process { getcap setcap getsched signal_perms };
+allow bluetooth_t self:process { getcap getsched setcap signal_perms };
 allow bluetooth_t self:fifo_file rw_fifo_file_perms;
 allow bluetooth_t self:shm create_shm_perms;
 allow bluetooth_t self:socket create_stream_socket_perms;
@@ -90,6 +91,8 @@ files_runtime_filetrans(bluetooth_t, bluetooth_runtime_t, { file sock_file })
 
 can_exec(bluetooth_t, bluetooth_helper_exec_t)
 
+bluetooth_use_inherited_helper_stream_sockets(bluetooth_t)
+
 kernel_read_kernel_sysctls(bluetooth_t)
 kernel_read_system_state(bluetooth_t)
 kernel_read_network_state(bluetooth_t)
@@ -105,6 +108,7 @@ dev_rw_generic_usb_dev(bluetooth_t)
 dev_read_urand(bluetooth_t)
 dev_rw_input_dev(bluetooth_t)
 dev_rw_wireless(bluetooth_t)
+dev_rw_uhid(bluetooth_t)
 
 domain_use_interactive_fds(bluetooth_t)
 domain_dontaudit_search_all_domains_state(bluetooth_t)
@@ -180,6 +184,8 @@ allow bluetooth_helper_t self:shm create_shm_perms;
 allow bluetooth_helper_t self:unix_stream_socket { accept connectto listen };
 
 allow bluetooth_helper_t bluetooth_t:socket { read write };
+allow bluetooth_helper_t bluetooth_t:fd use;
+allow bluetooth_helper_t bluetooth_t:unix_stream_socket rw_socket_perms;
 
 manage_dirs_pattern(bluetooth_helper_t, bluetooth_helper_tmp_t, bluetooth_helper_tmp_t)
 manage_files_pattern(bluetooth_helper_t, bluetooth_helper_tmp_t, bluetooth_helper_tmp_t)
@@ -207,6 +213,8 @@ files_dontaudit_list_default(bluetooth_helper_t)
 term_dontaudit_use_all_ttys(bluetooth_helper_t)
 
 auth_use_nsswitch(bluetooth_helper_t)
+
+init_use_script_ptys(bluetooth_helper_t)
 
 locallogin_dontaudit_use_fds(bluetooth_helper_t)
 

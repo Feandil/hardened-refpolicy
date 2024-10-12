@@ -29,7 +29,7 @@ files_runtime_file(avahi_var_lib_t)
 
 allow avahi_t self:capability { chown dac_override fowner kill net_admin net_raw setgid setuid sys_chroot };
 dontaudit avahi_t self:capability sys_tty_config;
-allow avahi_t self:process { setrlimit signal_perms getcap setcap };
+allow avahi_t self:process { getcap setcap setrlimit signal_perms };
 allow avahi_t self:fifo_file rw_fifo_file_perms;
 allow avahi_t self:unix_stream_socket { accept connectto listen };
 allow avahi_t self:tcp_socket { accept listen };
@@ -94,6 +94,10 @@ sysnet_etc_filetrans_config(avahi_t)
 
 userdom_dontaudit_use_unpriv_user_fds(avahi_t)
 userdom_dontaudit_search_user_home_dirs(avahi_t)
+
+ifdef(`init_systemd',`
+	systemd_stream_connect_nsresourced(avahi_t)
+')
 
 optional_policy(`
 	dbus_system_domain(avahi_t, avahi_exec_t)

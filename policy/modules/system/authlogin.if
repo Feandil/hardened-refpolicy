@@ -761,6 +761,25 @@ interface(`auth_etc_filetrans_shadow',`
 
 ########################################
 ## <summary>
+##	Get the attributes of the shadow history file.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_getattr_shadow_history',`
+	gen_require(`
+		type shadow_history_t;
+	')
+
+	files_search_etc($1)
+	allow $1 shadow_history_t:file getattr;
+')
+
+########################################
+## <summary>
 ##	Read the shadow history file.
 ## </summary>
 ## <param name="domain">
@@ -857,6 +876,24 @@ interface(`auth_rw_shadow_lock',`
 	')
 
 	rw_files_pattern($1, shadow_lock_t, shadow_lock_t)
+')
+
+########################################
+## <summary>
+##	Search faillock directory (/run/faillock).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_search_faillog',`
+	gen_require(`
+		type faillog_t;
+	')
+
+	allow $1 faillog_t:dir search_dir_perms;
 ')
 
 #######################################
@@ -1026,7 +1063,7 @@ interface(`auth_rw_lastlog',`
 	')
 
 	logging_search_logs($1)
-	allow $1 lastlog_t:file { rw_file_perms lock setattr };
+	allow $1 lastlog_t:file { lock rw_file_perms setattr };
 ')
 
 ########################################
@@ -1672,7 +1709,7 @@ interface(`auth_write_login_records',`
 		type wtmp_t;
 	')
 
-	allow $1 wtmp_t:file { write_file_perms lock };
+	allow $1 wtmp_t:file { lock write_file_perms };
 ')
 
 ########################################

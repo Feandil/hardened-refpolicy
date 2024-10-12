@@ -110,6 +110,24 @@ interface(`dev_getattr_fs',`
 
 ########################################
 ## <summary>
+##	Unmount device filesystems.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_unmount_fs',`
+	gen_require(`
+		type device_t;
+	')
+
+	allow $1 device_t:filesystem unmount;
+')
+
+########################################
+## <summary>
 ##	Remount device filesystems.
 ## </summary>
 ## <param name="domain">
@@ -1025,7 +1043,7 @@ interface(`dev_dontaudit_rw_generic_dev_nodes',`
 		type device_t;
 	')
 
-	dontaudit $1 device_t:{ chr_file blk_file } { getattr read write ioctl };
+	dontaudit $1 device_t:{ chr_file blk_file } { getattr ioctl read write };
 ')
 
 ########################################
@@ -3087,7 +3105,7 @@ interface(`dev_rx_raw_memory',`
 	')
 
 	dev_read_raw_memory($1)
-	allow $1 memory_device_t:chr_file { map execute };
+	allow $1 memory_device_t:chr_file { execute map };
 ')
 
 ########################################
@@ -3109,7 +3127,7 @@ interface(`dev_wx_raw_memory',`
 	')
 
 	dev_write_raw_memory($1)
-	allow $1 memory_device_t:chr_file { map execute };
+	allow $1 memory_device_t:chr_file { execute map };
 ')
 
 ########################################
@@ -3139,7 +3157,7 @@ interface(`dev_wx_raw_memory_cond',`
 	typeattribute $1 memory_raw_write;
 	dev_write_raw_memory_cond($1, $2)
 	tunable_policy(`$2', `
-		allow $1 memory_device_t:chr_file { map execute };
+		allow $1 memory_device_t:chr_file { execute map };
 	')
 ')
 
@@ -3615,10 +3633,10 @@ interface(`dev_create_null_dev',`
 interface(`dev_manage_null_service',`
 	gen_require(`
 		type null_device_t;
-		class service { status start stop reload };
+		class service { reload start status stop };
 	')
 
-	allow $1 null_device_t:service { status start stop reload };
+	allow $1 null_device_t:service { reload start status stop};
 ')
 
 ########################################
@@ -4851,6 +4869,25 @@ interface(`dev_rw_tpm',`
 	rw_chr_files_pattern($1, device_t, tpm_device_t)
 ')
 
+#####################
+## <summary>
+##	Allow open/read/write uhid device
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed rw to uhid device
+##	to communicate with uhid input node
+##	</summary>
+## </param>
+#
+interface(`dev_rw_uhid',`
+        gen_require(`
+                type device_t, uhid_device_t;
+        ')
+
+        rw_chr_files_pattern($1, device_t, uhid_device_t)
+')
+
 ########################################
 ## <summary>
 ##	Read from pseudo random number generator devices (e.g., /dev/urandom).
@@ -5448,6 +5485,24 @@ interface(`dev_relabelfrom_vfio_dev',`
 
 ############################
 ## <summary>
+##	Get the attributes of the vhost devices.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_getattr_vhost_dev',`
+	gen_require(`
+		type device_t, vhost_device_t;
+	')
+
+	getattr_chr_files_pattern($1, device_t, vhost_device_t)
+')
+
+############################
+## <summary>
 ##	Allow read/write the vhost devices
 ## </summary>
 ## <param name="domain">
@@ -5498,7 +5553,61 @@ interface(`dev_rwx_vmware',`
 	')
 
 	dev_rw_vmware($1)
-	allow $1 vmware_device_t:chr_file { map execute };
+	allow $1 vmware_device_t:chr_file { execute map };
+')
+
+########################################
+## <summary>
+##	Read the vsock device.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_read_vsock',`
+	gen_require(`
+		type device_t, vsock_device_t;
+	')
+
+	read_chr_files_pattern($1, device_t, vsock_device_t)
+')
+
+########################################
+## <summary>
+##	Write the vsock device.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_write_vsock',`
+	gen_require(`
+		type device_t, vsock_device_t;
+	')
+
+	write_chr_files_pattern($1, device_t, vsock_device_t)
+')
+
+########################################
+## <summary>
+##	Read and write the vsock device.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_rw_vsock',`
+	gen_require(`
+		type device_t, vsock_device_t;
+	')
+
+	rw_chr_files_pattern($1, device_t, vsock_device_t)
 ')
 
 ########################################
@@ -5758,7 +5867,7 @@ interface(`dev_rwx_zero',`
 	')
 
 	dev_rw_zero($1)
-	allow $1 zero_device_t:chr_file { map execute };
+	allow $1 zero_device_t:chr_file { execute map };
 ')
 
 ########################################

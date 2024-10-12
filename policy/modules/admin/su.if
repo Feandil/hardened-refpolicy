@@ -31,9 +31,10 @@
 template(`su_restricted_domain_template', `
 	gen_require(`
 		type su_exec_t;
+		attribute sudomain;
 	')
 
-	type $1_su_t;
+	type $1_su_t, sudomain;
 	domain_entry_file($1_su_t, su_exec_t)
 	domain_type($1_su_t)
 	domain_interactive_fd($1_su_t)
@@ -45,9 +46,9 @@ template(`su_restricted_domain_template', `
 	allow $1_su_t self:capability { audit_control audit_write chown dac_override fowner net_bind_service setgid setuid sys_nice sys_resource };
 	dontaudit $1_su_t self:capability sys_tty_config;
 	allow $1_su_t self:key { search write };
-	allow $1_su_t self:process { setexec setsched setrlimit signal };
+	allow $1_su_t self:process { setexec setrlimit setsched signal };
 	allow $1_su_t self:fifo_file rw_fifo_file_perms;
-	allow $1_su_t self:netlink_audit_socket { nlmsg_relay create_netlink_socket_perms };
+	allow $1_su_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
 	allow $1_su_t self:unix_stream_socket create_stream_socket_perms;
 
 	# Transition from the user domain to this domain.
@@ -154,9 +155,10 @@ template(`su_restricted_domain_template', `
 template(`su_role_template',`
 	gen_require(`
 		type su_exec_t;
+		attribute sudomain;
 	')
 
-	type $1_su_t;
+	type $1_su_t, sudomain;
 	userdom_user_application_domain($1_su_t, su_exec_t)
 	domain_interactive_fd($1_su_t)
 	role $4 types $1_su_t;
@@ -165,9 +167,9 @@ template(`su_role_template',`
 
 	allow $1_su_t self:capability { audit_control audit_write chown dac_override fowner net_bind_service setgid setuid sys_nice sys_resource };
 	dontaudit $1_su_t self:capability { net_admin sys_tty_config };
-	allow $1_su_t self:process { setexec setsched setrlimit signal };
+	allow $1_su_t self:process { setexec setrlimit setsched signal };
 	allow $1_su_t self:fifo_file rw_fifo_file_perms;
-	allow $1_su_t self:netlink_audit_socket { nlmsg_relay create_netlink_socket_perms };
+	allow $1_su_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
 	allow $1_su_t self:key { search write };
 
 	# By default, revert to the calling domain when a shell is executed.
@@ -318,4 +320,22 @@ interface(`su_exec',`
 
 	corecmd_search_bin($1)
 	can_exec($1, su_exec_t)
+')
+
+#######################################
+## <summary>
+##	Send signals to all su domains.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`su_signal_all',`
+	gen_require(`
+		attribute sudomain;
+	')
+
+	allow $1 sudomain:process signal;
 ')

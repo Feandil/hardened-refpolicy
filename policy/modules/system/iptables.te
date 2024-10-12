@@ -37,7 +37,7 @@ allow iptables_t self:capability { dac_override dac_read_search net_admin net_ra
 dontaudit iptables_t self:capability sys_tty_config;
 allow iptables_t self:cap_userns { net_admin net_raw };
 allow iptables_t self:fifo_file rw_fifo_file_perms;
-allow iptables_t self:process { sigchld sigkill sigstop signull signal };
+allow iptables_t self:process { sigchld sigkill signal signull sigstop };
 allow iptables_t self:netlink_socket create_socket_perms;
 allow iptables_t self:netlink_netfilter_socket create_socket_perms;
 allow iptables_t self:rawip_socket create_socket_perms;
@@ -84,6 +84,7 @@ domain_use_interactive_fds(iptables_t)
 
 files_read_etc_files(iptables_t)
 files_read_etc_runtime_files(iptables_t)
+files_read_usr_files(iptables_t)
 
 auth_use_nsswitch(iptables_t)
 
@@ -104,11 +105,12 @@ sysnet_dns_name_resolve(iptables_t)
 
 userdom_use_inherited_user_terminals(iptables_t)
 
-
-
 optional_policy(`
 	# iptables may try to rw /ptmx in a container
 	container_dontaudit_rw_chr_files(iptables_t)
+
+	# iptables reads firewall rules written to tmp
+	container_read_engine_tmp_files(iptables_t)
 ')
 
 optional_policy(`
@@ -124,6 +126,11 @@ optional_policy(`
 optional_policy(`
 	firstboot_use_fds(iptables_t)
 	firstboot_rw_pipes(iptables_t)
+')
+
+optional_policy(`
+	# apply firewall rules from multus
+	kubernetes_rw_container_engine_fifo_files(iptables_t)
 ')
 
 optional_policy(`

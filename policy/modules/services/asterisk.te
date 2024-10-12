@@ -41,7 +41,7 @@ files_type(asterisk_var_lib_t)
 
 allow asterisk_t self:capability { chown dac_override net_admin setgid setuid sys_nice };
 dontaudit asterisk_t self:capability { sys_module sys_tty_config };
-allow asterisk_t self:process { getsched setsched signal_perms getcap setcap };
+allow asterisk_t self:process { getcap getsched setcap setsched signal_perms };
 allow asterisk_t self:fifo_file rw_fifo_file_perms;
 allow asterisk_t self:sem create_sem_perms;
 allow asterisk_t self:shm create_shm_perms;
@@ -60,6 +60,7 @@ manage_dirs_pattern(asterisk_t, asterisk_spool_t, asterisk_spool_t)
 manage_files_pattern(asterisk_t, asterisk_spool_t, asterisk_spool_t)
 manage_lnk_files_pattern(asterisk_t, asterisk_spool_t, asterisk_spool_t)
 files_spool_filetrans(asterisk_t, asterisk_spool_t, { dir file })
+allow asterisk_t asterisk_spool_t:dir watch;
 
 manage_dirs_pattern(asterisk_t, asterisk_tmp_t, asterisk_tmp_t)
 manage_files_pattern(asterisk_t, asterisk_tmp_t, asterisk_tmp_t)
@@ -156,6 +157,10 @@ userdom_dontaudit_search_user_home_dirs(asterisk_t)
 
 optional_policy(`
 	alsa_read_config(asterisk_t)
+')
+
+optional_policy(`
+	certbot_read_lib(asterisk_t)
 ')
 
 optional_policy(`

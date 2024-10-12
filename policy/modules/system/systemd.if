@@ -23,7 +23,7 @@
 template(`systemd_role_template',`
 	gen_require(`
 		class service { reload start status stop };
-		class system { disable enable reload start stop status };
+		class system { disable enable reload start status stop };
 		attribute systemd_user_session_type, systemd_log_parse_env_type;
 		attribute systemd_user_activated_sock_file_type, systemd_user_unix_stream_activated_socket_type;
 		type systemd_analyze_exec_t;
@@ -61,8 +61,10 @@ template(`systemd_role_template',`
 	# remainder of the rules.
 	allow $1_systemd_t self:process { getsched signal };
 	allow $1_systemd_t self:netlink_kobject_uevent_socket create_socket_perms;
+	allow $1_systemd_t self:netlink_route_socket r_netlink_socket_perms;
+	allow $1_systemd_t self:unix_dgram_socket { create_socket_perms sendto };
 	allow $1_systemd_t self:unix_stream_socket create_stream_socket_perms;
-	allow $1_systemd_t $3:process { setsched rlimitinh signal_perms };
+	allow $1_systemd_t $3:process { rlimitinh setsched signal_perms };
 	corecmd_shell_domtrans($1_systemd_t, $3)
 	corecmd_bin_domtrans($1_systemd_t, $3)
 
@@ -170,7 +172,7 @@ template(`systemd_role_template',`
 	allow $3 $1_systemd_t:fifo_file rw_inherited_fifo_file_perms;
 	stream_connect_pattern($3, systemd_user_runtime_t, systemd_user_runtime_t, $1_systemd_t)
 
-	allow $3 $1_systemd_t:system { disable enable reload start stop status };
+	allow $3 $1_systemd_t:system { disable enable reload start status stop };
 
 	allow $3 systemd_user_runtime_t:dir { manage_dir_perms relabel_dir_perms };
 	allow $3 systemd_user_runtime_t:file { manage_file_perms relabel_file_perms };
@@ -1113,6 +1115,27 @@ interface(`systemd_PrivateDevices',`
 	fs_read_tmpfs_symlinks($1)
 ')
 
+########################################
+## <summary>
+##   Send and receive messages from
+##   systemd homed over dbus.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`systemd_dbus_chat_homed',`
+	gen_require(`
+		type systemd_homed_t;
+		class dbus send_msg;
+	')
+
+	allow $1 systemd_homed_t:dbus send_msg;
+	allow systemd_homed_t $1:dbus send_msg;
+')
+
 ######################################
 ## <summary>
 ##   Read and write systemd-homework semaphores.
@@ -2053,10 +2076,10 @@ interface(`systemd_manage_networkd_units',`
 interface(`systemd_enabledisable_networkd',`
 	gen_require(`
 		type systemd_networkd_unit_t;
-		class service { enable disable };
+		class service { disable enable };
 	')
 
-	allow $1 systemd_networkd_unit_t:service { enable disable };
+	allow $1 systemd_networkd_unit_t:service { disable enable };
 ')
 
 ########################################
@@ -2209,6 +2232,27 @@ interface(`systemd_read_networkd_runtime',`
 
 	list_dirs_pattern($1, systemd_networkd_runtime_t, systemd_networkd_runtime_t)
 	read_files_pattern($1, systemd_networkd_runtime_t, systemd_networkd_runtime_t)
+')
+
+#######################################
+## <summary>
+##  Connect to systemd-nsresourced over
+##  /run/systemd/io.systemd.NamespaceResource .
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`systemd_stream_connect_nsresourced', `
+	gen_require(`
+		type systemd_nsresourced_t;
+		type systemd_nsresourced_runtime_t;
+	')
+
+	init_search_runtime($1)
+	stream_connect_pattern($1, systemd_nsresourced_runtime_t, systemd_nsresourced_runtime_t, systemd_nsresourced_t)
 ')
 
 ########################################
@@ -2534,13 +2578,13 @@ interface(`systemd_tmpfilesd_managed',`
 	')
 
 	allow systemd_tmpfiles_t $1:dir { manage_dir_perms relabel_dir_perms  };
-	allow systemd_tmpfiles_t $1:file { create setattr unlink write_file_perms relabel_file_perms };
-	allow systemd_tmpfiles_t $1:lnk_file { create read setattr unlink relabel_lnk_file_perms };
-	allow systemd_tmpfiles_t $1:fifo_file { create setattr unlink relabel_fifo_file_perms };
+	allow systemd_tmpfiles_t $1:file { create relabel_file_perms setattr unlink write_file_perms };
+	allow systemd_tmpfiles_t $1:lnk_file { create read relabel_lnk_file_perms setattr unlink };
+	allow systemd_tmpfiles_t $1:fifo_file { create relabel_fifo_file_perms setattr unlink };
 
 	ifelse(`$2',`',`',`
 		refpolicywarn(`$0($*) second parameter is deprecated.')
-		allow systemd_tmpfiles_t $1:$2 { setattr relabelfrom relabelto create };
+		allow systemd_tmpfiles_t $1:$2 { create relabelfrom relabelto setattr };
 	')
 ')
 

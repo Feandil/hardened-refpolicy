@@ -59,7 +59,7 @@ interface(`dbus_exec',`
 #
 template(`dbus_role_template',`
 	gen_require(`
-		class dbus { send_msg acquire_svc };
+		class dbus { acquire_svc send_msg };
 		attribute session_bus_type;
 		type system_dbusd_t, dbusd_exec_t;
 		type session_dbusd_tmp_t, session_dbusd_home_t;
@@ -86,14 +86,14 @@ template(`dbus_role_template',`
 	# Local policy
 	#
 
-	allow $3 $1_dbusd_t:unix_stream_socket { create_stream_socket_perms connectto };
-	allow $3 $1_dbusd_t:dbus { send_msg acquire_svc };
+	allow $3 $1_dbusd_t:unix_stream_socket { connectto create_stream_socket_perms };
+	allow $3 $1_dbusd_t:dbus { acquire_svc send_msg };
 	allow $3 $1_dbusd_t:fd use;
 
 	dontaudit $1_dbusd_t self:process getcap;
 	dontaudit $1_dbusd_t self:cap_userns sys_ptrace;
 
-	allow $3 system_dbusd_t:dbus { send_msg acquire_svc };
+	allow $3 system_dbusd_t:dbus { acquire_svc send_msg };
 	dontaudit $3 $1_dbusd_t:netlink_selinux_socket { read write };
 
 	allow $3 { session_dbusd_home_t session_dbusd_tmp_t }:dir { manage_dir_perms relabel_dir_perms };
@@ -625,6 +625,25 @@ interface(`dbus_system_domain',`
 ## </param>
 #
 interface(`dbus_use_system_bus_fds',`
+	gen_require(`
+		type system_dbusd_t;
+	')
+
+	allow $1 system_dbusd_t:fd use;
+')
+
+########################################
+## <summary>
+##	Use PIDFD file descriptors from the
+##	DBUS system bus.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dbus_use_system_bus_pidfds',`
 	gen_require(`
 		type system_dbusd_t;
 	')
