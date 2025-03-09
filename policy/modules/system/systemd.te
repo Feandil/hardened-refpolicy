@@ -920,6 +920,7 @@ files_read_usr_files(systemd_locale_t)
 
 fs_getattr_all_fs(systemd_locale_t)
 fs_search_cgroup_dirs(systemd_locale_t)
+fs_getattr_nsfs_files(systemd_locale_t)
 
 init_stream_connect(systemd_locale_t)
 
@@ -1133,6 +1134,9 @@ tunable_policy(`systemd_logind_get_bootloader',`
 	fs_getattr_dos_fs(systemd_logind_t)
 	fs_list_dos(systemd_logind_t)
 	fs_read_dos_files(systemd_logind_t)
+
+	# automounted bootloader partitions have dosfs_t for contents inside them, so we only need to allow getattr
+	fs_getattr_autofs(systemd_logind_t)
 
 	files_search_boot(systemd_logind_t)
 ')
@@ -1583,6 +1587,7 @@ manage_sock_files_pattern(systemd_nsresourced_t, systemd_nsresourced_runtime_t, 
 init_runtime_filetrans(systemd_nsresourced_t, systemd_nsresourced_runtime_t, dir)
 
 fs_getattr_cgroup(systemd_nsresourced_t)
+fs_getattr_nsfs_files(systemd_nsresourced_t)
 
 # for /proc/1/environ
 init_read_state(systemd_nsresourced_t)
@@ -1784,12 +1789,14 @@ files_watch_runtime_dirs(systemd_resolved_t)
 files_list_runtime(systemd_resolved_t)
 
 fs_getattr_all_fs(systemd_resolved_t)
+fs_getattr_nsfs_files(systemd_resolved_t)
 fs_search_cgroup_dirs(systemd_resolved_t)
 fs_search_tmpfs(systemd_resolved_t)
 fs_search_ramfs(systemd_resolved_t)
 fs_watch_memory_pressure(systemd_resolved_t)
 
 init_dgram_send(systemd_resolved_t)
+init_watch_runtime_dirs(systemd_resolved_t)
 
 miscfiles_read_generic_certs(systemd_resolved_t)
 
@@ -1897,6 +1904,7 @@ allow systemd_sysusers_t self:unix_dgram_socket sendto;
 files_manage_etc_files(systemd_sysusers_t)
 
 fs_getattr_all_fs(systemd_sysusers_t)
+fs_getattr_nsfs_files(systemd_sysusers_t)
 fs_search_all(systemd_sysusers_t)
 
 kernel_read_kernel_sysctls(systemd_sysusers_t)
@@ -2089,6 +2097,7 @@ files_etc_filetrans(systemd_update_done_t, systemd_update_run_t, file)
 files_var_filetrans(systemd_update_done_t, systemd_update_run_t, file)
 
 fs_getattr_all_fs(systemd_update_done_t)
+fs_getattr_nsfs_files(systemd_update_done_t)
 fs_search_cgroup_dirs(systemd_update_done_t)
 
 kernel_read_kernel_sysctls(systemd_update_done_t)
@@ -2205,6 +2214,7 @@ files_read_etc_runtime_files(systemd_userdbd_t)
 files_read_usr_files(systemd_userdbd_t)
 
 fs_getattr_all_fs(systemd_userdbd_t)
+fs_getattr_nsfs_files(systemd_userdbd_t)
 fs_search_cgroup_dirs(systemd_userdbd_t)
 fs_read_efivarfs_files(systemd_userdbd_t)
 fs_watch_memory_pressure(systemd_userdbd_t)

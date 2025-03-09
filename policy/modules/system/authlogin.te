@@ -109,7 +109,7 @@ optional_policy(`
 # Check password local policy
 #
 
-allow chkpwd_t self:capability { dac_override setuid };
+allow chkpwd_t self:capability { dac_override dac_read_search setuid };
 dontaudit chkpwd_t self:capability sys_tty_config;
 allow chkpwd_t self:process { getattr signal };
 dontaudit chkpwd_t self:process getcap;
@@ -142,7 +142,6 @@ term_dontaudit_use_all_ptys(chkpwd_t)
 
 auth_read_shadow_history(chkpwd_t)
 auth_use_nsswitch(chkpwd_t)
-auth_use_pam_systemd(chkpwd_t)
 
 logging_send_audit_msgs(chkpwd_t)
 logging_send_syslog_msg(chkpwd_t)
@@ -158,6 +157,10 @@ ifdef(`distro_ubuntu',`
 	optional_policy(`
 		unconfined_domain(chkpwd_t)
 	')
+')
+
+ifdef(`init_systemd',`
+	auth_use_pam_systemd(chkpwd_t)
 ')
 
 optional_policy(`
