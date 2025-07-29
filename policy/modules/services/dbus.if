@@ -204,6 +204,25 @@ interface(`dbus_connect_all_session_bus',`
 
 #######################################
 ## <summary>
+##	send file to all session busses.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dbus_send_fifo_file_all_session_bus',`
+	gen_require(`
+		attribute session_bus_type;
+	')
+
+	allow session_bus_type $1:fd use;
+	allow session_bus_type $1:fifo_file rw_inherited_fifo_file_perms;
+')
+
+#######################################
+## <summary>
 ##	Acquire service on specified
 ##	DBUS session bus.
 ## </summary>
@@ -649,6 +668,30 @@ interface(`dbus_use_system_bus_pidfds',`
 	')
 
 	allow $1 system_dbusd_t:fd use;
+')
+
+########################################
+## <summary>
+##	Allow DBUS system bus to receive file handles
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to receive fds from
+##	</summary>
+## </param>
+## <param name="file type">
+##	<summary>
+##	Type of file to receive
+##	</summary>
+## </param>
+#
+interface(`dbus_system_bus_receive_file_handle',`
+	gen_require(`
+		type system_dbusd_t;
+	')
+
+	allow system_dbusd_t $1:fd use;
+	allow system_dbusd_t $2:file rw_inherited_file_perms;
 ')
 
 ########################################

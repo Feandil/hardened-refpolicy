@@ -57,6 +57,7 @@ files_search_etc(zed_t)
 
 kernel_read_system_state(zed_t)
 kernel_read_vm_overcommit_sysctl(zed_t)
+kernel_request_load_module(zed_t)
 
 storage_raw_rw_fixed_disk(zed_t)
 
@@ -83,7 +84,7 @@ optional_policy(`
 # zfs local policy
 #
 
-allow zfs_t self:process { getsched signal signull };
+allow zfs_t self:process { getsched setpgid signal signull };
 allow zfs_t self:capability { sys_admin sys_rawio };
 allow zfs_t self:fifo_file rw_fifo_file_perms;
 
@@ -120,6 +121,7 @@ fs_rw_nfsd_fs(zfs_t)
 kernel_read_fs_sysctls(zfs_t)
 kernel_read_kernel_sysctls(zfs_t)
 kernel_read_system_state(zfs_t)
+kernel_request_load_module(zfs_t)
 
 storage_raw_rw_fixed_disk(zfs_t)
 
@@ -145,6 +147,11 @@ allow zfs_t zfs_exec_t:file execute_no_trans;
 optional_policy(`
 	fstools_manage_runtime_files(zfs_t)
 	fstools_runtime_filetrans(zfs_t, dir, "blkid")
+')
+
+optional_policy(`
+	# required when incusd is using zfs as storage backend
+	incus_stream_connect_daemon(zfs_t)
 ')
 
 optional_policy(`

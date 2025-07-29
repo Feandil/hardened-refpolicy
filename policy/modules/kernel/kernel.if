@@ -711,6 +711,25 @@ interface(`kernel_getattr_debugfs',`
 
 ########################################
 ## <summary>
+##	Do not audit attempt to getattr a debugfs
+##	filesystem.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`kernel_dontaudit_getattr_debugfs',`
+        gen_require(`
+                type debugfs_t;
+        ')
+
+        dontaudit $1 debugfs_t:filesystem getattr;
+')
+
+########################################
+## <summary>
 ##	Mount a kernel debugging filesystem.
 ## </summary>
 ## <param name="domain">
@@ -761,6 +780,25 @@ interface(`kernel_remount_debugfs',`
 	')
 
 	allow $1 debugfs_t:filesystem remount;
+')
+
+########################################
+## <summary>
+##	Do not audit attempt to remount a debugfs
+##	filesystem.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`kernel_dontaudit_remount_debugfs',`
+        gen_require(`
+                type debugfs_t;
+        ')
+
+        dontaudit $1 debugfs_t:filesystem remount;
 ')
 
 ########################################
@@ -835,6 +873,44 @@ interface(`kernel_dontaudit_write_debugfs_dirs',`
 	')
 
 	dontaudit $1 debugfs_t:dir write;
+')
+
+########################################
+## <summary>
+##	Write to debugfs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_write_debugfs',`
+	gen_require(`
+		type debugfs_t;
+	')
+
+	write_files_pattern($1, debugfs_t, debugfs_t)
+	read_lnk_files_pattern($1, debugfs_t, debugfs_t)
+	list_dirs_pattern($1, debugfs_t, debugfs_t)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to write to debugfs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`kernel_dontaudit_write_debugfs',`
+	gen_require(`
+		type debugfs_t;
+	')
+
+	dontaudit $1 debugfs_t:file write_file_perms;
 ')
 
 ########################################
@@ -963,6 +1039,24 @@ interface(`kernel_dontaudit_getattr_proc',`
 	')
 
 	dontaudit $1 proc_t:filesystem getattr;
+')
+
+########################################
+## <summary>
+##	Watch proc dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_watch_proc_dirs',`
+	gen_require(`
+		type proc_t;
+	')
+
+	allow $1 proc_t:dir watch;
 ')
 
 ########################################
@@ -2182,6 +2276,24 @@ interface(`kernel_dontaudit_search_kernel_sysctl',`
 	dontaudit $1 sysctl_kernel_t:dir search;
 ')
 
+########################################
+## <summary>
+##	Allow watching sysctl kernel dirs
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to allow watching.
+##	</summary>
+## </param>
+#
+interface(`kernel_watch_kernel_sysctl_dirs',`
+	gen_require(`
+		type sysctl_kernel_t;
+	')
+
+	allow $1 sysctl_kernel_t:dir watch;
+')
+
 #######################################
 ## <summary>
 ##	Do not audit attempted reading of kernel sysctls
@@ -2827,6 +2939,24 @@ interface(`kernel_list_unlabeled',`
 	')
 
 	allow $1 unlabeled_t:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##	Create objects in unlabeled directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_add_entry_unlabeled_dirs',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	allow $1 unlabeled_t:dir add_entry_dir_perms;
 ')
 
 ########################################

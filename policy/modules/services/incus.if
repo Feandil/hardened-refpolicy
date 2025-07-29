@@ -1,0 +1,160 @@
+## <summary>Policy for incus</summary>
+
+########################################
+## <summary>
+##      Associated the specified domain to
+##      be a domain which is capable of
+##      operating as a container domain
+##      which can be controlled by incus.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`incus_container',`
+	gen_require(`
+		attribute incus_container_domain;
+	')
+
+	typeattribute $1 incus_container_domain;
+')
+
+########################################
+## <summary>
+##	Execute incus CLI in the incus CLI domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to transition.
+##	</summary>
+## </param>
+#
+interface(`incus_domtrans_cli',`
+	gen_require(`
+		type incusc_t, incusc_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, incusc_exec_t, incusc_t)
+')
+
+########################################
+## <summary>
+##	Execute incus CLI in the incus CLI
+##	domain, and allow the specified role
+##	the incus CLI domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to transition.
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	The role to be allowed the incus domain.
+##	</summary>
+## </param>
+#
+interface(`incus_run_cli',`
+	gen_require(`
+		type incusc_t;
+	')
+
+	role $2 types incusc_t;
+
+	incus_domtrans_cli($1)
+')
+
+########################################
+## <summary>
+##	Execute incus CLI in the incus CLI
+##	user domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to transition.
+##	</summary>
+## </param>
+#
+interface(`incus_domtrans_user_cli',`
+	gen_require(`
+		type incusc_user_t, incusc_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, incusc_exec_t, incusc_user_t)
+')
+
+########################################
+## <summary>
+##	Execute incus CLI in the incus CLI
+##	user domain, and allow the specified
+##	role the incus CLI user domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed to transition.
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	The role to be allowed the incus
+##	user domain.
+##	</summary>
+## </param>
+#
+interface(`incus_run_user_cli',`
+	gen_require(`
+		type incusc_user_t;
+	')
+
+	role $2 types incusc_user_t;
+
+	incus_domtrans_user_cli($1)
+')
+
+########################################
+## <summary>
+##	Connect to the incus daemon
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+interface(`incus_stream_connect_daemon',`
+	gen_require(`
+		type incusd_t;
+	')
+
+	allow $1 incusd_t:unix_stream_socket { connectto rw_socket_perms };
+')
+
+########################################
+## <summary>
+##	All of the rules required to
+##	administrate a incus
+##	environment.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	Role allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`incus_admin',`
+	incus_run_cli($1, $2)
+
+	optional_policy(`
+		rootlesskit_run($1, $2)
+	')
+')

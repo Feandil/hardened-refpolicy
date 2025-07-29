@@ -454,6 +454,25 @@ interface(`files_dontaudit_getattr_all_tmpfs_files',`
 
 ########################################
 ## <summary>
+##	Do not audit attempts to unlink
+##	sockets in tmp_t directories
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`files_dontaudit_delete_generic_tmp_named_sockets',`
+	gen_require(`
+		type tmp_t;
+	')
+
+	dontaudit $1 tmp_t:sock_file unlink;
+')
+
+########################################
+## <summary>
 ##	Get the attributes of all directories.
 ## </summary>
 ## <param name="domain">
@@ -1522,6 +1541,25 @@ interface(`files_list_non_auth_dirs',`
 	')
 
 	allow $1 non_auth_file_type:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##	Watch all non-authentication related
+##	directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_watch_non_auth_dirs',`
+	gen_require(`
+		attribute non_auth_file_type;
+	')
+
+	allow $1 non_auth_file_type:dir watch;
 ')
 
 ########################################
@@ -3798,6 +3836,25 @@ interface(`files_dontaudit_setattr_etc_runtime_files',`
 
 ########################################
 ## <summary>
+##	Create a machine-id file in
+##	the runtime directory
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_runtime_filetrans_machine_id',`
+	gen_require(`
+		type etc_runtime_t;
+	')
+
+	files_runtime_filetrans($1, etc_runtime_t, file, "machine-id")
+')
+
+########################################
+## <summary>
 ##	Read files in /etc that are dynamically
 ##	created on boot, such as mtab.
 ## </summary>
@@ -4195,6 +4252,24 @@ interface(`files_watch_home',`
 
 ########################################
 ## <summary>
+##	Manage user home root symlinks.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_manage_home_symlinks',`
+	gen_require(`
+		type home_root_t;
+	')
+
+	allow $1 home_root_t:lnk_file manage_lnk_file_perms;
+')
+
+########################################
+## <summary>
 ##	Create objects in /home.
 ## </summary>
 ## <param name="domain">
@@ -4578,8 +4653,7 @@ interface(`files_mmap_read_kernel_modules',`
 	')
 
 	allow $1 modules_object_t:dir list_dir_perms;
-	read_files_pattern($1, modules_object_t, modules_object_t)
-	allow $1 modules_object_t:file map;
+	mmap_read_files_pattern($1, modules_object_t, modules_object_t)
 	read_lnk_files_pattern($1, modules_object_t, modules_object_t)
 ')
 
@@ -6181,6 +6255,25 @@ interface(`files_manage_var_symlinks',`
 
 ########################################
 ## <summary>
+##	Delete character device nodes in
+##	the var directory.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_delete_var_chr_files',`
+	gen_require(`
+		type var_t;
+	')
+
+	delete_chr_files_pattern($1, var_t, var_t)
+')
+
+########################################
+## <summary>
 ##	Create objects in the /var directory
 ## </summary>
 ## <param name="domain">
@@ -6407,6 +6500,24 @@ interface(`files_read_var_lib_files',`
 
 	allow $1 var_lib_t:dir list_dir_perms;
 	read_files_pattern($1, { var_t var_lib_t }, var_lib_t)
+')
+
+########################################
+## <summary>
+##	map generic files in /var/lib.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_map_var_lib_files',`
+	gen_require(`
+		type var_lib_t;
+	')
+
+	allow $1 var_lib_t:file map;
 ')
 
 ########################################
@@ -7100,7 +7211,7 @@ interface(`files_exec_runtime',`
 
 ########################################
 ## <summary>
-##	Dontaudit attempt to execute generic programs in /var/run in the caller domain.
+##	Dontaudit attempts to execute generic programs in /var/run in the caller domain.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -7444,6 +7555,24 @@ interface(`files_create_all_runtime_pipes',`
 
 ########################################
 ## <summary>
+##     Create tmp_t sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_create_generic_tmp_named_sockets',`
+        gen_require(`
+                type tmp_t;
+        ')
+
+	create_sock_files_pattern($1, tmp_t, tmp_t)
+')
+
+########################################
+## <summary>
 ##     Delete all runtime named pipes
 ## </summary>
 ## <param name="domain">
@@ -7629,11 +7758,11 @@ interface(`files_runtime_filetrans_lock_dir',`
 ## </param>
 #
 interface(`files_create_all_spool_sockets',`
-        gen_require(`
-                attribute spoolfile;
-        ')
+	gen_require(`
+		attribute spoolfile;
+	')
 
-        allow $1 spoolfile:sock_file create_sock_file_perms;
+	allow $1 spoolfile:sock_file create_sock_file_perms;
 ')
 
 ########################################
@@ -7647,11 +7776,11 @@ interface(`files_create_all_spool_sockets',`
 ## </param>
 #
 interface(`files_delete_all_spool_sockets',`
-        gen_require(`
-                attribute spoolfile;
-        ')
+	gen_require(`
+		attribute spoolfile;
+	')
 
-        allow $1 spoolfile:sock_file delete_sock_file_perms;
+	allow $1 spoolfile:sock_file delete_sock_file_perms;
 ')
 
 ########################################
