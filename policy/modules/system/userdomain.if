@@ -4758,10 +4758,10 @@ interface(`userdom_search_user_home_content',`
 #
 interface(`userdom_watch_user_home_dirs',`
 	gen_require(`
-		type user_home_dir_t;
+		type user_home_dir_t, user_home_t;
 	')
 
-	allow $1 user_home_dir_t:dir watch;
+	allow $1 { user_home_dir_t user_home_t }:dir watch;
 ')
 
 ########################################
