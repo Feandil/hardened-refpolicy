@@ -13,6 +13,31 @@ policy_module(collectd)
 ## </desc>
 gen_tunable(collectd_tcp_network_connect, false)
 
+## <desc>
+##     <p>
+##     Determine whether collectd can connect
+##     to hddtemp using TCP.
+##     </p>
+## </desc>
+gen_tunable(collectd_hddtemp, true)
+
+## <desc>
+##     <p>
+##     Determine whether collectd can connect
+##     to http ports using TCP.
+##     Used by, at least, nginx stat module
+##     </p>
+## </desc>
+gen_tunable(collectd_http, true)
+
+## <desc>
+##     <p>
+##     Determine whether collectd can connect
+##     to nut using TCP (nut module)
+##     </p>
+## </desc>
+gen_tunable(collectd_nut, true)
+
 type collectd_t;
 type collectd_exec_t;
 init_daemon_domain(collectd_t, collectd_exec_t)
@@ -76,6 +101,18 @@ sysnet_dns_name_resolve(collectd_t)
 tunable_policy(`collectd_tcp_network_connect',`
 	corenet_sendrecv_all_client_packets(collectd_t)
 	corenet_tcp_connect_all_ports(collectd_t)
+')
+
+tunable_policy(`collectd_hddtemp',`
+	corenet_tcp_connect_hddtemp_port(collectd_t)
+')
+
+tunable_policy(`collectd_http',`
+	corenet_tcp_connect_http_port(collectd_t)
+')
+
+tunable_policy(`collectd_nut',`
+	corenet_tcp_connect_ups_port(collectd_t)
 ')
 
 optional_policy(`
