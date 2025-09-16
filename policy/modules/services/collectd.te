@@ -32,6 +32,14 @@ gen_tunable(collectd_http, true)
 
 ## <desc>
 ##     <p>
+##     Determine whether collectd can read
+##     /proc/cpu/*/msr (turbostat module)
+##     </p>
+## </desc>
+gen_tunable(collectd_turbostat, true)
+
+## <desc>
+##     <p>
 ##     Determine whether collectd can connect
 ##     to nut using TCP (nut module)
 ##     </p>
@@ -109,6 +117,11 @@ tunable_policy(`collectd_hddtemp',`
 
 tunable_policy(`collectd_http',`
 	corenet_tcp_connect_http_port(collectd_t)
+')
+
+tunable_policy(`collectd_turbostat',`
+	allow collectd_t self:capability { sys_rawio };
+	dev_read_cpuid(collectd_t)
 ')
 
 tunable_policy(`collectd_nut',`
