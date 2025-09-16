@@ -41,7 +41,7 @@ allow collectd_t self:rawip_socket create_socket_perms;
 allow collectd_t self:unix_stream_socket { accept listen };
 
 manage_dirs_pattern(collectd_t, collectd_var_lib_t, collectd_var_lib_t)
-manage_files_pattern(collectd_t, collectd_var_lib_t, collectd_var_lib_t)
+mmap_manage_files_pattern(collectd_t, collectd_var_lib_t, collectd_var_lib_t)
 files_var_lib_filetrans(collectd_t, collectd_var_lib_t, dir)
 
 manage_files_pattern(collectd_t, collectd_runtime_t, collectd_runtime_t)
