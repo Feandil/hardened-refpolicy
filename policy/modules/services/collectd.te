@@ -15,6 +15,15 @@ gen_tunable(collectd_tcp_network_connect, false)
 
 ## <desc>
 ##     <p>
+##     Determine whether collectd can read
+##     raw disk (dangerous!)
+##     (disk module)
+##     </p>
+## </desc>
+gen_tunable(collectd_disk, true)
+
+## <desc>
+##     <p>
 ##     Determine whether collectd can connect
 ##     to hddtemp using TCP.
 ##     </p>
@@ -107,6 +116,8 @@ logging_send_syslog_msg(collectd_t)
 sysnet_dns_name_resolve(collectd_t)
 
 udev_read_runtime_files(collectd_t)
+
+storage_raw_read_fixed_disk_cond(collectd_t, collectd_disk)
 
 tunable_policy(`collectd_tcp_network_connect',`
 	corenet_sendrecv_all_client_packets(collectd_t)
