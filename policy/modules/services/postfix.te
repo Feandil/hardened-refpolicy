@@ -13,6 +13,14 @@ policy_module(postfix)
 ## </desc>
 gen_tunable(postfix_local_write_mail_spool, true)
 
+## <desc>
+##	<p>
+##	Determine whether postfix can
+##	connect to posgresql via socket.
+##	</p>
+## </desc>
+gen_tunable(postfix_can_posgresql_connect, true)
+
 attribute postfix_domain;
 attribute postfix_server_domain;
 attribute postfix_server_tmp_content;
@@ -314,6 +322,10 @@ mta_spec_filetrans_aliases(postfix_master_t, postfix_etc_t, file)
 mta_read_sendmail_bin(postfix_master_t)
 mta_getattr_spool(postfix_master_t)
 
+tunable_policy(`postfix_can_posgresql_connect',`
+        postgresql_stream_connect(postfix_master_t)
+')
+
 optional_policy(`
 	certbot_read_lib(postfix_master_t)
 ')
@@ -415,6 +427,10 @@ corenet_tcp_connect_kismet_port(postfix_cleanup_t)
 
 mta_read_aliases(postfix_cleanup_t)
 mta_map_aliases(postfix_cleanup_t)
+
+tunable_policy(`postfix_can_posgresql_connect',`
+        postgresql_stream_connect(postfix_cleanup_t)
+')
 
 optional_policy(`
 	dkim_stream_connect(postfix_cleanup_t)
@@ -831,6 +847,10 @@ fs_getattr_all_fs(postfix_smtpd_t)
 
 mta_read_aliases(postfix_smtpd_t)
 mta_map_aliases(postfix_smtpd_t)
+
+tunable_policy(`postfix_can_posgresql_connect',`
+        postgresql_stream_connect(postfix_smtpd_t)
+')
 
 optional_policy(`
 	certbot_read_lib(postfix_smtpd_t)
