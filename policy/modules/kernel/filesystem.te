@@ -52,6 +52,7 @@ fs_use_xattr zfs gen_context(system_u:object_r:fs_t,s0);
 # like pipes and sockets, so that these objects are labeled with the same
 # type as the creating task.
 fs_use_task eventpollfs gen_context(system_u:object_r:fs_t,s0);
+fs_use_task pidfs gen_context(system_u:object_r:fs_t,s0);
 fs_use_task pipefs gen_context(system_u:object_r:fs_t,s0);
 fs_use_task sockfs gen_context(system_u:object_r:fs_t,s0);
 
@@ -283,6 +284,7 @@ type dosfs_t;
 fs_noxattr_type(dosfs_t)
 files_mountpoint(dosfs_t)
 allow dosfs_t fs_t:filesystem associate;
+genfscon exfat / gen_context(system_u:object_r:dosfs_t,s0)
 genfscon fat / gen_context(system_u:object_r:dosfs_t,s0)
 genfscon hfs / gen_context(system_u:object_r:dosfs_t,s0)
 genfscon hfsplus / gen_context(system_u:object_r:dosfs_t,s0)
@@ -336,7 +338,6 @@ genfscon dazukofs / gen_context(system_u:object_r:nfs_t,s0)
 genfscon coda / gen_context(system_u:object_r:nfs_t,s0)
 genfscon lustre / gen_context(system_u:object_r:nfs_t,s0)
 genfscon ncpfs / gen_context(system_u:object_r:nfs_t,s0)
-genfscon reiserfs / gen_context(system_u:object_r:nfs_t,s0)
 genfscon panfs / gen_context(system_u:object_r:nfs_t,s0)
 
 ########################################

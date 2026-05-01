@@ -333,7 +333,7 @@ corenet_port(container_port_t)
 dontaudit container_domain self:capability fsetid;
 dontaudit container_domain self:capability2 block_suspend;
 allow container_domain self:cap_userns { chown dac_override dac_read_search fowner kill setgid setuid };
-allow container_domain self:process { execmem execstack getattr getcap getsched getsession setcap setpgid setsched signal_perms };
+allow container_domain self:process { getattr getcap getpgid getsched getsession setcap setpgid setrlimit setsched signal_perms };
 allow container_domain self:dir rw_dir_perms;
 allow container_domain self:file create_file_perms;
 allow container_domain self:fifo_file manage_fifo_file_perms;
@@ -350,7 +350,7 @@ manage_sock_files_pattern(container_domain, container_file_t, container_file_t)
 manage_fifo_files_pattern(container_domain, container_file_t, container_file_t)
 rw_chr_files_pattern(container_domain, container_file_t, container_file_t)
 rw_blk_files_pattern(container_domain, container_file_t, container_file_t)
-allow container_domain container_file_t:dir_file_class_set watch;
+allow container_domain container_file_t:dir_file_class_set { watch watch_mount watch_reads watch_sb watch_with_perm };
 allow container_domain container_file_t:file { entrypoint map relabel_file_perms };
 allow container_domain container_file_t:chr_file map;
 
@@ -360,6 +360,7 @@ allow container_domain container_ro_file_t:chr_file read_chr_file_perms;
 allow container_domain container_ro_file_t:file { exec_file_perms read_file_perms };
 allow container_domain container_ro_file_t:lnk_file read_lnk_file_perms;
 allow container_domain container_ro_file_t:sock_file read_sock_file_perms;
+allow container_domain container_ro_file_t:dir_file_class_set { watch watch_mount watch_reads watch_sb watch_with_perm };
 
 fs_tmpfs_filetrans(container_domain, container_tmpfs_t, { dir file fifo_file lnk_file sock_file })
 manage_dirs_pattern(container_domain, container_tmpfs_t, container_tmpfs_t)
@@ -368,6 +369,7 @@ mmap_exec_files_pattern(container_domain, container_tmpfs_t, container_tmpfs_t)
 manage_fifo_files_pattern(container_domain, container_tmpfs_t, container_tmpfs_t)
 manage_lnk_files_pattern(container_domain, container_tmpfs_t, container_tmpfs_t)
 manage_sock_files_pattern(container_domain, container_tmpfs_t, container_tmpfs_t)
+allow container_domain container_tmpfs_t:dir_file_class_set { watch watch_mount watch_reads watch_sb watch_with_perm };
 
 can_exec(container_domain, container_file_t)
 corecmd_watch_bin_dirs(container_domain)
@@ -576,7 +578,7 @@ corenet_tcp_connect_all_ports(container_net_domain)
 # Container local policy
 #
 
-allow container_t self:process { getcap getpgid setrlimit };
+allow container_t self:process { execmem execstack };
 
 allow container_t container_file_t:filesystem getattr;
 
@@ -1100,7 +1102,8 @@ filetrans_pattern(container_engine_user_domain, container_data_home_t, container
 # KVM container local policy
 #
 
-allow container_kvm_t self:process { getcap setrlimit };
+# execmem needed for mprotect
+allow container_kvm_t self:process execmem;
 allow container_kvm_t self:capability { net_admin sys_resource };
 allow container_kvm_t self:tun_socket { relabelfrom relabelto };
 
@@ -1157,12 +1160,15 @@ domtrans_pattern(container_engine_system_domain, container_file_t, spc_t)
 domtrans_pattern(container_engine_system_domain, container_ro_file_t, spc_t)
 domtrans_pattern(container_engine_system_domain, container_var_lib_t, spc_t)
 
-allow spc_t self:process { getcap setexec setrlimit };
+allow spc_t self:process { execmem execstack setexec };
 # Normally triggered when rook-ceph executes lvm tools which creates noise.
 # This can be allowed if actually needed.
 dontaudit spc_t self:process setfscreate;
 allow spc_t self:capability { audit_write chown dac_override dac_read_search fowner fsetid ipc_lock kill mknod net_admin net_raw setgid setpcap setuid sys_admin sys_chroot sys_nice sys_ptrace sys_rawio sys_resource };
 allow spc_t self:capability2 { bpf perfmon };
+# sys_admin in userns needed by cilium-agent
+allow spc_t self:cap_userns { audit_write chown dac_override dac_read_search fowner fsetid ipc_lock kill mknod net_admin net_raw setgid setpcap setuid sys_admin sys_chroot sys_nice sys_ptrace sys_rawio sys_resource };
+allow spc_t self:cap2_userns { bpf perfmon };
 
 # for qemu
 domain_mmap_low(spc_t)
@@ -1315,10 +1321,12 @@ container_manage_log_files(spc_t)
 container_manage_var_lib_dirs(spc_t)
 container_manage_var_lib_files(spc_t)
 container_map_var_lib_files(spc_t)
+allow spc_t container_var_lib_t:{ dir file } { watch watch_mount watch_reads watch_sb watch_with_perm };
 
 manage_dirs_pattern(spc_t, container_tmp_t, container_tmp_t)
 manage_files_pattern(spc_t, container_tmp_t, container_tmp_t)
 files_tmp_filetrans(spc_t, container_tmp_t, { dir file })
+allow spc_t container_tmp_t:{ dir file } { watch watch_mount watch_reads watch_sb watch_with_perm };
 
 files_runtime_filetrans(spc_t, container_runtime_t, dir)
 # for cilium
@@ -1406,6 +1414,8 @@ domtrans_pattern(container_engine_user_domain, container_file_t, spc_user_t)
 domtrans_pattern(container_engine_user_domain, container_ro_file_t, spc_user_t)
 domtrans_pattern(container_engine_user_domain, container_var_lib_t, spc_user_t)
 fs_fusefs_domtrans(container_engine_user_domain, spc_user_t)
+
+allow spc_user_t self:process { execmem execstack };
 
 allow container_engine_user_domain spc_user_t:process { setsched signal_perms };
 

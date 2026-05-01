@@ -240,6 +240,7 @@ template(`ssh_server_template', `
 
 	auth_rw_login_records($1_t)
 	auth_rw_faillog($1_t)
+	auth_var_lib_filetrans_faillog($1_t)
 
 	# for sshd subsystems, such as sftp-server.
 	corecmd_getattr_bin_files($1_t)
@@ -948,4 +949,22 @@ interface(`ssh_dontaudit_agent_tmp',`
 	')
 
 	dontaudit $1 ssh_agent_tmp_t:dir list_dir_perms;
+')
+
+#######################################
+## <summary>
+##	allow search the ssh runtime dir
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to permit
+##	</summary>
+## </param>
+#
+interface(`ssh_search_sshd_runtime',`
+	gen_require(`
+		type sshd_runtime_t;
+	')
+
+	allow $1 sshd_runtime_t:dir search_dir_perms;
 ')

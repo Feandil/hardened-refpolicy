@@ -43,6 +43,8 @@ ifdef(`distro_redhat',`
 /etc/cron\.monthly(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 
 /etc/dhcp/dhclient\.d(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/etc/dhcp/dhclient-enter-hooks\.d(/.*)? --	gen_context(system_u:object_r:bin_t,s0)
+/etc/dhcp/dhclient-exit-hooks\.d(/.*)? --	gen_context(system_u:object_r:bin_t,s0)
 
 /etc/hotplug/.*agent		--	gen_context(system_u:object_r:bin_t,s0)
 /etc/hotplug/.*rc		-- 	gen_context(system_u:object_r:bin_t,s0)
@@ -51,6 +53,8 @@ ifdef(`distro_redhat',`
 
 /etc/kde/env(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /etc/kde/shutdown(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+
+/etc/letsencrypt/renewal-hooks/.* --	gen_context(system_u:object_r:bin_t,s0)
 
 /etc/mail/make			--	gen_context(system_u:object_r:bin_t,s0)
 
@@ -102,6 +106,10 @@ ifdef(`distro_redhat',`
 /etc/vmware-tools(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 
 /etc/wpa_supplicant/wpa_cli\.sh	--	gen_context(system_u:object_r:bin_t,s0)
+
+/etc/wide-dhcpv6/dhcp6c-ifupdown --	gen_context(system_u:object_r:bin_t,s0)
+/etc/wide-dhcpv6/dhcp6c-script	--	gen_context(system_u:object_r:bin_t,s0)
+/etc/wpa_supplicant/.*\.sh	--	gen_context(system_u:object_r:bin_t,s0)
 
 /etc/X11/xdm/GiveConsole	--	gen_context(system_u:object_r:bin_t,s0)
 /etc/X11/xdm/TakeConsole	--	gen_context(system_u:object_r:bin_t,s0)
@@ -173,6 +181,7 @@ ifdef(`distro_gentoo',`
 /usr/bin/zsh.*			--	gen_context(system_u:object_r:shell_exec_t,s0)
 
 /usr/lib/(.*/)?bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/(.*/)?glib-2\.0(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/postfix/configure-instance\.sh	--	gen_context(system_u:object_r:bin_t,s0)
 
 /usr/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
@@ -193,8 +202,6 @@ ifdef(`distro_gentoo',`
 /usr/lib/pgsql/test/regress/.*\.sh --	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/qt.*/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/wicd/monitor\.py 	-- 	gen_context(system_u:object_r:bin_t,s0)
-/usr/lib/apt/apt-helper		--	gen_context(system_u:object_r:bin_t,s0)
-/usr/lib/apt/apt\.systemd\.daily	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/apt/methods.+		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ConsoleKit/.*	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ConsoleKit/run-seat\.d(/.*)?	gen_context(system_u:object_r:bin_t,s0)
@@ -228,6 +235,7 @@ ifdef(`distro_gentoo',`
 /usr/lib/mon/alert\.d(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/nagios/plugins(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/netsaint/plugins(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/NetworkManager/dispatcher\.d(/.*)? gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/NetworkManager/nm-.*	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/networkmanager/nm-.*	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/news/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
@@ -356,6 +364,7 @@ ifdef(`distro_debian',`
 /usr/share/hal/scripts(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ifupdown2/__main__\.py	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/libalpm/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/libpam-kwallet-common/pam_kwallet_init -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/mc/extfs/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/Modules/init(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/org\.gnome\.Weather/org\.gnome\.Weather\.Application	--	gen_context(system_u:object_r:bin_t,s0)
@@ -379,6 +388,7 @@ ifdef(`distro_debian',`
 /usr/share/texmf/web2c/mktexdir	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/texmf-dist/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/turboprint/lib(/.*)?	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/unattended-upgrades/.* --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/vhostmd/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 
 /usr/X11R6/lib(64)?/X11/xkb/xkbcomp --	gen_context(system_u:object_r:bin_t,s0)

@@ -99,6 +99,11 @@ optional_policy(`
 ')
 
 optional_policy(`
+	# because arping chooses ~sshd as a target for chroot
+	ssh_search_sshd_runtime(netutils_t)
+')
+
+optional_policy(`
 	vmware_append_log(netutils_t)
 ')
 
@@ -184,7 +189,7 @@ userdom_use_inherited_user_terminals(ss_t)
 
 allow traceroute_t self:capability { net_admin net_raw setgid setuid };
 allow traceroute_t self:fifo_file rw_inherited_fifo_file_perms;
-allow traceroute_t self:process signal;
+allow traceroute_t self:process { signal getsched };
 allow traceroute_t self:netlink_generic_socket create_socket_perms;
 allow traceroute_t self:rawip_socket create_socket_perms;
 allow traceroute_t self:packet_socket { create_socket_perms map };
