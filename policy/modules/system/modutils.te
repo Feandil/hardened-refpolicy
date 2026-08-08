@@ -34,7 +34,7 @@ ifdef(`init_systemd',`
 # insmod local policy
 #
 
-allow kmod_t self:capability { dac_override dac_read_search net_raw sys_nice sys_tty_config };
+allow kmod_t self:capability { dac_override dac_read_search net_raw net_admin sys_nice sys_tty_config };
 allow kmod_t self:process { execmem sigchld sigkill signal signull sigstop };
 # for the radeon/amdgpu modules
 dontaudit kmod_t self:capability sys_admin;
@@ -46,6 +46,7 @@ allow kmod_t self:key write;
 # Read module config and dependency information
 list_dirs_pattern(kmod_t, modules_conf_t, modules_conf_t)
 read_files_pattern(kmod_t, modules_conf_t, modules_conf_t)
+read_lnk_files_pattern(kmod_t, modules_conf_t, modules_conf_t)
 allow kmod_t modules_dep_t:file map;
 list_dirs_pattern(kmod_t, modules_dep_t, modules_dep_t)
 manage_files_pattern(kmod_t, modules_dep_t, modules_dep_t)
@@ -122,7 +123,7 @@ userdom_use_user_terminals(kmod_t)
 userdom_dontaudit_search_user_home_dirs(kmod_t)
 
 ifdef(`init_systemd',`
-	# kmod needs to create /run/tmpdiles.d
+	# kmod needs to create /run/tmpfiles.d
 	systemd_tmpfiles_creator(kmod_t)
 
 	init_rw_stream_sockets(kmod_t)

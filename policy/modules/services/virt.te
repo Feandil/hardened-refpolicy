@@ -211,6 +211,9 @@ init_named_socket_activation(virtlogd_t, virt_runtime_t)
 type virtlogd_run_t;
 files_runtime_file(virtlogd_run_t)
 
+type virt_script_exec_t;
+files_type(virt_script_exec_t)
+
 ifdef(`enable_mls',`
 	init_ranged_daemon_domain(virtlockd_t, virtlockd_exec_t, s0 - mls_systemhigh)
 	init_ranged_daemon_domain(virtlogd_t, virtlogd_exec_t, s0 - mls_systemhigh)
@@ -701,6 +704,8 @@ sysnet_domtrans_ifconfig(virtd_t)
 
 userdom_read_all_users_state(virtd_t)
 
+virt_exec_script(virtd_t)
+
 ifdef(`init_systemd',`
 	init_read_utmp(virtd_t)
 
@@ -1156,6 +1161,7 @@ manage_files_pattern(virt_leaseshelper_t, virt_runtime_t, virt_runtime_t)
 files_runtime_filetrans(virt_leaseshelper_t, virt_runtime_t, file)
 
 kernel_dontaudit_read_system_state(virt_leaseshelper_t)
+kernel_read_kernel_sysctls(virt_leaseshelper_t)
 
 # Read /sys/devices/system/node/node*/meminfo
 dev_list_sysfs(virt_leaseshelper_t)
@@ -1201,6 +1207,8 @@ kernel_getattr_proc(virtlockd_t)
 kernel_read_kernel_sysctls(virtlockd_t)
 kernel_read_system_state(virtlockd_t)
 
+corecmd_search_bin(virtlockd_t)
+
 dev_read_sysfs(virtlockd_t)
 
 files_read_etc_files(virtlockd_t)
@@ -1208,6 +1216,7 @@ files_list_var_lib(virtlockd_t)
 
 logging_send_syslog_msg(virtlockd_t)
 
+miscfiles_read_generic_certs(virtlockd_t)
 miscfiles_read_localization(virtlockd_t)
 
 virt_append_log(virtlockd_t)

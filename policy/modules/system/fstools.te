@@ -19,6 +19,9 @@ files_tmp_file(fsadm_tmp_t)
 type fsadm_run_t;
 files_runtime_file(fsadm_run_t)
 
+type fsadm_var_lib_t;
+files_type(fsadm_var_lib_t)
+
 type swapfile_t; # customizable
 files_type(swapfile_t)
 
@@ -33,7 +36,7 @@ ifdef(`distro_gentoo',`
 #
 
 # ipc_lock is for losetup
-allow fsadm_t self:capability { dac_override dac_read_search ipc_lock sys_admin sys_rawio sys_resource sys_tty_config };
+allow fsadm_t self:capability { dac_override dac_read_search fowner ipc_lock sys_admin sys_rawio sys_resource sys_tty_config };
 dontaudit fsadm_t self:capability net_admin;
 allow fsadm_t self:process { dyntransition execstack getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setkeycreate setpgid setsched setsockcreate share siginh signal_perms transition };
 allow fsadm_t self:fd use;
@@ -66,9 +69,14 @@ allow fsadm_t fsadm_log_t:dir setattr;
 manage_files_pattern(fsadm_t, fsadm_log_t, fsadm_log_t)
 logging_log_filetrans(fsadm_t, fsadm_log_t, file)
 
+allow fsadm_t fsadm_var_lib_t:file manage_file_perms;
+allow fsadm_t fsadm_var_lib_t:sock_file manage_sock_file_perms;
+files_var_lib_filetrans(fsadm_t, fsadm_var_lib_t, dir)
+
 # Enable swapping to files
 allow fsadm_t swapfile_t:file rw_file_perms;
 
+kernel_get_sysvipc_info(fsadm_t)
 kernel_read_system_state(fsadm_t)
 kernel_read_kernel_sysctls(fsadm_t)
 kernel_request_load_module(fsadm_t)
@@ -120,6 +128,8 @@ files_manage_lost_found(fsadm_t)
 # Write to /etc/mtab.
 files_manage_etc_runtime_files(fsadm_t)
 files_etc_filetrans_etc_runtime(fsadm_t, file)
+# btrfs subvol snapshot.
+files_rw_non_auth_dirs(fsadm_t)
 
 fs_getattr_cgroup(fsadm_t)
 fs_getattr_dos_fs(fsadm_t)
@@ -208,6 +218,7 @@ optional_policy(`
 
 optional_policy(`
 	# for smartctl cron jobs
+	cron_rw_inherited_tmp_files(fsadm_t)
 	cron_system_entry(fsadm_t, fsadm_exec_t)
 ')
 

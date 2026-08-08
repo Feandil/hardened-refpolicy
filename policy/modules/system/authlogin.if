@@ -101,7 +101,6 @@ interface(`auth_use_pam',`
 ## </param>
 #
 interface(`auth_use_pam_systemd',`
-	dbus_system_bus_client($1)
 	systemd_connect_machined($1)
 	systemd_dbus_chat_logind($1)
 	systemd_read_logind_state($1)
@@ -109,6 +108,10 @@ interface(`auth_use_pam_systemd',`
 
 	# to read /etc/machine-id
 	files_read_etc_runtime_files($1)
+
+	optional_policy(`
+		dbus_system_bus_client($1)
+	')
 ')
 
 ########################################
@@ -1085,6 +1088,42 @@ interface(`auth_rw_lastlog',`
 
 	logging_search_logs($1)
 	allow $1 lastlog_t:file { lock rw_file_perms setattr };
+')
+
+#######################################
+## <summary>
+##	Create the last logins log.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_create_lastlog',`
+	gen_require(`
+		type lastlog_t;
+	')
+
+	create_files_pattern($1, lastlog_t, lastlog_t)
+')
+
+#######################################
+## <summary>
+##	Delete the last logins log.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_delete_lastlog',`
+	gen_require(`
+		type lastlog_t;
+	')
+
+	delete_files_pattern($1, lastlog_t, lastlog_t)
 ')
 
 ########################################

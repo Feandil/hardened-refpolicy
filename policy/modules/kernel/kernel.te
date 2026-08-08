@@ -50,6 +50,7 @@ type kernel_t, can_load_kernmodule;
 domain_base_type(kernel_t)
 role system_r types kernel_t;
 sid kernel gen_context(system_u:system_r:kernel_t,mls_systemhigh)
+sid init gen_context(system_u:system_r:kernel_t,mls_systemhigh)
 
 #
 # DebugFS
@@ -68,6 +69,14 @@ genfscon debugfs / gen_context(system_u:object_r:debugfs_t,s0)
 type kvmfs_t;
 fs_type(kvmfs_t)
 genfscon kvmfs / gen_context(system_u:object_r:kvmfs_t,s0)
+
+#
+#transparent_hugepage
+#
+
+type transparent_hugepage_sysfs_t;
+files_type(transparent_hugepage_sysfs_t)
+genfscon sysfs /kernel/mm/transparent_hugepage gen_context(system_u:object_r:transparent_hugepage_sysfs_t,s0)
 
 #
 # Procfs types
@@ -220,7 +229,6 @@ sid any_socket		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
 sid file_labels		gen_context(system_u:object_r:unlabeled_t,s0)
 sid icmp_socket		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
 sid igmp_packet		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
-sid init		gen_context(system_u:object_r:unlabeled_t,s0)
 sid kmod		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
 sid policy		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)
 sid scmp_packet		gen_context(system_u:object_r:unlabeled_t,mls_systemhigh)

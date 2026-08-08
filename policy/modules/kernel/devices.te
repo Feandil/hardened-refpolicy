@@ -127,6 +127,16 @@ type freefall_device_t;
 dev_node(freefall_device_t)
 
 #
+# Qualcomm FastRPC nodes
+# Two types: one for default (non-secure) devices, one for secure devices
+#
+type fastrpc_device_t;
+dev_node(fastrpc_device_t)
+
+type fastrpc_secure_device_t;
+dev_node(fastrpc_secure_device_t)
+
+#
 # Type for GPIO chip /dev/gpiochip*
 #
 type gpiochip_device_t;
@@ -140,6 +150,12 @@ dev_node(hyperv_kvp_device_t)
 
 type hyperv_vss_device_t;
 dev_node(hyperv_vss_device_t)
+
+#
+# Type for /dev/i2c-* (Inter-Integrated Circuit)
+#
+type i2c_device_t;
+dev_node(i2c_device_t)
 
 #
 # Type for /dev/iio:device* (Industrial IO)
