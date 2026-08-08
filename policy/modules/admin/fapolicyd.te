@@ -38,6 +38,9 @@ logging_log_file(fapolicyd_log_t)
 type fapolicyd_runtime_t;
 files_runtime_file(fapolicyd_runtime_t)
 
+type fapolicyd_tmpfs_t;
+files_tmpfs_file(fapolicyd_tmpfs_t)
+
 type fagenrules_tmp_t;
 files_tmp_file(fagenrules_tmp_t)
 
@@ -53,9 +56,12 @@ files_type(fapolicyd_var_lib_t)
 #
 
 allow fapolicyd_t self:capability { audit_write chown dac_override setgid setuid sys_admin sys_nice sys_ptrace };
+allow fapolicyd_t self:fifo_file rw_inherited_fifo_file_perms;
 allow fapolicyd_t self:process { setcap setsched };
 
 allow fapolicyd_t fapolicyd_log_t:file { create_file_perms write_file_perms };
+allow fapolicyd_t fapolicyd_runtime_t:dir setattr_dir_perms;
+allow fapolicyd_t fapolicyd_tmpfs_t:file write_inherited_file_perms;
 
 manage_fifo_files_pattern(fapolicyd_t, fapolicyd_runtime_t, fapolicyd_runtime_t)
 manage_files_pattern(fapolicyd_t, fapolicyd_runtime_t, fapolicyd_runtime_t)
@@ -68,6 +74,8 @@ mmap_manage_files_pattern(fapolicyd_t, fapolicyd_var_lib_t, fapolicyd_var_lib_t)
 kernel_getattr_proc(fapolicyd_t)
 kernel_read_kernel_sysctls(fapolicyd_t)
 
+corecmd_exec_bin(fapolicyd_t)
+
 domain_read_all_domains_state(fapolicyd_t)
 
 files_mmap_read_all_files(fapolicyd_t)
@@ -79,6 +87,7 @@ files_watch_all_mount_perm(fapolicyd_t)
 files_watch_all_mount_sb(fapolicyd_t)
 
 fs_getattr_xattr_fs(fapolicyd_t)
+fs_tmpfs_filetrans(fapolicyd_t, fapolicyd_tmpfs_t, file)
 fs_watch_all_fs(fapolicyd_t)
 
 logging_log_filetrans(fapolicyd_t, fapolicyd_log_t, file)

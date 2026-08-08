@@ -168,7 +168,9 @@ ifdef(`distro_ubuntu',`
 ')
 
 ifdef(`init_systemd',`
-	auth_use_pam_systemd(chkpwd_t)
+	optional_policy(`
+		auth_use_pam_systemd(chkpwd_t)
+	')
 ')
 
 optional_policy(`
@@ -259,6 +261,7 @@ auth_setattr_faillog_files(pam_domain)
 auth_exec_pam(pam_domain)
 
 files_read_etc_files(pam_domain)
+files_read_usr_files(pam_domain)
 
 logging_send_audit_msgs(pam_domain)
 logging_send_syslog_msg(pam_domain)
@@ -492,6 +495,9 @@ files_read_etc_files(nsswitch_domain)
 sysnet_dns_name_resolve(nsswitch_domain)
 
 ifdef(`init_systemd', `
+	# /proc/sys/kernel/random/boot_id
+	kernel_read_kernel_sysctls(nsswitch_domain)
+
 	systemd_stream_connect_userdb(nsswitch_domain)
 	systemd_stream_connect_homed(nsswitch_domain)
 	systemd_stream_connect_nsresourced(nsswitch_domain)

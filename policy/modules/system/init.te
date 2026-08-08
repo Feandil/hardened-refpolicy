@@ -618,6 +618,9 @@ ifdef(`init_systemd',`
 
 	optional_policy(`
 		container_remount_fs(init_t)
+		container_run_system_engine_bpf(init_t)
+
+		fs_manage_bpf_files(init_t)
 	')
 
 	optional_policy(`
@@ -1016,6 +1019,8 @@ ifdef(`distro_gentoo',`
 	files_manage_generic_locks(initrc_t)
 	files_manage_var_symlinks(initrc_t)
 	files_runtime_filetrans(initrc_t, initrc_state_t, dir, "openrc")
+	# TODO: Give seenrng its own domain. It is provided by openrc, but other things can use it, and regardless it would be good to confine it, even in early boot.
+	files_var_lib_filetrans(initrc_t, init_random_seed_t, dir, "seedrng")
 
 	# openrc uses tmpfs for its state data
 	fs_tmpfs_filetrans(initrc_t, initrc_state_t, { dir file fifo_file lnk_file })
@@ -1324,7 +1329,16 @@ optional_policy(`
 	init_dbus_chat(initrc_t)
 
 	optional_policy(`
+		firewalld_dbus_chat(initrc_t)
+	')
+
+	optional_policy(`
 		networkmanager_dbus_chat(initrc_t)
+	')
+
+	optional_policy(`
+		# Needed by wireplumber to interact with ModemManager over D-Bus
+		modemmanager_dbus_chat(initrc_t)
 	')
 
 	optional_policy(`
@@ -1522,6 +1536,10 @@ optional_policy(`
 
 optional_policy(`
 	sysnet_read_dhcpc_state(initrc_t)
+')
+
+optional_policy(`
+	tee_supplicant_var_lib_filetrans(initrc_t)
 ')
 
 optional_policy(`

@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install dependencies
       run: |
@@ -25,7 +25,7 @@ jobs:
         sudo apt-get install -qy autoconf-archive bison flex libconfuse-dev uthash-dev
 
     - name: Checkout SELint
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: SELinuxProject/selint
         ref: "${{ inputs.selint-version }}"
@@ -51,16 +51,24 @@ jobs:
         # disable W-005 (Interface call from module not in optional_policy block): refpolicy does not follow this rule
         selint --source --recursive --summary --fail --disable C-005 --disable C-008 --disable W-005 policy
 
+    - name: Upload failed build directory artifact
+      if: ${{ failure() && runner.debug }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: failed-selint
+        path: |
+          ${{ github.workspace }}
+
   check_fc_files:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     # This version should be the minimum required to run the fc checker
     # or the standard Python version on Ubuntu.
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "${{ inputs.python-version }}"
 
@@ -76,7 +84,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install dependencies
       run: |

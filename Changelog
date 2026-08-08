@@ -1,3 +1,251 @@
+* Tue Jun 16 2026 Chris PeBenito <pebenito@ieee.org> - 2.20260616
+Abhilasha Manna (2):
+      virt: label libvirt hook scripts with dedicated exec type
+      kernel: add kernel_read_transparent_hugepage_sysfs interface
+
+Brett A C Sheffield (1):
+      varnishd: update fcontexts for vinyl-cache rename
+
+Chris PeBenito (54):
+      build-setools.yml: Refactor to use the build-setools action from the
+         SETools repo.
+      Update GitHub actions to newest versions.
+      ci: Remove unnecessary archiving in actions/upload-artifact.
+      ci: Refactor to centralize global variables.
+      build-userspace.yml. Use build action from selinux repo.
+      irqbalance: v1.9.4 added namespacing in the systemd unit.
+
+Christian Göttsche (2):
+      Add new policy cababilities
+      Add new kernel security class memfd_file and new kernel permissions
+
+Clayton Casciato (1):
+      userdomain: kernel_dontaudit_request_load_module for all users
+
+Daniel Burgener (1):
+      Add op-tee based tee supplicant policy
+
+Dave Sugar (3):
+      devices: Add label for /dev/isst_interface
+      snmpd: snmpd doesn't seem to need dac_override capability
+      fapolicyd: fix issue with tmpfs_t write
+
+Gargi Misra (8):
+      refpolicy: Added dontaudit on docker_t to manage /usr directory
+      refpolicy: Added policy for rpcbind
+      refpolicy: Added policy for systemd_user_runtime_dir_t to read tmp_t
+         directory
+      refpolicy: Added policy for modprob to read blacklist-video.conf lnk_file
+      refpolicy: donotaudit rsyslogd for net_admin capability on self
+      refpolicy: Addressing denial seen on alsa to allow write on event dev node
+      systemd-coredum: Added sepolicy permission to read namespace file
+      libvirt_leasesh: Added read and search permission on kernel sysctls
+
+Henrik Lindström (2):
+      systemd: Fix systemd-networkd /run/mount denial
+      systemd: Fix denial on "systemctl restart systemd-networkd"
+
+Jaihind Yadav (3):
+      ping: allow execution and PTY access
+      selinux: allow seatd to use unallocated TTYs
+      selinux: allow ModemManager to send DBus messages to initrc_t.
+
+Kemal Rasim Sh (1):
+      container: Allow access to /etc/cdi for CDI configuration
+
+Marc Schiffbauer (11):
+      qemu: Add qemu_getattr interface
+      qemu: Add qemu_write_state interface
+      qemu: Add qemu_manage_image_symlinks interface
+      qemu: Update incus support
+      container: Add container_write_all_container_state interface
+      virt: Add virt_relabel_images interface
+      incus: Fix start of virtual networking in incus >=6.15
+      incus: Add incus_entry_type interface
+      incus: Allow setting of per instance oom_score_adj
+      selinux: Add selinux_read_fs interface
+      incus: Update module to reflect new incus selinux support
+
+Rahul Sandhu (2):
+      newrole_t, run_init_t: call auth_run_pam()
+      matrixd: gatekeep postgresql calls in an optional policy block
+
+Russell Coker (12):
+      https://picasa.google.com/
+      Add boolean user_ptrace to allow user domains to strace themselves
+      apt_dpkg_strict (#1131)
+      tor_pluggable_transports2 (#1133)
+      fsadm (#1129)
+      btrfs (#1144)
+      Label /dev/i2c-* devices and add boolean to allow user access (EG for DDC)
+      Changed paths to /var/lib/boinc-client.
+      Allow fwupdmgr_exec_t to be run by init scripts
+      Allow network manager to use bpf for IPv4 collision detection, see the
+         following:
+      Added boolean smartmon_megaraid to allow smartd to create
+         /dev/megaraid_sas_ioctl_node and other character devices labelled
+         fixed_disk_device_t
+      Allow fwupd to mmap generic cert files, and manage user runtime files.
+
+Sam James (21):
+      gpg: adapt to Gentoo's app-alternatives/gpg
+      kernel: treat /efi similarly to /boot
+      systemd: allow systemd-nsresourced to interact w/ bpf
+      systemd: allow systemd-userwork to speak to systemd-machined
+      systemd: allow user systemd-tmpfiles to setfscreate
+      su: use auth_use_pam
+      git: add type transitions for user home content
+      authlogin: systemd reads /proc/sys/kernel/random/boot_id via nss
+      systemd: allow resolved access to /etc/localtime
+      systemd: resolved has a systemd-networkd hook
+      authlogin: allow pam_domain to read /usr/share/pam
+      corecommands: label /usr/share/pam/security/namespace.init as bin_t
+      authlogin: guard auth_use_pam_systemd->dbus_system_bus_client calls with
+         optional_policy
+      sudo: guard auth_use_pam_systemd call
+      sshd: guard dbus calls with optional_policy
+      systemd: allow tmpfiles to setrlimit
+      systemd: allow tmpfiles to relabel various unlabeled objects
+      systemd: allow tmpfiles to handle auditd_log_t
+      init: adapt to OpenRC changes
+      portage: label /var/cache/binhost
+      portage: label /etc/portage/gnupg
+
+Sasi Kumar Maddineni (1):
+      dmesg: allow dmesg_t access to init script stream sockets
+
+Varun Singhal (1):
+      Add SELinux policy support for Userspace Resource Manager (URM) (#1097)
+
+Wenjia Zhang (1):
+      tee_supplicant: Add necessary SELinux policy for qtee_supplicant
+
+Yi Zhao (1):
+      nfs: allow nfsd_t to create netlink_generic_socket
+
+* Thu Mar 12 2026 Chris PeBenito <pebenito@ieee.org> - 2.20260312
+Amisha Jain (1):
+      obexctl: Add sepolicy for obexctl to work in ssh
+
+Antonio Enrico Russo (1):
+      systemd: support LogNamespace
+
+Chris PeBenito (55):
+      devices: Add iio write and rw interfaces.
+      check_fc_files.py: Add a version suffix match.
+      Revert "kernel: remove some unused initial SID contexts"
+         SELinuxProject/revert-1035-sds-remove-unused-initsids
+      init: Fix typo in init.if comment
+      tests.yml: Increase userspace to v3.9.
+      build-userspace/setools.yml: Add commit hash to cache ID.
+      ci: Create artifact of the workdir if the build fails.
+      validate/diff-policy.yml: Fix library usage.
+      build-policy: Add temp backwards compatibility
+      Add local policy comment for pd_mapper_t
+      chronyd: Add urandom access for chronyc UTI_GetRandomBytesUrandom.
+      sechecker.ini: Add net_admin to kmod_t.
+         jaihindy/fix-systemd-user-runtime-connect-userdb
+
+Christian Göttsche (1):
+      ci: add module storage test
+
+Clayton Casciato (5):
+      logging: allow syslogd_t syslog_tls_port_t name_connect
+      logging: allow miscfiles_read_generic_certs(syslogd_t)
+      authlogin: label /var/lib/lastlog (lastlog2)
+      authlogin: add auth_create_lastlog and auth_delete_lastlog
+      locallogin: allow local_login_t lastlog_t create,delete
+
+Damodar Reddy GangiReddy (1):
+      sepolicy: Add sepolicy rules for bluetooth Notify failures
+
+Dave Sugar (6):
+      fapolicyd: support for new /usr/sbin/fapolicyd-rpm-loader
+      firewalld: Allow firewall-cmd to be called from systemd
+      snmpd doesn't seem to need sys_ptrace capability
+      userdomain: Remove permissions from unprivileged user
+      systemd: systemd-pcrphase read /etc/crypto-policies
+      dbus: Remove permissions from unprivileged user
+
+Fiona Klute (1):
+      ssh: set file context for default locations of split binaries
+
+Gangabhavani Yenugula (1):
+      pd-mapper: Introduce SELinux domain for pd-mapper
+
+Gargi Misra (4):
+      Add sepolicy for bootloader to create directory in dosfs
+      Adding rules for mount to search configfs
+      Adding rules for virt module
+      Suppressing denial for systemd login to read process init scripts avc: 
+         denied  { search } for  pid=736 comm="systemd-logind" name="944"
+         dev="proc" ino=15804 scontext=system_u:system_r:systemd_logind_t:s0
+         tcontext=system_u:system_r:initrc_t:s0 tclass=dir permissive=0
+
+Jaihind Yadav (1):
+      systemd: use systemd_stream_connect_userdb() for user runtime client
+
+Kenton Groombridge (10):
+      init, systemd: add interfaces for systemd managed unit dirs
+      kanidm: hookup systemd unit dir management
+      tuned: various fixes
+      systemd: allow socket activation for systemd-resolved
+      systemd: dontaudit user session getattr generic blk devices
+      netutils: allow network access in a user namespace
+      container: allow execute_no_trans on container_tmpfs_t files
+      podman: allow watching systemd-resolved runtime
+      init: allow using system container BPF programs
+      crio: various fixes
+
+Rahul Sandhu (12):
+      wayland: new policy module
+      portage: grant compile domains getattr on chr_files in /dev
+      xserver: fixup labelling for mesa cache
+      wayland: allow reading udev runtime files for input devices
+      wayland: grant access to /dev/input for libinput
+      wayland: allow talking to logind over dbus
+      wayland: allow managing wayland_runtime_t sock files for display sock
+      wayland: allow managing wayland_runtime_t files for display lock file
+      wayland: grant wayland_compositor access to /dev/udmabuf
+      wayland: allow violating W^X for compositors behind a boolean
+      chromium: drop the chromium_render_t domain
+      gcc_config_t: allow reading cgroup files for cpu.max
+
+Russell Coker (3):
+      Label ~/.cache/gstreamer-[0-9\.]+(/.*)? files (#1042)
+      games (#1026)
+      Wireshark patch to allow execmem (which it unfortunately needs), allow
+         (#1039)
+
+Sasi Kumar Maddineni (1):
+      kmod: add net_admin capability to kmod_t
+
+Stephen Smalley (1):
+      kernel: remove some unused initial SID contexts
+
+Uwe Kleine-König (1):
+      file_contexts.subs: Improve comment grammar
+
+Vinayak Katoch (3):
+      Add policy support for Qualcomm FastRPC devices
+      devices: Rename FastRPC interfaces to follow dev_ naming convention
+      Define security policy for DSP FastRPC daemons
+
+Wei Deng (2):
+      Sepolicy changes for brctl to access devpts
+      ofono: introduce dedicated SELinux domain ofono_t
+
+Wenjia Zhang (1):
+      tee_supplicant: Introduce SELinux domain for tee_supplicant
+
+Yi Zhao (6):
+      systemd: allow journalctl to search log directory
+      ofono: allow ofonod to read localization file
+      systemd: fixes for systemd-user-runtime-dir
+      systemd: set label for /run/userdb
+      loadkeys: allow loadkeys to read and write tmpfs files
+      systemd: allow systemd-sysusers to send audit messages
+
 * Tue Sep 23 2025 Chris PeBenito <pebenito@ieee.org> - 2.20250923
 Antonio Enrico Russo (4):
       Remove redundancies

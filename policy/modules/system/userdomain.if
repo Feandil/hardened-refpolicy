@@ -144,8 +144,16 @@ template(`userdom_base_user_template',`
 		allow $1_t self:process execstack;
 	')
 
+	tunable_policy(`user_i2c',`
+		dev_rw_i2c($1_t)
+	')
+
 	tunable_policy(`user_all_users_send_syslog',`
 		logging_send_syslog_msg($1_t)
+	')
+
+	tunable_policy(`user_ptrace',`
+		allow $1_t self:process ptrace;
 	')
 
 	optional_policy(`
@@ -585,6 +593,8 @@ template(`userdom_basic_networking_template',`
 
 	corenet_all_recvfrom_labeled($1_t, $1_t)
 
+	kernel_dontaudit_request_load_module($1_t)
+
 	optional_policy(`
 		init_tcp_recvfrom_all_daemons($1_t)
 		init_udp_recvfrom_all_daemons($1_t)
@@ -898,6 +908,10 @@ template(`userdom_common_user_template',`
 	')
 
 	optional_policy(`
+		pipewire_role($1, $1_t, $1_application_exec_domain, $1_r)
+	')
+
+	optional_policy(`
 		tunable_policy(`allow_user_postgresql_connect',`
 			postgresql_stream_connect($1_t)
 			postgresql_tcp_connect($1_t)
@@ -995,10 +1009,9 @@ template(`userdom_login_user_template', `
 	# User domain Local policy
 	#
 
-	allow $1_t self:capability { chown fowner setgid };
 	dontaudit $1_t self:capability { fsetid sys_nice };
 
-	allow $1_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure ptrace rlimitinh setcap setfscreate setkeycreate setpgid setsched setsockcreate share siginh signal_perms transition };
+	allow $1_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setfscreate setkeycreate setpgid setsched setsockcreate share siginh signal_perms transition };
 	dontaudit $1_t self:process setrlimit;
 	dontaudit $1_t self:netlink_route_socket { append bind connect create getattr getopt ioctl nlmsg_read nlmsg_write read setattr setopt shutdown write };
 
@@ -1374,7 +1387,7 @@ template(`userdom_admin_user_template',`
 
 	allow $1_t self:capability { chown dac_override dac_read_search fowner fsetid ipc_lock ipc_owner kill lease linux_immutable mknod net_admin net_bind_service net_broadcast net_raw setfcap setgid setpcap setuid sys_admin sys_boot sys_chroot sys_nice sys_pacct sys_ptrace sys_rawio sys_resource sys_time sys_tty_config };
 	allow $1_t self:cap_userns sys_ptrace;
-	allow $1_t self:process { setexec setfscreate };
+	allow $1_t self:process { ptrace setexec setfscreate };
 	allow $1_t self:netlink_audit_socket nlmsg_readpriv;
 	allow $1_t self:netlink_tcpdiag_socket create_netlink_socket_perms;
 	allow $1_t self:tun_socket create;
@@ -2458,6 +2471,24 @@ interface(`userdom_dontaudit_append_user_home_content_files',`
 	')
 
 	dontaudit $1 user_home_t:file append_file_perms;
+')
+
+########################################
+## <summary>
+##	Allow read/write on inherited user home files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to allow.
+##	</summary>
+## </param>
+#
+interface(`userdom_rw_inherited_user_home_content_files',`
+	gen_require(`
+		type user_home_t;
+	')
+
+	allow $1 user_home_t:file rw_inherited_file_perms;
 ')
 
 ########################################

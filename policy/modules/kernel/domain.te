@@ -124,6 +124,9 @@ dev_read_cpu_online(domain)
 # see https://sourceware.org/git/?p=glibc.git;a=commit;h=9fab36eb
 kernel_read_vm_overcommit_sysctl(domain)
 
+# read and search access to sys/kernel/mm/transparent_hugepage
+kernel_read_transparent_hugepage_sysfs(domain)
+
 # Use trusted objects in /dev
 dev_rw_null(domain)
 dev_rw_zero(domain)
