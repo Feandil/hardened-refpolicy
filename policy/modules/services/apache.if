@@ -655,6 +655,26 @@ interface(`apache_rw_cache_files',`
 
 ########################################
 ## <summary>
+##	Allow full control of httpd cache files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`apache_manage_cache',`
+	gen_require(`
+		type httpd_cache_t;
+	')
+
+	manage_dirs_pattern($1, httpd_cache_t, httpd_cache_t)
+	mmap_manage_files_pattern($1, httpd_cache_t, httpd_cache_t)
+	manage_lnk_files_pattern($1, httpd_cache_t, httpd_cache_t)
+')
+
+########################################
+## <summary>
 ##	Delete httpd cache directories.
 ## </summary>
 ## <param name="domain">
