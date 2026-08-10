@@ -294,6 +294,7 @@ ifdef(`init_systemd',`
 	optional_policy(`
 		auth_use_pam_systemd(sshd_t)
 		init_dbus_chat(sshd_t)
+		systemd_connect_logind(sshd_t)
 	')
 ')
 
