@@ -131,6 +131,7 @@ optional_policy(`
 #
 
 allow nut_upsdrvctl_t self:fd use;
+allow nut_upsdrvctl_t self:netlink_kobject_uevent_socket create_socket_perms;
 
 manage_sock_files_pattern(nut_upsdrvctl_t, nut_runtime_t, nut_runtime_t)
 files_runtime_filetrans(nut_upsdrvctl_t, nut_runtime_t, sock_file)
@@ -140,6 +141,8 @@ corecmd_exec_bin(nut_upsdrvctl_t)
 dev_read_sysfs(nut_upsdrvctl_t)
 dev_read_urand(nut_upsdrvctl_t)
 dev_rw_generic_usb_dev(nut_upsdrvctl_t)
+
+udev_read_runtime_files(nut_upsdrvctl_t)
 
 term_use_unallocated_ttys(nut_upsdrvctl_t)
 
