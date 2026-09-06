@@ -81,7 +81,7 @@ allow named_t self:fifo_file rw_fifo_file_perms;
 allow named_t self:unix_stream_socket { accept listen };
 allow named_t self:tcp_socket { accept listen };
 allow named_t self:anon_inode { create map read write };
-allow named_t self:io_uring sqpoll;
+allow named_t self:io_uring { sqpoll allowed };
 
 manage_files_pattern(named_t, dnssec_t, dnssec_t)
 filetrans_pattern(named_t, named_conf_t, dnssec_t, dir, "cache")
@@ -225,7 +225,7 @@ allow ndc_t self:process { getsched setsched signal_perms };
 allow ndc_t self:fifo_file rw_fifo_file_perms;
 allow ndc_t self:unix_stream_socket { accept listen };
 allow ndc_t self:anon_inode { create map read write };
-allow ndc_t self:io_uring sqpoll;
+allow ndc_t self:io_uring { sqpoll allowed };
 
 allow ndc_t dnssec_t:file read_file_perms;
 allow ndc_t dnssec_t:lnk_file read_lnk_file_perms;
