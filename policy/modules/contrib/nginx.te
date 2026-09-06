@@ -117,6 +117,7 @@ dev_read_urand(nginx_t)
 domain_use_interactive_fds(nginx_t)
 
 files_read_etc_files(nginx_t)
+files_dontaudit_read_etc_runtime(nginx_t)
 
 auth_use_nsswitch(nginx_t)
 
