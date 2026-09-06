@@ -120,6 +120,7 @@ files_search_var_lib(phpfpm_t)
 fs_getattr_xattr_fs(phpfpm_t)
 
 miscfiles_read_localization(phpfpm_t)
+miscfiles_read_generic_certs(phpfpm_t)
 
 sysnet_dns_name_resolve(phpfpm_t)
 sysnet_read_config(phpfpm_t)
