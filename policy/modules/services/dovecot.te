@@ -140,7 +140,7 @@ can_exec(dovecot_t, dovecot_exec_t)
 
 allow dovecot_t dovecot_auth_t:process signal;
 
-domtrans_pattern(dovecot_t, dovecot_auth_exec_t, dovecot_auth_t)
+nnp_domtrans_pattern(dovecot_t, dovecot_auth_exec_t, dovecot_auth_t)
 
 corenet_all_recvfrom_netlabel(dovecot_t)
 corenet_tcp_sendrecv_generic_if(dovecot_t)
