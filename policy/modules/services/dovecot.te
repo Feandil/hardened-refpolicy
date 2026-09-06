@@ -130,7 +130,7 @@ mmap_manage_files_pattern(dovecot_t, dovecot_spool_t, dovecot_spool_t)
 manage_lnk_files_pattern(dovecot_t, dovecot_spool_t, dovecot_spool_t)
 
 manage_dirs_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
-manage_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+mmap_manage_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
 manage_lnk_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
 manage_sock_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
 manage_fifo_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
