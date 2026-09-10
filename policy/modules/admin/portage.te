@@ -212,6 +212,9 @@ kernel_dontaudit_request_load_module(portage_t)
 # merging baselayout will need this:
 kernel_write_proc_files(portage_t)
 
+kernel_mount_proc(portage_t)
+kernel_mounton_proc_dirs(portage_t)
+
 domain_dontaudit_read_all_domains_state(portage_t)
 
 # modify any files in the system
