@@ -408,7 +408,6 @@ type cyphesis_port_t, port_type, defined_port_type;
 type cyphesis_client_packet_t, packet_type, client_packet_type;
 type cyphesis_server_packet_t, packet_type, server_packet_type;
 typeattribute cyphesis_port_t unreserved_port_type;
-portcon tcp 6767 gen_context(system_u:object_r:cyphesis_port_t,s0)
 portcon tcp 6769 gen_context(system_u:object_r:cyphesis_port_t,s0)
 portcon tcp 6780-6799 gen_context(system_u:object_r:cyphesis_port_t,s0)
 portcon udp 32771 gen_context(system_u:object_r:cyphesis_port_t,s0)
@@ -807,6 +806,7 @@ typeattribute ircd_port_t unreserved_port_type;
 portcon tcp 6665 gen_context(system_u:object_r:ircd_port_t,s0)
 portcon tcp 6666 gen_context(system_u:object_r:ircd_port_t,s0)
 portcon tcp 6667 gen_context(system_u:object_r:ircd_port_t,s0)
+portcon tcp 6767 gen_context(system_u:object_r:ircd_port_t,s0)
 portcon tcp 6668 gen_context(system_u:object_r:ircd_port_t,s0)
 portcon tcp 6669 gen_context(system_u:object_r:ircd_port_t,s0)
 portcon tcp 6697 gen_context(system_u:object_r:ircd_port_t,s0)
