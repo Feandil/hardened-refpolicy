@@ -95,7 +95,8 @@ logging_log_filetrans(phpfpm_t, phpfpm_log_t, file)
 
 manage_files_pattern(phpfpm_t, phpfpm_tmp_t, phpfpm_tmp_t)
 manage_dirs_pattern(phpfpm_t, phpfpm_tmp_t, phpfpm_tmp_t)
-files_tmp_filetrans(phpfpm_t, phpfpm_tmp_t, {file dir})
+files_tmp_filetrans(phpfpm_t, phpfpm_tmp_t, { file dir })
+fs_tmpfs_filetrans(phpfpm_t, phpfpm_tmp_t, { file dir })
 
 manage_files_pattern(phpfpm_t, phpfpm_runtime_t, phpfpm_runtime_t)
 files_runtime_filetrans(phpfpm_t, phpfpm_runtime_t, { file sock_file })
