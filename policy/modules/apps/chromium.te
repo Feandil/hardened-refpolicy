@@ -88,6 +88,9 @@ optional_policy(`
 	pulseaudio_stream_connect(chromium_t)
 	pulseaudio_use_fds(chromium_t)
 ')
+optional_policy(`
+	wayland_client_tmpfs(chromium_tmpfs_t)
+')
 
 type chromium_xdg_config_t;
 xdg_config_content(chromium_xdg_config_t)
@@ -305,6 +308,10 @@ optional_policy(`
 		systemd_list_resolved_runtime(chromium_t)
 		systemd_dbus_chat_hostnamed(chromium_t)
 	')
+
+	optional_policy(`
+		wireplumber_dbus_chat(chromium_t)
+	')
 ')
 
 optional_policy(`
@@ -320,11 +327,15 @@ optional_policy(`
 ')
 
 optional_policy(`
+	pipewire_client(chromium_t)
+')
+
+optional_policy(`
 	ssh_dontaudit_agent_tmp(chromium_t)
 ')
 
 optional_policy(`
-	wm_mmap_rw_tmpfs_files(chromium_t)
+	wm_application_domain(chromium_t, chromium_exec_t)
 ')
 
 #########################################

@@ -16,6 +16,14 @@ gen_require(`
 ## </desc>
 gen_bool(secure_mode_insmod, false)
 
+## <desc>
+## <p>
+## Allow domains that can load kernel modules to use the net_admin
+## capability during module initialization.
+## </p>
+## </desc>
+gen_tunable(kernel_module_load_net_admin, false)
+
 # assertion related attributes
 attribute can_load_kernmodule;
 attribute can_receive_kernel_messages;
@@ -57,7 +65,6 @@ sid init gen_context(system_u:system_r:kernel_t,mls_systemhigh)
 #
 
 type debugfs_t;
-files_mountpoint(debugfs_t)
 fs_type(debugfs_t)
 allow debugfs_t self:filesystem associate;
 genfscon debugfs / gen_context(system_u:object_r:debugfs_t,s0)
@@ -589,6 +596,10 @@ if(secure_mode_insmod) {
 	files_load_kernel_modules(can_load_kernmodule)
 
 	kernel_search_key(can_load_kernmodule)
+}
+
+if (!secure_mode_insmod && kernel_module_load_net_admin) {
+	allow can_load_kernmodule self:capability net_admin;
 }
 
 ########################################

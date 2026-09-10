@@ -651,6 +651,7 @@ fs_getattr_nsfs_files(systemd_generator_t)
 
 init_create_runtime_files(systemd_generator_t)
 init_read_all_script_files(systemd_generator_t)
+init_manage_generic_unit_files(systemd_generator_t)
 init_manage_runtime_dirs(systemd_generator_t)
 init_manage_runtime_symlinks(systemd_generator_t)
 init_read_runtime_files(systemd_generator_t)
@@ -1273,6 +1274,7 @@ optional_policy(`
 optional_policy(`
 	devicekit_dbus_chat_disk(systemd_logind_t)
 	devicekit_dbus_chat_power(systemd_logind_t)
+	devicekit_read_power_state(systemd_logind_t)
 ')
 
 optional_policy(`
@@ -1404,6 +1406,7 @@ files_rw_etc_runtime_files(systemd_machine_id_setup_t)
 fs_getattr_cgroup(systemd_machine_id_setup_t)
 fs_search_cgroup_dirs(systemd_machine_id_setup_t)
 fs_getattr_tmpfs(systemd_machine_id_setup_t)
+fs_getattr_xattr_fs(systemd_machine_id_setup_t)
 fs_read_nsfs_files(systemd_machine_id_setup_t)
 fs_unmount_tmpfs(systemd_machine_id_setup_t)
 
@@ -2230,6 +2233,7 @@ files_manage_generic_tmp_dirs(systemd_tmpfiles_t)
 files_manage_var_dirs(systemd_tmpfiles_t)
 files_manage_var_lib_dirs(systemd_tmpfiles_t)
 files_manage_all_locks(systemd_tmpfiles_t)
+files_read_all_tmp_files(systemd_tmpfiles_t)  # to acquire lock for --clean
 files_purge_tmp(systemd_tmpfiles_t)
 files_read_etc_files(systemd_tmpfiles_t)
 files_read_etc_runtime_files(systemd_tmpfiles_t)
@@ -2585,6 +2589,10 @@ optional_policy(`
 
 optional_policy(`
 	gpg_delete_agent_named_sockets(systemd_user_runtime_dir_t)
+')
+
+optional_policy(`
+	pipewire_delete_user_sockets(systemd_user_runtime_dir_t)
 ')
 
 optional_policy(`

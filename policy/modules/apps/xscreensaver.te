@@ -44,6 +44,9 @@ allow xscreensaver_t xscreensaver_helper_t:process { signal sigstop };
 
 allow xscreensaver_t xscreensaver_config_t:file manage_file_perms;
 
+allow xscreensaver_t xscreensaver_tmpfs_t:file rw_file_perms;
+fs_tmpfs_filetrans(xscreensaver_t, xscreensaver_tmpfs_t, file)
+
 kernel_read_system_state(xscreensaver_t)
 
 files_read_usr_files(xscreensaver_t)
@@ -85,6 +88,11 @@ tunable_policy(`xscreensaver_read_generic_user_content',`
 	userdom_dontaudit_list_user_tmp(xscreensaver_t)
 	userdom_dontaudit_read_user_home_content_files(xscreensaver_t)
 	userdom_dontaudit_read_user_tmp_files(xscreensaver_t)
+')
+
+optional_policy(`
+	wm_application_domain(xscreensaver_t, xscreensaver_exec_t)
+	wm_dbus_chat_applications(xscreensaver_t)
 ')
 
 ########################################
