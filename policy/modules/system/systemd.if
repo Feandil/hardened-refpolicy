@@ -1684,24 +1684,6 @@ interface(`systemd_dbus_chat_logind',`
 
 ########################################
 ## <summary>
-##     Allow connecting to /run/systemd/io.systemd.Login socket
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain that can access the socket
-##	</summary>
-## </param>
-#
-interface(`systemd_connect_logind',`
-	gen_require(`
-		type systemd_logind_t;
-	')
-
-	allow $1 systemd_logind_t:unix_stream_socket connectto;
-')
-
-########################################
-## <summary>
 ##	Get the system status information from systemd_login
 ## </summary>
 ## <param name="domain">
