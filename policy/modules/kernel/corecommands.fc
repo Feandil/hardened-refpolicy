@@ -46,6 +46,8 @@ ifdef(`distro_redhat',`
 /etc/dhcp/dhclient-enter-hooks\.d(/.*)? --	gen_context(system_u:object_r:bin_t,s0)
 /etc/dhcp/dhclient-exit-hooks\.d(/.*)? --	gen_context(system_u:object_r:bin_t,s0)
 
+/etc/etckeeper/[^/]+/[^/]+	--	gen_context(system_u:object_r:bin_t,s0)
+
 /etc/hotplug/.*agent		--	gen_context(system_u:object_r:bin_t,s0)
 /etc/hotplug/.*rc		-- 	gen_context(system_u:object_r:bin_t,s0)
 /etc/hotplug/hotplug\.functions --	gen_context(system_u:object_r:bin_t,s0)
@@ -183,9 +185,11 @@ ifdef(`distro_gentoo',`
 /usr/lib/(.*/)?bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/(.*/)?glib-2\.0(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/postfix/configure-instance\.sh	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/libreoffice/program(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 
 /usr/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/(.*/)?sbin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/([^/]*linux-gnu/)?webkitgtk.*/WebKitWebProcess -- gen_context(system_u:object_r:bin_t,s0)
 
 /usr/lib/atril/atrild		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/at-spi2-core(/.*)?		gen_context(system_u:object_r:bin_t,s0)
@@ -484,6 +488,11 @@ ifdef(`distro_suse', `
 /usr/lib/samba/classic/.*	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ssh/.*			--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/apache2/[^/]*	--	gen_context(system_u:object_r:bin_t,s0)
+')
+
+ifdef(`distro_gentoo',`
+/usr/lib/python-exec/python-exec2	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/python-exec/python.*/.*	--	gen_context(system_u:object_r:bin_t,s0)
 ')
 
 #

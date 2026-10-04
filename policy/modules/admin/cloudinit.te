@@ -175,10 +175,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	aisexecd_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
 	amanda_run_recover(cloud_init_t, system_r)
 ')
 
@@ -491,10 +487,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	i18n_input_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
 	icecast_admin(cloud_init_t, system_r)
 ')
 
@@ -726,10 +718,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	openct_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
 	openhpi_admin(cloud_init_t, system_r)
 ')
 
@@ -747,10 +735,6 @@ optional_policy(`
 
 optional_policy(`
 	pacemaker_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
-	pads_admin(cloud_init_t, system_r)
 ')
 
 optional_policy(`
@@ -785,11 +769,6 @@ optional_policy(`
 	portage_run(cloud_init_t, system_r)
 	portage_run_fetch(cloud_init_t, system_r)
 	portage_run_gcc_config(cloud_init_t, system_r)
-')
-
-optional_policy(`
-	portmap_run_helper(cloud_init_t, system_r)
-	portmap_admin(cloud_init_t, system_r)
 ')
 
 optional_policy(`
@@ -829,19 +808,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	pxe_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
 	pyzor_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
-	qpidd_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
-	quantum_admin(cloud_init_t, system_r)
 ')
 
 optional_policy(`
@@ -957,10 +924,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	slpd_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
 	smartmon_admin(cloud_init_t, system_r)
 ')
 
@@ -1061,18 +1024,10 @@ optional_policy(`
 ')
 
 optional_policy(`
-	transproxy_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
 	tripwire_run_siggen(cloud_init_t, system_r)
 	tripwire_run_tripwire(cloud_init_t, system_r)
 	tripwire_run_twadmin(cloud_init_t, system_r)
 	tripwire_run_twprint(cloud_init_t, system_r)
-')
-
-optional_policy(`
-	tzdata_run(cloud_init_t, system_r)
 ')
 
 optional_policy(`
@@ -1133,10 +1088,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	wdmd_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
 	webalizer_run(cloud_init_t, system_r)
 ')
 
@@ -1151,10 +1102,6 @@ optional_policy(`
 
 optional_policy(`
 	zabbix_admin(cloud_init_t, system_r)
-')
-
-optional_policy(`
-	zarafa_admin(cloud_init_t, system_r)
 ')
 
 optional_policy(`

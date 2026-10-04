@@ -189,14 +189,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	prelink_run(unconfined_t, unconfined_r)
-')
-
-optional_policy(`
-	portmap_run_helper(unconfined_t, unconfined_r)
-')
-
-optional_policy(`
 	postfix_run_map(unconfined_t, unconfined_r)
 	# cjp: this should probably be removed:
 	postfix_domtrans_master(unconfined_t)
@@ -235,10 +227,6 @@ optional_policy(`
 optional_policy(`
 	sysnet_run_dhcpc(unconfined_t, unconfined_r)
 	sysnet_dbus_chat_dhcpc(unconfined_t)
-')
-
-optional_policy(`
-	tzdata_run(unconfined_t, unconfined_r)
 ')
 
 optional_policy(`

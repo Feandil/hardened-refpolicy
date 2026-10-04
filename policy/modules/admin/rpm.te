@@ -255,10 +255,6 @@ optional_policy(`
 	')
 ')
 
-optional_policy(`
-	prelink_run(rpm_t, rpm_roles)
-')
-
 ########################################
 #
 # rpm-script Local policy
@@ -418,11 +414,6 @@ optional_policy(`
 
 optional_policy(`
 	ntp_domtrans(rpm_script_t)
-')
-
-optional_policy(`
-	tzdata_run(rpm_t, rpm_roles)
-	tzdata_run(rpm_script_t, rpm_roles)
 ')
 
 optional_policy(`
